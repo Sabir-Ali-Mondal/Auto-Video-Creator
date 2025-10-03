@@ -1,0 +1,1663 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Video Creator Pro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --bs-body-bg: #fdfdfc;
+            --bs-body-color: #3d3d3f;
+            --bs-card-bg: #ffffff;
+            --bs-card-border-color: #e9e9e7;
+            --bs-primary: #d946ef;
+            --bs-primary-rgb: 217, 70, 239;
+            --bs-success: #10b981;
+            --bs-danger: #ef4444;
+            --bs-warning: #f59e0b;
+            --bs-font-sans-serif: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bs-body-bg);
+            color: var(--bs-body-color);
+            font-family: var(--bs-font-sans-serif);
+        }
+
+        .card {
+            border: 1px solid var(--bs-card-border-color);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border-radius: 0.75rem;
+        }
+
+        textarea.form-control {
+            min-height: 350px;
+            font-family: 'SF Mono', 'Courier New', monospace;
+            font-size: 0.85rem;
+            border-radius: 0.5rem;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+
+        textarea.form-control:focus {
+            border-color: var(--bs-primary);
+            box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+        }
+
+        canvas {
+            width: 100%;
+            height: auto;
+            border-radius: 0.75rem;
+            background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%);
+            aspect-ratio: 16 / 9;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            transition: transform 0.2s ease;
+        }
+
+        canvas:hover {
+            transform: translateY(-2px);
+        }
+
+        .notification-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1050;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-width: 320px;
+        }
+
+        .toast-notification {
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.75rem;
+            color: #fff;
+            font-weight: 500;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: 4px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .toast-notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .player-scrubber {
+            cursor: pointer;
+            border-radius: 1rem;
+            transition: transform 0.1s ease;
+        }
+
+        .player-scrubber:hover {
+            transform: scaleY(1.2);
+        }
+
+        .player-scrubber:active {
+            transform: scaleY(1.4);
+        }
+
+        .performance-indicator {
+            position: absolute;
+            top: 0.5rem;
+            left: 0.5rem;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            font-family: monospace;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .performance-indicator.show {
+            opacity: 1;
+        }
+
+        .scene-progress {
+            position: absolute;
+            bottom: 0.5rem;
+            left: 0.5rem;
+            right: 0.5rem;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .scene-progress.show {
+            opacity: 1;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.75rem;
+            color: white;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .loading-spinner {
+            width: 3rem;
+            height: 3rem;
+            border: 0.25rem solid transparent;
+            border-top: 0.25rem solid var(--bs-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .btn {
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: all 0.15s ease-in-out;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .voice-selector {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid var(--bs-card-border-color);
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .voice-option {
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+
+        .voice-option:hover {
+            background-color: var(--bs-light);
+        }
+
+        .voice-option.selected {
+            background-color: var(--bs-primary);
+            color: white;
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .container-fluid {
+                padding: 1rem;
+            }
+
+            textarea.form-control {
+                min-height: 250px;
+                font-size: 0.9rem;
+            }
+
+            .btn {
+                padding: 0.5rem 0.75rem;
+            }
+
+            canvas {
+                border-radius: 0.5rem;
+            }
+
+            .notification-container {
+                top: 0.5rem;
+                right: 0.5rem;
+                left: 0.5rem;
+                max-width: none;
+            }
+        }
+
+        /* Accessibility improvements */
+        .visually-hidden {
+            position: absolute !important;
+            width: 1px !important;
+            height: 1px !important;
+            padding: 0 !important;
+            margin: -1px !important;
+            overflow: hidden !important;
+            clip: rect(0, 0, 0, 0) !important;
+            white-space: nowrap !important;
+            border: 0 !important;
+        }
+
+        /* Focus indicators */
+        .btn:focus,
+        .form-control:focus,
+        .form-select:focus {
+            outline: 2px solid var(--bs-primary);
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="notificationContainer" class="notification-container" role="region" aria-label="Notifications"></div>
+    <div class="container-fluid p-3 p-md-4">
+        <div class="row g-4">
+            <!-- Left Column -->
+            <div class="col-lg-7">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h4 class="card-title mb-3"><i class="bi bi-robot me-2 text-primary" aria-hidden="true"></i> AI Script Helper</h4>
+                        <div class="mb-2">
+                            <label for="topicInput" class="form-label small fw-bold">Topic / Description</label>
+                            <textarea id="topicInput" class="form-control form-control-sm" rows="2" placeholder="e.g., The impact of renewable energy..." aria-describedby="topicHelp"></textarea>
+                            <div id="topicHelp" class="form-text small">Describe the topic for your AI-generated video script</div>
+                        </div>
+                        <div class="mb-2">
+                            <label for="langSelect" class="form-label small fw-bold">Language</label>
+                            <select id="langSelect" class="form-select form-select-sm" aria-describedby="langHelp">
+                                <option value="en-IN">English (India)</option>
+                                <option value="en-US">English (US)</option>
+                                <option value="en-GB">English (UK)</option>
+                                <option value="hi-IN">Hindi</option>
+                                <option value="bn-IN">Bengali</option>
+                                <option value="te-IN">Telugu</option>
+                                <option value="ta-IN">Tamil</option>
+                                <option value="es-ES">Spanish</option>
+                                <option value="fr-FR">French</option>
+                                <option value="de-DE">German</option>
+                            </select>
+                            <div id="langHelp" class="form-text small">Select the language for voice narration</div>
+                        </div>
+                        <div class="mb-3">
+                            <button id="voiceTestBtn" class="btn btn-outline-secondary btn-sm me-2">
+                                <i class="bi bi-volume-up me-1" aria-hidden="true"></i> Test Voice
+                            </button>
+                            <div id="voiceSelector" class="voice-selector"></div>
+                        </div>
+                        <button id="generateBtn" class="btn btn-primary w-100">
+                            <i class="bi bi-magic me-2" aria-hidden="true"></i>Generate Prompt for AI
+                        </button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title mb-3">
+                            <i class="bi bi-filetype-json me-2 text-primary" aria-hidden="true"></i> Video Script Editor
+                        </h4>
+                        <div class="position-relative">
+                            <textarea id="jsonInput" class="form-control" spellcheck="false" aria-label="JSON video script editor" aria-describedby="jsonHelp"></textarea>
+                            <div id="jsonHelp" class="form-text small mt-2">
+                                Edit your video script in JSON format. Press Ctrl+Space for auto-format.
+                            </div>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2 mt-3">
+                            <button id="loadExampleBtn" class="btn btn-light" aria-describedby="exampleHelp">
+                                <i class="bi bi-lightbulb me-1" aria-hidden="true"></i> Example
+                            </button>
+                            <button id="pasteBtn" class="btn btn-light" aria-describedby="pasteHelp">
+                                <i class="bi bi-clipboard me-1" aria-hidden="true"></i> Paste
+                            </button>
+                            <button id="formatBtn" class="btn btn-light" aria-describedby="formatHelp">
+                                <i class="bi bi-code me-1" aria-hidden="true"></i> Format
+                            </button>
+                            <button id="previewBtn" class="btn btn-outline-primary">
+                                <i class="bi bi-play-circle me-1" aria-hidden="true"></i> Preview
+                            </button>
+                            <button id="renderBtn" class="btn btn-success">
+                                <i class="bi bi-film me-1" aria-hidden="true"></i> Render & Download
+                            </button>
+                        </div>
+                        <div class="visually-hidden">
+                            <span id="exampleHelp">Load a sample video script</span>
+                            <span id="pasteHelp">Paste content from clipboard</span>
+                            <span id="formatHelp">Auto-format JSON content</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-lg-5">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title mb-3">
+                            <i class="bi bi-display me-2 text-primary" aria-hidden="true"></i> Preview Player
+                        </h4>
+                        <div class="position-relative">
+                            <canvas id="previewCanvas" width="1280" height="720" aria-label="Video preview canvas" tabindex="0"></canvas>
+                            <div id="loadingOverlay" class="loading-overlay">
+                                <div class="loading-spinner"></div>
+                                <div id="loadingText">Loading assets...</div>
+                            </div>
+                            <div id="performanceIndicator" class="performance-indicator">FPS: --</div>
+                            <div id="sceneProgress" class="scene-progress">
+                                <div class="small fw-bold mb-1" id="currentSceneTitle">Scene: --</div>
+                                <div class="small opacity-75" id="currentSceneNarration">--</div>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 mt-3">
+                            <button id="playPauseBtn" class="btn btn-light" title="Play/Pause (Space)" aria-label="Play or pause video">
+                                <i class="bi bi-play-fill fs-5" aria-hidden="true"></i>
+                            </button>
+                            <span id="timeDisplay" class="small text-muted user-select-none">00:00 / 00:00</span>
+                            <div class="progress flex-grow-1 player-scrubber" role="slider" aria-label="Video progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0" style="height: 8px;">
+                                <div id="progressBar" class="progress-bar bg-primary" style="width: 0%"></div>
+                            </div>
+                            <button id="fullscreenBtn" class="btn btn-light" title="Toggle Fullscreen (F)" aria-label="Toggle fullscreen mode">
+                                <i class="bi bi-fullscreen fs-5" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <div class="d-flex gap-2 mt-3">
+                            <a id="downloadLink" class="btn btn-primary flex-fill fw-bold" style="display:none;" role="button" aria-label="Download rendered video">
+                                <i class="bi bi-download me-2" aria-hidden="true"></i>Download Video (WebM)
+                            </a>
+                            <select id="exportFormat" class="form-select form-select-sm" style="max-width: 120px; display:none;">
+                                <option value="webm">WebM</option>
+                                <option value="mp4">MP4</option>
+                            </select>
+                        </div>
+                        <div class="mt-3 small text-muted d-flex align-items-center gap-2" id="status">
+                            <i class="bi bi-info-circle text-primary" aria-hidden="true"></i>
+                            <span>Status: Ready. Press Space to play or click Preview.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced example with better structure
+        const example = {
+            "width": 1280,
+            "height": 720,
+            "fps": 30,
+            "scenes": [{
+                    "id": "intro",
+                    "type": "title",
+                    "text": "AI Innovation Today",
+                    "narration": "Welcome to our comprehensive look at artificial intelligence innovations that are transforming our world today.",
+                    "bgColor": "#fefce8",
+                    "voiceGender": "female",
+                    "pitch": 1.0,
+                    "rate": 0.9,
+                    "duration": 5
+                },
+                {
+                    "id": "growth_chart",
+                    "type": "chart",
+                    "text": "AI Market Growth",
+                    "narration": "The artificial intelligence market has experienced exponential growth over the past five years, with projections showing continued acceleration through 2025.",
+                    "bgColor": "#f0fdf4",
+                    "chartData": [{
+                            "label": "2020",
+                            "value": 58
+                        },
+                        {
+                            "label": "2021",
+                            "value": 95
+                        },
+                        {
+                            "label": "2022",
+                            "value": 142
+                        },
+                        {
+                            "label": "2023",
+                            "value": 207
+                        },
+                        {
+                            "label": "2024",
+                            "value": 298
+                        }
+                    ],
+                    "voiceGender": "male",
+                    "pitch": 0.95,
+                    "rate": 0.85,
+                    "duration": 7
+                },
+                {
+                    "id": "applications",
+                    "type": "image",
+                    "text": "Real-World Applications",
+                    "narration": "From healthcare diagnostics to autonomous vehicles, AI applications are revolutionizing industries and improving lives across the globe.",
+                    "imageUrl": "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&auto=format&fit=crop",
+                    "bgUrl": "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=1280&auto=format&fit=crop",
+                    "bgColor": "#f5f3ff",
+                    "voiceGender": "female",
+                    "pitch": 1.0,
+                    "rate": 0.9,
+                    "duration": 6
+                },
+                {
+                    "id": "performance_metrics",
+                    "type": "table",
+                    "text": "Industry Performance",
+                    "narration": "Key performance indicators across different sectors demonstrate the significant impact and adoption rates of AI technologies worldwide.",
+                    "bgColor": "#fdf2f8",
+                    "tableHeaders": ["Sector", "AI Adoption", "Growth Rate", "Impact Score"],
+                    "tableData": [
+                        ["Healthcare", "78%", "23%", "9.2/10"],
+                        ["Finance", "85%", "31%", "8.8/10"],
+                        ["Manufacturing", "65%", "18%", "8.5/10"],
+                        ["Transportation", "72%", "28%", "9.0/10"]
+                    ],
+                    "voiceGender": "male",
+                    "pitch": 1.0,
+                    "rate": 0.85,
+                    "duration": 8
+                },
+                {
+                    "id": "conclusion",
+                    "type": "end",
+                    "text": "The Future is Now",
+                    "narration": "As we continue to push the boundaries of artificial intelligence, we're not just witnessing technological advancement—we're participating in the future.",
+                    "bgColor": "#fefce8",
+                    "voiceGender": "female",
+                    "pitch": 1.1,
+                    "rate": 0.9,
+                    "duration": 5
+                }
+            ]
+        };
+
+        // Enhanced elements object with new features
+        const elements = {
+            jsonInput: document.getElementById('jsonInput'),
+            loadExampleBtn: document.getElementById('loadExampleBtn'),
+            pasteBtn: document.getElementById('pasteBtn'),
+            formatBtn: document.getElementById('formatBtn'),
+            previewBtn: document.getElementById('previewBtn'),
+            renderBtn: document.getElementById('renderBtn'),
+            generateBtn: document.getElementById('generateBtn'),
+            topicInput: document.getElementById('topicInput'),
+            langSelect: document.getElementById('langSelect'),
+            voiceTestBtn: document.getElementById('voiceTestBtn'),
+            voiceSelector: document.getElementById('voiceSelector'),
+            downloadLink: document.getElementById('downloadLink'),
+            exportFormat: document.getElementById('exportFormat'),
+            statusEl: document.getElementById('status'),
+            progressBarEl: document.getElementById('progressBar'),
+            canvas: document.getElementById('previewCanvas'),
+            ctx: document.getElementById('previewCanvas').getContext('2d'),
+            notificationContainer: document.getElementById('notificationContainer'),
+            playPauseBtn: document.getElementById('playPauseBtn'),
+            timeDisplay: document.getElementById('timeDisplay'),
+            fullscreenBtn: document.getElementById('fullscreenBtn'),
+            scrubber: document.querySelector('.player-scrubber'),
+            loadingOverlay: document.getElementById('loadingOverlay'),
+            loadingText: document.getElementById('loadingText'),
+            performanceIndicator: document.getElementById('performanceIndicator'),
+            sceneProgress: document.getElementById('sceneProgress'),
+            currentSceneTitle: document.getElementById('currentSceneTitle'),
+            currentSceneNarration: document.getElementById('currentSceneNarration')
+        };
+
+        // Enhanced state management
+        let state = {
+            isRunning: false,
+            isPaused: false,
+            isRendering: false,
+            mediaRecorder: null,
+            images: new Map(),
+            voices: [],
+            maleVoices: [],
+            femaleVoices: [],
+            selectedVoices: {
+                male: null,
+                female: null
+            },
+            currentUtterance: null,
+            rafId: null,
+            startTime: 0,
+            pauseTime: 0,
+            totalDuration: 0,
+            sceneTimings: [],
+            currentSceneIndex: -1,
+            performanceMonitor: {
+                lastTime: 0,
+                frameCount: 0,
+                fps: 0
+            },
+            audioContext: null,
+            loadingProgress: 0
+        };
+
+        // Enhanced notification system
+        function showNotification(message, type = 'info', duration = 4000) {
+            const notif = document.createElement('div');
+            const icons = {
+                info: 'info-circle-fill',
+                success: 'check-circle-fill',
+                error: 'exclamation-triangle-fill',
+                warning: 'exclamation-circle-fill'
+            };
+
+            notif.className = `toast-notification bg-${type === 'info' ? 'primary' : type}`;
+            notif.innerHTML = `
+        <i class="bi bi-${icons[type]} me-2" aria-hidden="true"></i> 
+        ${message}
+    `;
+            notif.setAttribute('role', 'alert');
+            notif.setAttribute('aria-live', 'polite');
+
+            elements.notificationContainer.appendChild(notif);
+
+            setTimeout(() => notif.classList.add('show'), 10);
+            setTimeout(() => {
+                notif.classList.remove('show');
+                setTimeout(() => notif.remove(), 500);
+            }, duration);
+        }
+
+        // Enhanced IndexedDB with better error handling
+        const dbRequest = indexedDB.open('VideoCreatorDB', 2);
+        let db;
+
+        dbRequest.onerror = () => {
+            console.warn('IndexedDB not available, using localStorage fallback');
+        };
+
+        dbRequest.onupgradeneeded = e => {
+            db = e.target.result;
+            if (!db.objectStoreNames.contains('scripts')) {
+                db.createObjectStore('scripts', {
+                    keyPath: 'id'
+                });
+            }
+            if (!db.objectStoreNames.contains('settings')) {
+                db.createObjectStore('settings', {
+                    keyPath: 'key'
+                });
+            }
+        };
+
+        dbRequest.onsuccess = e => {
+            db = e.target.result;
+            loadScript();
+            loadSettings();
+        };
+
+        function saveScript(script) {
+            if (db) {
+                const transaction = db.transaction(['scripts'], 'readwrite');
+                transaction.objectStore('scripts').put({
+                    id: 'lastScript',
+                    content: script,
+                    timestamp: Date.now()
+                });
+            } else {
+                localStorage.setItem('lastScript', script);
+            }
+        }
+
+        function loadScript() {
+            if (db) {
+                const request = db.transaction(['scripts']).objectStore('scripts').get('lastScript');
+                request.onsuccess = () => {
+                    const result = request.result;
+                    elements.jsonInput.value = result ? result.content : JSON.stringify(example, null, 2);
+                };
+            } else {
+                const saved = localStorage.getItem('lastScript');
+                elements.jsonInput.value = saved || JSON.stringify(example, null, 2);
+            }
+        }
+
+        function saveSettings(settings) {
+            if (db) {
+                const transaction = db.transaction(['settings'], 'readwrite');
+                transaction.objectStore('settings').put({
+                    key: 'userSettings',
+                    data: settings
+                });
+            }
+        }
+
+        function loadSettings() {
+            if (db) {
+                const request = db.transaction(['settings']).objectStore('settings').get('userSettings');
+                request.onsuccess = () => {
+                    if (request.result) {
+                        const settings = request.result.data;
+                        if (settings.language) elements.langSelect.value = settings.language;
+                    }
+                };
+            }
+        }
+
+        // Enhanced JSON parsing with better error feedback
+        function parseAndValidateJson() {
+            const jsonText = elements.jsonInput.value.trim();
+
+            if (!jsonText) {
+                throw new Error('Please enter a JSON script');
+            }
+
+            try {
+                const parsed = JSON.parse(jsonText);
+
+                // Enhanced validation
+                if (!parsed.scenes || !Array.isArray(parsed.scenes)) {
+                    throw new Error('Script must have a "scenes" array');
+                }
+
+                if (parsed.scenes.length === 0) {
+                    throw new Error('At least one scene is required');
+                }
+
+                // Validate each scene
+                parsed.scenes.forEach((scene, index) => {
+                    if (!scene.type) {
+                        throw new Error(`Scene ${index + 1} is missing a "type" field`);
+                    }
+                    if (!scene.text && !scene.narration) {
+                        throw new Error(`Scene ${index + 1} needs either "text" or "narration"`);
+                    }
+                    if (!scene.duration || scene.duration <= 0) {
+                        throw new Error(`Scene ${index + 1} needs a valid "duration" (seconds)`);
+                    }
+                });
+
+                return parsed;
+            } catch (e) {
+                if (e instanceof SyntaxError) {
+                    showNotification(`JSON Syntax Error: ${e.message}`, 'error');
+                } else {
+                    showNotification(`Validation Error: ${e.message}`, 'error');
+                }
+                throw e;
+            }
+        }
+
+        // Enhanced asset preloading with progress tracking
+        async function preloadAsset(url) {
+            if (!url || state.images.has(url)) return;
+
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            state.images.set(url, {
+                img,
+                loaded: false,
+                error: false
+            });
+
+            return new Promise((resolve) => {
+                const timeoutId = setTimeout(() => {
+                    state.images.get(url).error = true;
+                    console.warn(`Failed to load image: ${url}`);
+                    resolve();
+                }, 10000); // 10 second timeout
+
+                img.onload = () => {
+                    clearTimeout(timeoutId);
+                    state.images.get(url).loaded = true;
+                    state.loadingProgress += 1;
+                    resolve();
+                };
+
+                img.onerror = () => {
+                    clearTimeout(timeoutId);
+                    state.images.get(url).error = true;
+                    console.warn(`Failed to load image: ${url}`);
+                    resolve();
+                };
+
+                img.src = url;
+            });
+        }
+
+        // Enhanced voice management with better selection
+        function loadVoices() {
+            state.voices = speechSynthesis.getVoices().filter(voice => !voice.localService || voice.name.includes('Google'));
+
+            if (state.voices.length === 0) {
+                setTimeout(loadVoices, 100); // Retry if voices not loaded yet
+                return;
+            }
+
+            const lang = elements.langSelect.value.split('-')[0] || 'en';
+            const langVoices = state.voices.filter(v => v.lang.startsWith(lang));
+
+            // Enhanced voice categorization
+            state.maleVoices = langVoices.filter(v => {
+                const name = v.name.toLowerCase();
+                return name.includes('male') || name.includes('david') || name.includes('alex') ||
+                    name.includes('daniel') || name.includes('mark') || name.includes('thomas');
+            });
+
+            state.femaleVoices = langVoices.filter(v => {
+                const name = v.name.toLowerCase();
+                return name.includes('female') || name.includes('samantha') || name.includes('zira') ||
+                    name.includes('susan') || name.includes('victoria') || name.includes('karen') ||
+                    name.includes('anna') || name.includes('sara');
+            });
+
+            // Fallback assignment if categorization fails
+            if (state.maleVoices.length === 0 && state.femaleVoices.length === 0 && langVoices.length > 0) {
+                langVoices.forEach((v, i) => {
+                    (i % 2 === 0 ? state.femaleVoices : state.maleVoices).push(v);
+                });
+            }
+
+            // Auto-select best voices
+            state.selectedVoices.male = state.maleVoices[0] || state.voices[0];
+            state.selectedVoices.female = state.femaleVoices[0] || state.voices[0];
+
+            updateVoiceSelector();
+        }
+
+        function updateVoiceSelector() {
+            const selector = elements.voiceSelector;
+            selector.innerHTML = '';
+
+            if (state.voices.length === 0) {
+                selector.innerHTML = '<div class="text-muted small">No voices available</div>';
+                return;
+            }
+
+            ['female', 'male'].forEach(gender => {
+                const genderVoices = gender === 'female' ? state.femaleVoices : state.maleVoices;
+                if (genderVoices.length === 0) return;
+
+                const header = document.createElement('div');
+                header.className = 'fw-bold small text-uppercase text-muted mb-2';
+                header.textContent = `${gender} voices`;
+                selector.appendChild(header);
+
+                genderVoices.forEach(voice => {
+                    const option = document.createElement('div');
+                    option.className = 'voice-option small';
+                    option.textContent = `${voice.name} (${voice.lang})`;
+                    option.addEventListener('click', () => {
+                        state.selectedVoices[gender] = voice;
+                        updateVoiceSelector();
+                        showNotification(`Selected ${gender} voice: ${voice.name}`, 'success', 2000);
+                    });
+
+                    if (state.selectedVoices[gender] === voice) {
+                        option.classList.add('selected');
+                    }
+
+                    selector.appendChild(option);
+                });
+            });
+        }
+
+        // Enhanced TTS with better timing control
+        function speak(scene, callback) {
+            if (state.currentUtterance) {
+                speechSynthesis.cancel();
+            }
+
+            const text = scene.narration || scene.text || '';
+            if (!text.trim()) {
+                if (callback) callback();
+                return;
+            }
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            const voiceGender = scene.voiceGender || 'female';
+            const selectedVoice = state.selectedVoices[voiceGender] || state.selectedVoices.female || state.voices[0];
+
+            if (selectedVoice) {
+                utterance.voice = selectedVoice;
+            }
+
+            utterance.pitch = scene.pitch || 1.0;
+            utterance.rate = scene.rate || 0.9;
+            utterance.volume = 0.9;
+
+            utterance.onend = () => {
+                state.currentUtterance = null;
+                if (callback) callback();
+            };
+
+            utterance.onerror = (e) => {
+                console.warn('Speech synthesis error:', e);
+                state.currentUtterance = null;
+                if (callback) callback();
+            };
+
+            state.currentUtterance = utterance;
+            speechSynthesis.speak(utterance);
+        }
+
+        // Enhanced drawing functions with performance optimizations
+        function drawScene(scene, sceneProgress) {
+            const {
+                ctx,
+                canvas
+            } = elements;
+            const {
+                width: w,
+                height: h
+            } = canvas;
+
+            // Performance optimization: only clear and redraw when needed
+            ctx.clearRect(0, 0, w, h);
+
+            // Enhanced background rendering
+            const bgGradient = ctx.createLinearGradient(0, 0, 0, h);
+            const bgColor = scene.bgColor || '#fdfdfc';
+            bgGradient.addColorStop(0, bgColor);
+            bgGradient.addColorStop(1, adjustColor(bgColor, -10));
+            ctx.fillStyle = bgGradient;
+            ctx.fillRect(0, 0, w, h);
+
+            // Background image with better rendering
+            const bgImgData = state.images.get(scene.bgUrl);
+            if (bgImgData?.loaded) {
+                ctx.save();
+                ctx.globalAlpha = 0.2;
+                const {
+                    img
+                } = bgImgData;
+                const ratio = img.width / img.height;
+                const canvasRatio = w / h;
+
+                let sx = 0,
+                    sy = 0,
+                    sw = img.width,
+                    sh = img.height;
+                if (ratio > canvasRatio) {
+                    sw = sh * canvasRatio;
+                    sx = (img.width - sw) / 2;
+                } else {
+                    sh = sw / canvasRatio;
+                    sy = (img.height - sh) / 2;
+                }
+
+                ctx.drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
+                ctx.restore();
+            }
+
+            // Enhanced scene transition effects
+            const fadeInOut = Math.min(1, sceneProgress / 0.1, (1 - sceneProgress) / 0.1);
+            ctx.globalAlpha = fadeInOut;
+
+            // Scene-specific drawing
+            const drawFunctions = {
+                title: drawTitleScene,
+                chart: drawChartScene,
+                table: drawTableScene,
+                image: drawImageScene,
+                end: drawEndScene
+            };
+
+            const drawFunction = drawFunctions[scene.type] || drawTitleScene;
+            drawFunction(ctx, scene, w, h, sceneProgress);
+
+            ctx.globalAlpha = 1.0;
+        }
+
+        // Utility function to adjust color brightness
+        function adjustColor(color, amount) {
+            const num = parseInt(color.replace("#", ""), 16);
+            const amt = Math.round(2.55 * amount);
+            const R = (num >> 16) + amt;
+            const G = (num >> 8 & 0x00FF) + amt;
+            const B = (num & 0x0000FF) + amt;
+            return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+                (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+                (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+        }
+
+        // Enhanced drawing functions
+        function drawWithShadow(ctx, drawCommands, shadowConfig = {}) {
+            ctx.save();
+            ctx.shadowColor = shadowConfig.color || 'rgba(0,0,0,0.3)';
+            ctx.shadowBlur = shadowConfig.blur || 12;
+            ctx.shadowOffsetX = shadowConfig.offsetX || 0;
+            ctx.shadowOffsetY = shadowConfig.offsetY || 4;
+            drawCommands();
+            ctx.restore();
+        }
+
+        function drawTitleScene(ctx, scene, w, h, progress) {
+            drawWithShadow(ctx, () => {
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = scene.style?.color || '#2d3748';
+
+                // Responsive font sizing
+                const fontSize = Math.min(w / 12, scene.style?.fontSize || 80);
+                ctx.font = `bold ${fontSize}px ${scene.style?.fontFamily || 'Inter, system-ui, sans-serif'}`;
+
+                // Text animation effect
+                const scale = 0.8 + (progress * 0.2);
+                ctx.save();
+                ctx.translate(w / 2, h / 2);
+                ctx.scale(scale, scale);
+                ctx.fillText(scene.text, 0, 0);
+                ctx.restore();
+            });
+        }
+
+        function drawEndScene(ctx, scene, w, h, progress) {
+            drawTitleScene(ctx, {
+                ...scene,
+                style: {
+                    fontSize: 60,
+                    color: '#4a5568'
+                }
+            }, w, h, progress);
+
+            // Add subtle animation
+            ctx.save();
+            ctx.globalAlpha = 0.1 + (Math.sin(progress * Math.PI * 4) * 0.05);
+            ctx.fillStyle = '#e2e8f0';
+            ctx.fillRect(0, h - 4, w * progress, 4);
+            ctx.restore();
+        }
+
+        function drawImageScene(ctx, scene, w, h, progress) {
+            const textWidth = w * 0.45;
+            const textX = w * 0.05;
+
+            // Enhanced text rendering with word wrap
+            drawWithShadow(ctx, () => {
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.fillStyle = scene.style?.color || '#2d3748';
+                const fontSize = Math.min(w / 20, scene.style?.fontSize || 50);
+                ctx.font = `bold ${fontSize}px Inter, system-ui, sans-serif`;
+
+                // Simple word wrap
+                const words = scene.text.split(' ');
+                const lines = [];
+                let currentLine = words[0];
+
+                for (let i = 1; i < words.length; i++) {
+                    const word = words[i];
+                    const width = ctx.measureText(currentLine + " " + word).width;
+                    if (width < textWidth) {
+                        currentLine += " " + word;
+                    } else {
+                        lines.push(currentLine);
+                        currentLine = word;
+                    }
+                }
+                lines.push(currentLine);
+
+                // Draw wrapped text
+                const lineHeight = fontSize * 1.2;
+                const startY = h / 2 - (lines.length * lineHeight) / 2;
+                lines.forEach((line, i) => {
+                    ctx.fillText(line, textX, startY + (i * lineHeight));
+                });
+            });
+
+            // Enhanced image rendering
+            const imgData = state.images.get(scene.imageUrl);
+            if (imgData?.loaded) {
+                const img = imgData.img;
+                const imageBox = {
+                    x: w * 0.55,
+                    y: h * 0.1,
+                    w: w * 0.4,
+                    h: h * 0.8
+                };
+
+                const imgRatio = img.width / img.height;
+                const boxRatio = imageBox.w / imageBox.h;
+
+                let dw = imageBox.w,
+                    dh = imageBox.h;
+                let dx = imageBox.x,
+                    dy = imageBox.y;
+
+                if (imgRatio > boxRatio) {
+                    dh = dw / imgRatio;
+                    dy += (imageBox.h - dh) / 2;
+                } else {
+                    dw = dh * imgRatio;
+                    dx += (imageBox.w - dw) / 2;
+                }
+
+                // Image animation
+                const scale = 0.95 + (progress * 0.05);
+                const finalW = dw * scale;
+                const finalH = dh * scale;
+                const finalX = dx + (dw - finalW) / 2;
+                const finalY = dy + (dh - finalH) / 2;
+
+                drawWithShadow(ctx, () => {
+                    ctx.drawImage(img, finalX, finalY, finalW, finalH);
+                }, {
+                    blur: 20,
+                    offsetY: 8
+                });
+            }
+        }
+
+        function drawChartScene(ctx, scene, w, h, progress) {
+            // Title
+            drawWithShadow(ctx, () => {
+                ctx.fillStyle = '#2d3748';
+                const titleSize = Math.min(w / 25, 36);
+                ctx.font = `bold ${titleSize}px Inter, system-ui, sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.fillText(scene.text, w / 2, h * 0.15);
+            });
+
+            // Enhanced chart rendering
+            const data = scene.chartData || [];
+            if (data.length === 0) return;
+
+            const chartArea = {
+                x: w * 0.15,
+                y: h * 0.25,
+                w: w * 0.7,
+                h: h * 0.5
+            };
+
+            const maxValue = Math.max(...data.map(d => d.value));
+            const barWidth = chartArea.w / (data.length * 1.5);
+            const spacing = barWidth * 0.5;
+
+            data.forEach((item, i) => {
+                const barHeight = (item.value / maxValue) * chartArea.h * progress; // Animated growth
+                const x = chartArea.x + (i * (barWidth + spacing));
+                const y = chartArea.y + chartArea.h - barHeight;
+
+                // Gradient bars
+                const gradient = ctx.createLinearGradient(0, y, 0, y + barHeight);
+                gradient.addColorStop(0, `rgba(217, 70, 239, 0.8)`);
+                gradient.addColorStop(1, `rgba(217, 70, 239, 0.4)`);
+
+                ctx.fillStyle = gradient;
+                ctx.fillRect(x, y, barWidth, barHeight);
+
+                // Value labels
+                ctx.fillStyle = '#4a5568';
+                ctx.font = `${Math.min(w / 40, 16)}px Inter, system-ui, sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.fillText(item.value.toString(), x + barWidth / 2, y - 5);
+
+                // Category labels
+                ctx.fillText(item.label, x + barWidth / 2, chartArea.y + chartArea.h + 25);
+            });
+        }
+
+        function drawTableScene(ctx, scene, w, h, progress) {
+            // Title
+            drawWithShadow(ctx, () => {
+                ctx.fillStyle = '#2d3748';
+                const titleSize = Math.min(w / 25, 36);
+                ctx.font = `bold ${titleSize}px Inter, system-ui, sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.fillText(scene.text, w / 2, h * 0.15);
+            });
+
+            const headers = scene.tableHeaders || [];
+            const data = scene.tableData || [];
+            if (headers.length === 0) return;
+
+            const tableArea = {
+                x: w * 0.1,
+                y: h * 0.28,
+                w: w * 0.8
+            };
+
+            const colCount = headers.length;
+            const colWidth = tableArea.w / colCount;
+            const rowHeight = Math.min(50, h / 15);
+            const fontSize = Math.min(w / 50, 20);
+
+            // Table background
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fillRect(tableArea.x, tableArea.y, tableArea.w, rowHeight * (data.length + 1));
+
+            // Headers
+            ctx.fillStyle = '#4a5568';
+            ctx.font = `bold ${fontSize}px Inter, system-ui, sans-serif`;
+            ctx.textAlign = 'center';
+
+            headers.forEach((header, i) => {
+                const x = tableArea.x + (i * colWidth) + (colWidth / 2);
+                const y = tableArea.y + (rowHeight * 0.7);
+                ctx.fillText(header, x, y);
+            });
+
+            // Data rows (animated entry)
+            ctx.fillStyle = '#2d3748';
+            ctx.font = `${fontSize * 0.9}px Inter, system-ui, sans-serif`;
+
+            const visibleRows = Math.floor(data.length * progress);
+            for (let rowIndex = 0; rowIndex < visibleRows; rowIndex++) {
+                const row = data[rowIndex];
+                row.forEach((cell, colIndex) => {
+                    const x = tableArea.x + (colIndex * colWidth) + (colWidth / 2);
+                    const y = tableArea.y + ((rowIndex + 1.7) * rowHeight);
+                    ctx.fillText(cell, x, y);
+                });
+            }
+        }
+
+        // Enhanced time formatting
+        function formatTime(seconds) {
+            const min = Math.floor(seconds / 60);
+            const sec = Math.floor(seconds % 60);
+            return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+        }
+
+        // Performance monitoring
+        function updatePerformanceMonitor() {
+            const now = performance.now();
+            if (state.performanceMonitor.lastTime) {
+                state.performanceMonitor.frameCount++;
+                const delta = now - state.performanceMonitor.lastTime;
+
+                if (delta >= 1000) { // Update every second
+                    state.performanceMonitor.fps = Math.round((state.performanceMonitor.frameCount * 1000) / delta);
+                    state.performanceMonitor.frameCount = 0;
+                    state.performanceMonitor.lastTime = now;
+
+                    elements.performanceIndicator.textContent = `FPS: ${state.performanceMonitor.fps}`;
+
+                    // Show/hide performance indicator based on performance
+                    if (state.isRunning) {
+                        elements.performanceIndicator.classList.add('show');
+                        if (state.performanceMonitor.fps < 20) {
+                            elements.performanceIndicator.style.backgroundColor = 'rgba(239, 68, 68, 0.8)'; // Red
+                        } else if (state.performanceMonitor.fps < 25) {
+                            elements.performanceIndicator.style.backgroundColor = 'rgba(245, 158, 11, 0.8)'; // Yellow
+                        } else {
+                            elements.performanceIndicator.style.backgroundColor = 'rgba(16, 185, 129, 0.8)'; // Green
+                        }
+                    } else {
+                        elements.performanceIndicator.classList.remove('show');
+                    }
+                }
+            } else {
+                state.performanceMonitor.lastTime = now;
+            }
+        }
+
+        // Enhanced main render loop with scene-based audio
+        function mainRenderLoop() {
+            if (!state.isRunning) return;
+
+            updatePerformanceMonitor();
+
+            if (state.isPaused) {
+                state.rafId = requestAnimationFrame(mainRenderLoop);
+                return;
+            }
+
+            const elapsed = (performance.now() - state.startTime) / 1000;
+
+            // Find current scene
+            let currentScene = null;
+            let sceneStartTime = 0;
+            let newSceneIndex = -1;
+
+            for (let i = 0; i < state.sceneTimings.length; i++) {
+                const sceneTiming = state.sceneTimings[i];
+                if (elapsed < sceneTiming.endTime) {
+                    currentScene = sceneTiming.scene;
+                    sceneStartTime = sceneTiming.startTime;
+                    newSceneIndex = i;
+                    break;
+                }
+            }
+
+            // Handle scene changes for audio
+            if (newSceneIndex !== state.currentSceneIndex) {
+                state.currentSceneIndex = newSceneIndex;
+
+                if (currentScene && !state.isRendering) {
+                    // Play audio for new scene (preview mode only)
+                    speak(currentScene);
+
+                    // Update scene progress display
+                    elements.currentSceneTitle.textContent = `Scene ${newSceneIndex + 1}: ${currentScene.text || currentScene.type}`;
+                    elements.currentSceneNarration.textContent = currentScene.narration || 'No narration';
+                    elements.sceneProgress.classList.add('show');
+                }
+            }
+
+            if (currentScene) {
+                const sceneProgress = Math.min(1, (elapsed - sceneStartTime) / currentScene.duration);
+                drawScene(currentScene, sceneProgress);
+            }
+
+            // Update UI
+            const progressPercent = (elapsed / state.totalDuration) * 100;
+            elements.progressBarEl.style.width = `${Math.min(100, progressPercent)}%`;
+            elements.progressBarEl.parentElement.setAttribute('aria-valuenow', Math.round(progressPercent));
+            elements.timeDisplay.textContent = `${formatTime(elapsed)} / ${formatTime(state.totalDuration)}`;
+
+            // Check for completion
+            if (elapsed >= state.totalDuration) {
+                stopPlayback();
+            } else {
+                state.rafId = requestAnimationFrame(mainRenderLoop);
+            }
+        }
+
+        // Enhanced playback control
+        function stopPlayback() {
+            state.isRunning = false;
+            state.isPaused = false;
+            state.currentSceneIndex = -1;
+
+            if (state.rafId) {
+                cancelAnimationFrame(state.rafId);
+                state.rafId = null;
+            }
+
+            elements.playPauseBtn.querySelector('i').className = 'bi bi-play-fill fs-5';
+            elements.sceneProgress.classList.remove('show');
+            elements.performanceIndicator.classList.remove('show');
+
+            // Stop audio
+            if (state.currentUtterance) {
+                speechSynthesis.cancel();
+                state.currentUtterance = null;
+            }
+
+            // Stop recording
+            if (state.mediaRecorder?.state === 'recording') {
+                state.mediaRecorder.stop();
+            }
+
+            state.isRendering = false;
+            elements.statusEl.querySelector('span').textContent = 'Status: Ready. Press Space to play or click Preview.';
+        }
+
+        // Enhanced seek functionality
+        function seekTo(timeRatio) {
+            if (!state.isRunning) return;
+
+            const seekTime = state.totalDuration * timeRatio;
+            state.startTime = performance.now() - (seekTime * 1000);
+
+            // Stop current audio and let the render loop restart it for the new scene
+            if (state.currentUtterance) {
+                speechSynthesis.cancel();
+                state.currentUtterance = null;
+            }
+
+            state.currentSceneIndex = -1; // Force scene detection
+
+            showNotification(`Seek to ${formatTime(seekTime)}`, 'info', 1500);
+        }
+
+        // Enhanced run function with better loading states
+        async function run(mode = 'preview') {
+            if (state.isRunning) {
+                return showNotification("A process is already running. Stop it first.", "warning");
+            }
+
+            try {
+                const scriptObj = parseAndValidateJson();
+                const scenes = scriptObj.scenes || [];
+
+                state.isRunning = true;
+                state.isRendering = mode === 'render';
+                state.loadingProgress = 0;
+
+                // Show loading
+                elements.loadingOverlay.style.display = 'flex';
+                elements.loadingText.textContent = 'Validating script...';
+
+                // Update UI
+                elements.playPauseBtn.querySelector('i').className = 'bi bi-pause-fill fs-5';
+                elements.downloadLink.style.display = 'none';
+                elements.exportFormat.style.display = 'none';
+
+                // Load voices
+                elements.loadingText.textContent = 'Loading voices...';
+                await new Promise(resolve => {
+                    loadVoices();
+                    setTimeout(resolve, 500); // Give voices time to load
+                });
+
+                // Preload assets
+                const allUrls = scenes
+                    .flatMap(s => [s.bgUrl, s.imageUrl])
+                    .filter(Boolean)
+                    .filter((url, i, arr) => arr.indexOf(url) === i); // Remove duplicates
+
+                if (allUrls.length > 0) {
+                    elements.loadingText.textContent = `Loading ${allUrls.length} assets...`;
+                    await Promise.all(allUrls.map(preloadAsset));
+                }
+
+                // Calculate scene timings
+                state.sceneTimings = [];
+                let accumulatedTime = 0;
+                for (const scene of scenes) {
+                    state.sceneTimings.push({
+                        scene,
+                        startTime: accumulatedTime,
+                        endTime: accumulatedTime + scene.duration
+                    });
+                    accumulatedTime += scene.duration;
+                }
+                state.totalDuration = accumulatedTime;
+
+                // Setup recording if needed
+                if (mode === 'render') {
+                    elements.loadingText.textContent = 'Starting video recording...';
+                    const stream = elements.canvas.captureStream(scriptObj.fps || 30);
+                    const chunks = [];
+
+                    const recordingOptions = {
+                        mimeType: 'video/webm;codecs=vp9'
+                    };
+                    if (!MediaRecorder.isTypeSupported(recordingOptions.mimeType)) {
+                        recordingOptions.mimeType = 'video/webm';
+                    }
+
+                    state.mediaRecorder = new MediaRecorder(stream, recordingOptions);
+
+                    state.mediaRecorder.ondataavailable = e => {
+                        if (e.data.size > 0) chunks.push(e.data);
+                    };
+
+                    state.mediaRecorder.onstop = () => {
+                        const blob = new Blob(chunks, {
+                            type: 'video/webm'
+                        });
+                        const url = URL.createObjectURL(blob);
+
+                        elements.downloadLink.href = url;
+                        elements.downloadLink.download = `video-export-${Date.now()}.webm`;
+                        elements.downloadLink.style.display = 'block';
+                        elements.exportFormat.style.display = 'block';
+
+                        showNotification("🎉 Video is ready for download!", "success");
+                    };
+
+                    state.mediaRecorder.start();
+                    showNotification("Recording started...", "info");
+                }
+
+                // Hide loading
+                elements.loadingOverlay.style.display = 'none';
+
+                // Start playback
+                state.startTime = performance.now();
+                state.currentSceneIndex = -1;
+
+                showNotification(`${mode === 'render' ? 'Recording' : 'Preview'} started!`, "success");
+
+                mainRenderLoop();
+
+            } catch (err) {
+                console.error('Run error:', err);
+                state.isRunning = false;
+                state.isRendering = false;
+                elements.loadingOverlay.style.display = 'none';
+                elements.playPauseBtn.querySelector('i').className = 'bi bi-play-fill fs-5';
+            }
+        }
+
+        // Enhanced initialization with keyboard shortcuts
+        function initialize() {
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+
+                switch (e.code) {
+                    case 'Space':
+                        e.preventDefault();
+                        elements.playPauseBtn.click();
+                        break;
+                    case 'KeyF':
+                        e.preventDefault();
+                        elements.fullscreenBtn.click();
+                        break;
+                    case 'Escape':
+                        if (state.isRunning) stopPlayback();
+                        break;
+                    case 'KeyR':
+                        if (e.ctrlKey || e.metaKey) {
+                            e.preventDefault();
+                            elements.renderBtn.click();
+                        }
+                        break;
+                    case 'KeyP':
+                        if (e.ctrlKey || e.metaKey) {
+                            e.preventDefault();
+                            elements.previewBtn.click();
+                        }
+                        break;
+                }
+            });
+
+            // JSON formatting shortcut
+            elements.jsonInput.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.code === 'Space') {
+                    e.preventDefault();
+                    formatJsonContent();
+                }
+            });
+
+            // Enhanced event listeners
+            elements.loadExampleBtn.addEventListener('click', () => {
+                elements.jsonInput.value = JSON.stringify(example, null, 2);
+                saveScript(elements.jsonInput.value);
+                showNotification("📝 Example script loaded.", "success");
+            });
+
+            elements.pasteBtn.addEventListener('click', async () => {
+                try {
+                    const text = await navigator.clipboard.readText();
+                    elements.jsonInput.value = text;
+                    saveScript(text);
+                    showNotification("📋 Pasted from clipboard.", "success");
+                } catch (err) {
+                    showNotification("❌ Failed to read clipboard. Try Ctrl+V instead.", "error");
+                }
+            });
+
+            elements.formatBtn.addEventListener('click', formatJsonContent);
+
+            elements.jsonInput.addEventListener('input', debounce(() => {
+                saveScript(elements.jsonInput.value);
+            }, 1000));
+
+            elements.previewBtn.addEventListener('click', () => run('preview'));
+            elements.renderBtn.addEventListener('click', () => run('render'));
+
+            elements.playPauseBtn.addEventListener('click', () => {
+                if (!state.isRunning) {
+                    run('preview');
+                } else {
+                    togglePlayPause();
+                }
+            });
+
+            elements.fullscreenBtn.addEventListener('click', async () => {
+                try {
+                    if (document.fullscreenElement) {
+                        await document.exitFullscreen();
+                    } else {
+                        await elements.canvas.requestFullscreen();
+                    }
+                } catch (err) {
+                    showNotification("Fullscreen not supported", "warning");
+                }
+            });
+
+            // Enhanced scrubber with keyboard support
+            elements.scrubber.addEventListener('click', handleScrubberClick);
+            elements.scrubber.addEventListener('keydown', (e) => {
+                if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') {
+                    e.preventDefault();
+                    const currentProgress = parseFloat(elements.progressBarEl.style.width) || 0;
+                    const step = e.code === 'ArrowRight' ? 5 : -5;
+                    const newProgress = Math.max(0, Math.min(100, currentProgress + step));
+                    seekTo(newProgress / 100);
+                }
+            });
+
+            // Language change handler
+            elements.langSelect.addEventListener('change', () => {
+                loadVoices();
+                saveSettings({
+                    language: elements.langSelect.value
+                });
+            });
+
+            // Voice test functionality
+            elements.voiceTestBtn.addEventListener('click', testVoice);
+
+            // Toggle voice selector
+            elements.voiceTestBtn.addEventListener('click', () => {
+                elements.voiceSelector.style.display =
+                    elements.voiceSelector.style.display === 'none' ? 'block' : 'none';
+            });
+
+            elements.generateBtn.addEventListener('click', generateAIPrompt);
+
+            // Speech synthesis voice loading
+            speechSynthesis.onvoiceschanged = loadVoices;
+            loadVoices();
+
+            // Initialize canvas context settings
+            const ctx = elements.ctx;
+            ctx.textRendering = 'optimizeLegibility';
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+
+            showNotification("🚀 AI Video Creator Pro ready!", "success");
+        }
+
+        // Utility functions
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        function formatJsonContent() {
+            try {
+                const parsed = JSON.parse(elements.jsonInput.value);
+                elements.jsonInput.value = JSON.stringify(parsed, null, 2);
+                saveScript(elements.jsonInput.value);
+                showNotification("✨ JSON formatted successfully!", "success");
+            } catch (err) {
+                showNotification("❌ Invalid JSON - cannot format", "error");
+            }
+        }
+
+        function togglePlayPause() {
+            state.isPaused = !state.isPaused;
+            const icon = elements.playPauseBtn.querySelector('i');
+            icon.className = `bi bi-${state.isPaused ? 'play' : 'pause'}-fill fs-5`;
+
+            if (state.isPaused) {
+                state.pauseTime = performance.now();
+                speechSynthesis.pause();
+                showNotification("⏸️ Paused", "info", 1000);
+            } else {
+                state.startTime += (performance.now() - state.pauseTime);
+                speechSynthesis.resume();
+                showNotification("▶️ Playing", "info", 1000);
+            }
+        }
+
+        function handleScrubberClick(e) {
+            if (!state.isRunning) return;
+
+            const rect = elements.scrubber.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const seekRatio = clickX / rect.width;
+            seekTo(Math.max(0, Math.min(1, seekRatio)));
+        }
+
+        function testVoice() {
+            const sampleText = "Hello! This is a test of the selected voice. The quality and characteristics of text-to-speech can vary significantly.";
+
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+            }
+
+            const utterance = new SpeechSynthesisUtterance(sampleText);
+            const voice = state.selectedVoices.female || state.voices[0];
+            if (voice) utterance.voice = voice;
+
+            speechSynthesis.speak(utterance);
+            showNotification("🔊 Testing voice...", "info", 2000);
+        }
+
+        function generateAIPrompt() {
+            const topic = elements.topicInput.value.trim();
+            const lang = elements.langSelect.value;
+
+            if (!topic) {
+                return showNotification("⚠️ Please enter a topic/description first.", "warning");
+            }
+
+            const prompt = `You are a professional video script generator. Create a comprehensive JSON video script about: "${topic}".
+
+Requirements:
+- Generate minimum 10 scenes and as long as needed using diverse types: 'title', 'chart', 'image', 'table', 'end'
+- Each scene must have: "text" (short title, 3-5 words), "narration" (detailed voiceover in ${lang})
+- Include "voiceGender" ('male'/'female'), "pitch" (0.9-1.2), "rate" (0.8-1.1)
+- Set appropriate "duration" in seconds based on narration length
+- Use real, working URLs from internet for 'imageUrl' and Unsplash for 'bgUrl'
+- Make chart data realistic and relevant to the topic
+- Ensure table data is meaningful and properly formatted
+- It should feel like podcst teaching.
+Output format: Return ONLY the JSON object, no additional text or explanation.
+Code must be in Markdown code copier.
+Example structure:
+${JSON.stringify(example, null, 2)}`;
+
+            // Copy to clipboard
+            navigator.clipboard.writeText(prompt).then(() => {
+                showNotification("📋 Prompt copied to clipboard!", "success");
+
+                // Also open Perplexity
+                const perplexityUrl = `https://www.perplexity.ai/?q=${encodeURIComponent(prompt)}`;
+                window.open(perplexityUrl, '_blank');
+
+                showNotification("🔗 Opening Perplexity AI...", "info");
+            }).catch(() => {
+                window.open(`https://www.perplexity.ai/?q=${encodeURIComponent(prompt)}`, '_blank');
+                showNotification("🔗 Prompt ready - Opening Perplexity AI...", "info");
+            });
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', initialize);
+    </script>
+</body>
+
+</html>
