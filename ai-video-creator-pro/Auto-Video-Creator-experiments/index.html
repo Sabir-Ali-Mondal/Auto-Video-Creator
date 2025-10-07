@@ -1,0 +1,2396 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Video Creator Pro - Unified Suite</title>
+    <!-- LIBRARIES -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/chartjs-chart-venn@4.1.0/build/index.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient-start: #e0e7ff;
+            --bg-gradient-end: #f0f9ff;
+            --glass-bg: rgba(255, 255, 255, 0.45);
+            --glass-border: rgba(255, 255, 255, 0.9);
+            --glass-shadow: rgba(100, 116, 139, 0.15);
+            --text-primary: #1e293b;
+            --text-secondary: #475569;
+            --accent-primary: #6d28d9;
+            --accent-primary-light: rgba(109, 40, 217, 0.1);
+            --accent-secondary: #db2777;
+            --accent-tertiary: #f59e0b;
+            --accent-quaternary: #0284c7;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+        }
+
+        /* --- 1. BASE & LAYOUT --- */
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: var(--font-sans);
+            color: var(--text-primary);
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            background-size: 200% 200%;
+            animation: gradient-pan 15s ease infinite;
+        }
+
+        @keyframes gradient-pan {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .main-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            padding: 1.5rem;
+            gap: 1.5rem;
+        }
+
+        .glass-pane {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.5rem;
+            box-shadow: 0 8px 32px 0 var(--glass-shadow);
+        }
+
+        .editor-panel {
+            width: 40%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .player-panel {
+            width: 60%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        #player-wrapper {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* --- 2. SELECTION SCREEN --- */
+        #selection-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        #selection-screen h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.025em;
+        }
+
+        #selection-screen p {
+            font-size: clamp(1rem, 2vw, 1.25rem);
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin-bottom: 3rem;
+        }
+
+        .mode-selection-container {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .mode-card {
+            width: 320px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 2rem;
+        }
+
+        .mode-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 40px 0 var(--glass-shadow);
+        }
+
+        .mode-card h2 {
+            font-size: 1.75rem;
+            margin: 0 0 0.5rem 0;
+            font-weight: 700;
+        }
+
+        .mode-card[data-mode="graph"] h2 {
+            color: var(--accent-primary);
+        }
+
+        .mode-card[data-mode="creative"] h2 {
+            color: var(--accent-secondary);
+        }
+
+        .mode-card[data-mode="mindvoice"] h2 {
+            color: var(--accent-tertiary);
+        }
+
+        .mode-card[data-mode="chem-mechanism"] h2 {
+            color: var(--accent-quaternary);
+        }
+
+        .mode-card p {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        /* --- 3. EDITOR PANEL --- */
+        .editor-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--glass-border);
+            flex-shrink: 0;
+        }
+
+        .editor-header h3 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .editor-header #mode-indicator {
+            font-weight: 800;
+        }
+
+        .editor-controls {
+            padding: 1rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            flex-shrink: 0;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .control-group label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        #ai-topic-input {
+            width: 100%;
+            padding: 0.6rem 0.8rem;
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.5);
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        #ai-topic-input:focus {
+            box-shadow: 0 0 0 3px var(--accent-primary-light);
+            border-color: var(--accent-primary);
+        }
+
+        .editor-btn {
+            background-color: rgba(255, 255, 255, 0.6);
+            color: var(--text-primary);
+            border: 1px solid var(--glass-border);
+            padding: 0.6rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .editor-btn:hover {
+            background-color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.07);
+        }
+
+        .editor-btn.primary {
+            background-color: var(--accent-primary);
+            color: white;
+            border-color: transparent;
+        }
+
+        .editor-btn.primary:hover {
+            background-color: #5b21b6;
+        }
+
+        #json-input {
+            width: 100%;
+            height: 100%;
+            padding: 1rem;
+            border: none;
+            resize: none;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            outline: none;
+            background: transparent;
+            color: var(--text-primary);
+        }
+
+        /* --- 4. NOTIFICATION --- */
+        #notification-container {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .notification {
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 280px;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background-color: #10b981;
+        }
+
+        .notification.error {
+            background-color: #ef4444;
+        }
+
+        .notification.info {
+            background-color: #3b82f6;
+        }
+
+        /* --- 5. PLAYER STYLES --- */
+        .player-content-container {
+            width: 100%;
+            height: 100%;
+            aspect-ratio: 16 / 9;
+            max-width: 100%;
+            max-height: 100%;
+            position: relative;
+            overflow: hidden;
+            border-radius: 1rem;
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        #fullscreen-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            z-index: 5000;
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #fullscreen-btn:hover {
+            background: rgba(0, 0, 0, 0.6);
+            transform: scale(1.1);
+        }
+
+        .player-panel.fullscreen-active {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            padding: 0;
+            z-index: 10000;
+            border-radius: 0;
+            background: #020617;
+        }
+
+        .player-panel.fullscreen-active .player-content-container {
+            border-radius: 0;
+        }
+
+        .player-canvas-wrapper {
+            flex: 1;
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .player-canvas-wrapper canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: contain;
+        }
+
+        .p5-controls-overlay {
+            position: absolute;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            gap: 0.5rem;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: #f1f5f9;
+        }
+
+        .p5-control-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            color: #f1f5f9;
+            background: rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .p5-control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        #chemistryControls {
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        #chem-playPauseBtn {
+            background: var(--accent-quaternary);
+        }
+
+        #step-info-box {
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 500px;
+            padding: 0.8rem 1rem;
+            text-align: center;
+        }
+
+        #mechanism-timeline {
+            bottom: 6rem;
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: 90%;
+            background: none;
+            border: none;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .step-box {
+            flex-shrink: 0;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            background: #0f172a;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #94a3b8;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .step-box.active {
+            color: white;
+            background: var(--accent-quaternary);
+            border-color: #2563eb;
+            transform: scale(1.05);
+        }
+
+        .step-arrow {
+            color: #94a3b8;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin: 0 4px;
+        }
+
+        #mindmapInfoBox {
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 500px;
+            padding: 0.8rem 1.2rem;
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        #mindmapInfoBox.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        #mindmapInfoBox h3 {
+            color: var(--accent-tertiary);
+            margin: 0 0 5px 0;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        #mindmapInfoBox p {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: #cbd5e1;
+            margin: 0;
+        }
+
+        #podcastBtn {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--accent-tertiary), #d97706);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+
+        #podcastBtn:hover {
+            transform: scale(1.1);
+        }
+
+        #podcastBtn.playing {
+            background: linear-gradient(45deg, #ef4444, #b91c1c);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="notification-container"></div>
+    <div id="p5_container" style="position: absolute; top: -9999px; left: -9999px;"></div>
+
+    <div id="selection-screen">
+        <h1>AI Video Creator Pro</h1>
+        <p>Choose your creation style. Generate a data-driven presentation, a creative video, a mindmap, or a chemical reaction from an AI-generated JSON script.</p>
+        <div class="mode-selection-container">
+            <div class="mode-card glass-pane" data-mode="graph">
+                <h2>Graph Presentation</h2>
+                <p>Ideal for business reviews and data analysis. Uses Chart.js for crisp, animated, and narrated data visualizations.</p>
+            </div>
+            <div class="mode-card glass-pane" data-mode="creative">
+                <h2>Creative Video</h2>
+                <p>Perfect for marketing and explainers. Renders custom graphics, tables, quizzes, and even 3D sketches with p5.js.</p>
+            </div>
+            <div class="mode-card glass-pane" data-mode="mindvoice">
+                <h2>MindVoice Map</h2>
+                <p>Turn your ideas into a clear and engaging mindmap with guided audio narration.</p>
+            </div>
+            <div class="mode-card glass-pane" data-mode="chem-mechanism">
+                <h2>Chem Mechanism</h2>
+                <p>Explore chemical reactions step by step through easy, visual storytelling.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container" id="app-container" style="display: none;">
+        <div class="editor-panel glass-pane">
+            <div class="editor-header">
+                <h3><span>🎬</span> Video Script Editor <span id="mode-indicator"></span></h3>
+            </div>
+            <div class="editor-controls">
+                <div class="control-group">
+                    <label for="ai-topic-input">1. Generate AI Script (Optional)</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="ai-topic-input" placeholder="e.g., The future of renewable energy" style="flex-grow: 1;">
+                        <button id="generate-prompt-btn" class="editor-btn" title="Generate & Copy AI Prompt"><i class="bi bi-sparkles"></i> Prompt</button>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="control-group">
+                        <label>2. Load or Edit Script</label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button id="load-example-btn" class="editor-btn">Example</button>
+                            <button id="clean-json-btn" class="editor-btn">Format</button>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label>3. Create Video</label>
+                        <button id="play-btn" class="editor-btn primary" style="width: 100%; font-size: 1rem; padding: 0.75rem 1rem;"><i class="bi bi-play-fill" style="font-size: 1.5rem;"></i> Play</button>
+                    </div>
+                </div>
+            </div>
+            <div style="flex-grow: 1; position: relative;"><textarea id="json-input" spellcheck="false"></textarea></div>
+        </div>
+        <div class="player-panel glass-pane" id="player-panel-host">
+            <div id="player-wrapper"></div>
+        </div>
+    </div>
+
+    <script>
+        'use strict';
+
+        const TEMPLATES = {
+            graph: {
+                "theme": {
+                    "--bg-color": "#0f0a19",
+                    "--surface-color": "#1a1625",
+                    "--border-color": "#2d2438",
+                    "--primary-color": "#8b5cf6",
+                    "--text-color": "#f3f4f6",
+                    "--glass-bg": "rgba(139, 92, 246, 0.15)",
+                    "--glass-hover-bg": "rgba(139, 92, 246, 0.25)",
+                    "--highlight-primary": "#a855f7",
+                    "--highlight-secondary": "#06b6d4",
+                    "--highlight-accent": "#f59e0b"
+                },
+                "sceneOrder": ["intro", "market_growth", "charging_infra", "manufacturer_share", "conclusion"],
+                "scenes": {
+                    "intro": {
+                        "id": "intro",
+                        "type": "title",
+                        "content": {
+                            "title": "The EV Revolution",
+                            "narration": "Welcome. Today we will explore the exponential growth of the electric vehicle market and the key trends shaping our automotive future towards 2030.",
+                            "duration": 3000
+                        }
+                    },
+                    "market_growth": {
+                        "id": "market_growth",
+                        "type": "scripted_chart",
+                        "content": {
+                            "title": "Global EV Sales Growth",
+                            "intro_narration": "First, let's look at the projected global sales. The growth is staggering.",
+                            "chartConfig": {
+                                "type": "line",
+                                "data": {
+                                    "labels": ["2022", "2024", "2026", "2028", "2030"],
+                                    "datasets": [{
+                                        "label": "EV Sales (Millions)",
+                                        "data": [10.5, 21, 40.5, 62, 75],
+                                        "borderColor": "#8b5cf6",
+                                        "tension": 0.4
+                                    }]
+                                }
+                            },
+                            "script_steps": [{
+                                "step": 1,
+                                "narration": "In 2022, global sales stood at a strong 10.5 million units.",
+                                "highlight": {
+                                    "datasetIndex": 0,
+                                    "dataIndex": 0
+                                }
+                            }, {
+                                "step": 2,
+                                "narration": "By 2030, this number is projected to surge to 75 million vehicles sold annually.",
+                                "highlight": {
+                                    "datasetIndex": 0,
+                                    "dataIndex": 4
+                                }
+                            }]
+                        }
+                    },
+                    "charging_infra": {
+                        "id": "charging_infra",
+                        "type": "scripted_chart",
+                        "content": {
+                            "title": "Public Charging Infrastructure",
+                            "intro_narration": "This growth is supported by a massive expansion in charging infrastructure.",
+                            "chartConfig": {
+                                "type": "bar",
+                                "data": {
+                                    "labels": ["USA", "Europe", "China"],
+                                    "datasets": [{
+                                        "label": "Public Chargers (Millions)",
+                                        "data": [0.5, 2.9, 7.6],
+                                        "backgroundColor": ["#8b5cf6", "#06b6d4", "#f59e0b"]
+                                    }]
+                                }
+                            },
+                            "script_steps": [{
+                                "step": 1,
+                                "narration": "China is leading the way with a projected 7.6 million public chargers.",
+                                "highlight": {
+                                    "datasetIndex": 0,
+                                    "dataIndex": 2
+                                }
+                            }, {
+                                "step": 2,
+                                "narration": "Europe is also investing heavily, aiming for nearly 3 million chargers.",
+                                "highlight": {
+                                    "datasetIndex": 0,
+                                    "dataIndex": 1
+                                }
+                            }]
+                        }
+                    },
+                    "manufacturer_share": {
+                        "id": "manufacturer_share",
+                        "type": "scripted_chart",
+                        "content": {
+                            "title": "Projected Market Share by 2030",
+                            "intro_narration": "Finally, let's see how the market share is expected to look.",
+                            "chartConfig": {
+                                "type": "doughnut",
+                                "data": {
+                                    "labels": ["Tesla", "BYD", "VW Group", "Others"],
+                                    "datasets": [{
+                                        "data": [20, 18, 15, 47],
+                                        "backgroundColor": ["#ef4444", "#8b5cf6", "#3b82f6", "#e2e8f0"]
+                                    }]
+                                }
+                            },
+                            "script_steps": [{
+                                "step": 1,
+                                "narration": "Tesla is expected to hold a dominant 20% of the market.",
+                                "highlight": {
+                                    "datasetIndex": 0,
+                                    "dataIndex": 0
+                                }
+                            }, {
+                                "step": 2,
+                                "narration": "However, competitors like BYD are closing the gap, with a projected 18% share.",
+                                "highlight": {
+                                    "datasetIndex": 0,
+                                    "dataIndex": 1
+                                }
+                            }]
+                        }
+                    },
+                    "conclusion": {
+                        "id": "conclusion",
+                        "type": "end",
+                        "content": {
+                            "title": "An Electric Future",
+                            "narration": "The path is clear. The automotive industry is rapidly and irreversibly shifting to an electric future, driven by innovation, policy, and consumer demand.",
+                            "duration": 4000
+                        }
+                    }
+                }
+            },
+            creative: {
+                "width": 1280,
+                "height": 720,
+                "scenes": [{
+                    "id": "title",
+                    "type": "title",
+                    "text": "Beyond the Product",
+                    "narration": "In a crowded market, features are not enough. The brands that win are the ones that tell the best stories.",
+                    "voiceGender": "female"
+                }, {
+                    "id": "paragraph",
+                    "type": "paragraph",
+                    "text": "Connecting Emotionally",
+                    "narration": "Storytelling builds an emotional bridge between a brand and its audience, fostering loyalty that transcends price.",
+                    "bgUrl": "https://images.unsplash.com/photo-1528716321680-815a8cdb8cbe?w=1280&auto=format&fit=crop&q=80",
+                    "voiceGender": "male"
+                }, {
+                    "id": "bullet_points",
+                    "type": "bullet_points",
+                    "text": "Key Story Elements",
+                    "narration": "A great brand story has a few key ingredients: a relatable hero, a clear conflict, and a satisfying resolution.",
+                    "points": ["The Hero (Your Customer)", "The Conflict (Their Problem)", "The Resolution (Your Solution)", "The Transformation"],
+                    "bgUrl": "https://images.unsplash.com/photo-1455390582262-044cdead277a?w=1280&auto=format&fit=crop&q=80",
+                    "voiceGender": "female"
+                }, {
+                    "id": "chart_scene",
+                    "type": "chart",
+                    "text": "Impact on Engagement",
+                    "narration": "The data is clear. Story-driven campaigns see significantly higher engagement and recall rates.",
+                    "chartData": [{
+                        "label": "Traditional Ad",
+                        "value": 35
+                    }, {
+                        "label": "Feature List",
+                        "value": 45
+                    }, {
+                        "label": "Brand Story Ad",
+                        "value": 85
+                    }],
+                    "bgUrl": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1280&auto=format&fit=crop&q=80",
+                    "voiceGender": "male"
+                }, {
+                    "id": "quiz",
+                    "type": "quiz",
+                    "narration": "Let's test your knowledge. In a brand story, who should always be the main character or 'hero'?",
+                    "question": "Who is the hero of a brand story?",
+                    "options": ["The CEO", "The Product", "The Customer", "The Brand"],
+                    "correctAnswer": 2,
+                    "answerText": "The Customer",
+                    "voiceGender": "female"
+                }, {
+                    "id": "end",
+                    "type": "end",
+                    "text": "Tell Your Story",
+                    "narration": "Your audience is waiting for a story to believe in. It's time to tell yours. Thank you.",
+                    "bgUrl": "https://images.unsplash.com/photo-1481018085669-2bc6e4f00994?w=1280&auto=format&fit=crop&q=80",
+                    "voiceGender": "male"
+                }]
+            },
+            'chem-mechanism': {
+                "meta": {
+                    "reactionName": "Friedel-Crafts Acylation of Benzene"
+                },
+                "molecules": {
+                    "acyl_chloride": {
+                        "position": {
+                            "x": -250,
+                            "y": -50
+                        },
+                        "atoms": [{
+                            "id": "c1",
+                            "element": "C",
+                            "position": {
+                                "x": 0,
+                                "y": 0
+                            }
+                        }, {
+                            "id": "o1",
+                            "element": "O",
+                            "position": {
+                                "x": 0,
+                                "y": -50
+                            }
+                        }, {
+                            "id": "cl1",
+                            "element": "Cl",
+                            "position": {
+                                "x": 50,
+                                "y": 0
+                            }
+                        }, {
+                            "id": "c2",
+                            "element": "C",
+                            "position": {
+                                "x": -50,
+                                "y": 25
+                            }
+                        }],
+                        "bonds": [{
+                            "id": "b_co",
+                            "from": "c1",
+                            "to": "o1",
+                            "type": "double"
+                        }, {
+                            "id": "b_ccl",
+                            "from": "c1",
+                            "to": "cl1",
+                            "type": "single"
+                        }, {
+                            "id": "b_cc",
+                            "from": "c1",
+                            "to": "c2",
+                            "type": "single"
+                        }]
+                    },
+                    "lewis_acid": {
+                        "position": {
+                            "x": -150,
+                            "y": 100
+                        },
+                        "atoms": [{
+                            "id": "al1",
+                            "element": "Al",
+                            "position": {
+                                "x": 0,
+                                "y": 0
+                            }
+                        }, {
+                            "id": "cl2",
+                            "element": "Cl",
+                            "position": {
+                                "x": -40,
+                                "y": -30
+                            }
+                        }, {
+                            "id": "cl3",
+                            "element": "Cl",
+                            "position": {
+                                "x": 40,
+                                "y": -30
+                            }
+                        }, {
+                            "id": "cl4",
+                            "element": "Cl",
+                            "position": {
+                                "x": 0,
+                                "y": 50
+                            }
+                        }]
+                    },
+                    "benzene": {
+                        "position": {
+                            "x": 150,
+                            "y": 0
+                        },
+                        "atoms": [{
+                            "id": "c3",
+                            "element": "C",
+                            "position": {
+                                "x": 0,
+                                "y": -60
+                            }
+                        }, {
+                            "id": "c4",
+                            "element": "C",
+                            "position": {
+                                "x": 52,
+                                "y": -30
+                            }
+                        }, {
+                            "id": "c5",
+                            "element": "C",
+                            "position": {
+                                "x": 52,
+                                "y": 30
+                            }
+                        }, {
+                            "id": "c6",
+                            "element": "C",
+                            "position": {
+                                "x": 0,
+                                "y": 60
+                            }
+                        }, {
+                            "id": "c7",
+                            "element": "C",
+                            "position": {
+                                "x": -52,
+                                "y": 30
+                            }
+                        }, {
+                            "id": "c8",
+                            "element": "C",
+                            "position": {
+                                "x": -52,
+                                "y": -30
+                            }
+                        }],
+                        "bonds": [{
+                            "id": "b_pi1",
+                            "from": "c3",
+                            "to": "c4",
+                            "type": "double"
+                        }, {
+                            "id": "b_pi2",
+                            "from": "c5",
+                            "to": "c6",
+                            "type": "double"
+                        }, {
+                            "id": "b_pi3",
+                            "from": "c7",
+                            "to": "c8",
+                            "type": "double"
+                        }]
+                    }
+                },
+                "mechanism": [{
+                    "step": 1,
+                    "title": "Formation of Acylium Ion",
+                    "narration": "The Lewis acid catalyst, aluminum trichloride, coordinates with the chlorine atom of the acyl chloride.",
+                    "displayMolecules": ["acyl_chloride", "lewis_acid"],
+                    "actions": [{
+                        "type": "ELECTRON_ARROW",
+                        "from": "acyl_chloride.cl1",
+                        "to": "lewis_acid.al1",
+                        "duration": 2000,
+                        "delay": 500
+                    }]
+                }, {
+                    "step": 2,
+                    "title": "Cleavage to form Electrophile",
+                    "narration": "This coordination weakens the carbon-chlorine bond, which then breaks to form a highly reactive, resonance-stabilized acylium ion.",
+                    "displayMolecules": ["acyl_chloride", "lewis_acid"],
+                    "actions": [{
+                        "type": "BOND_ANIMATION",
+                        "target": "acyl_chloride.b_ccl",
+                        "animationType": "breaking",
+                        "duration": 1500,
+                        "delay": 0
+                    }]
+                }, {
+                    "step": 3,
+                    "title": "Electrophilic Attack",
+                    "narration": "The pi electrons of the benzene ring act as a nucleophile, attacking the electrophilic carbon of the acylium ion.",
+                    "displayMolecules": ["acyl_chloride", "benzene"],
+                    "actions": [{
+                        "type": "ELECTRON_ARROW",
+                        "from": "benzene.b_pi1",
+                        "to": "acyl_chloride.c1",
+                        "duration": 2000,
+                        "delay": 500
+                    }]
+                }, {
+                    "step": 4,
+                    "title": "Restoration of Aromaticity",
+                    "narration": "Finally, a chloride ion from the catalyst complex removes a proton from the ring, restoring the stable aromatic system and regenerating the catalyst.",
+                    "displayMolecules": ["benzene", "acyl_chloride"],
+                    "actions": []
+                }]
+            },
+            mindvoice: {
+                "id": "root_node",
+                "title": "Photosynthesis",
+                "notes": "The process used by plants, algae, and some bacteria to convert light energy into chemical energy.",
+                "script": "Let's dive into Photosynthesis, the incredible natural process that powers most life on Earth by turning sunlight into food.",
+                "children": [{
+                    "id": "inputs",
+                    "title": "Key Ingredients",
+                    "notes": "Requires sunlight, water, and carbon dioxide.",
+                    "script": "To start, photosynthesis needs three key ingredients: sunlight for energy, water absorbed through the roots, and carbon dioxide from the air.",
+                    "children": []
+                }, {
+                    "id": "stages",
+                    "title": "Two Main Stages",
+                    "notes": "Consists of Light-Dependent Reactions and the Calvin Cycle.",
+                    "script": "The process happens in two main stages. First, the light-dependent reactions capture solar energy, and then the Calvin Cycle uses that energy to create sugar.",
+                    "children": [{
+                        "id": "light_reactions",
+                        "title": "Light-Dependent Reactions",
+                        "notes": "Occur in the thylakoid membranes. Water is split to release oxygen.",
+                        "script": "In the light-dependent reactions, chlorophyll absorbs sunlight, splitting water molecules. This is the step that releases the oxygen we breathe into the atmosphere."
+                    }, {
+                        "id": "calvin_cycle",
+                        "title": "Calvin Cycle",
+                        "notes": "Occurs in the stroma. CO2 is converted into glucose (sugar).",
+                        "script": "Next, in the Calvin Cycle, the captured energy is used to convert carbon dioxide into glucose. This sugar is the plant's food, providing energy for growth."
+                    }]
+                }, {
+                    "id": "outputs",
+                    "title": "Essential Outputs",
+                    "notes": "Produces glucose for energy and oxygen as a byproduct.",
+                    "script": "So, the two critical products of this entire process are glucose, which fuels the plant, and oxygen, which is essential for animal life.",
+                    "children": []
+                }]
+            }
+        };
+        const AI_PROMPTS = {
+            graph: (topic, template) => `Generate a video script JSON for the topic: "${topic}". STRICTLY follow this exact JSON structure. Only change the text, narration, and data values to fit the topic. Use plausible but illustrative data. Do not add any new keys or change the scene types. TEMPLATE: ${JSON.stringify(template, null, 2)} OUTPUT ONLY THE RAW JSON. NO MARKDOWN, NO EXPLANATIONS.`,
+            creative: (topic, template) => `Generate a video script JSON for the topic: "${topic}". STRICTLY follow this exact JSON structure. Only change the text, narration, and data values to fit the topic. For all "bgUrl" keys, provide real, working image URLs from images.unsplash.com. TEMPLATE: ${JSON.stringify(template, null, 2)} OUTPUT ONLY THE RAW JSON. NO MARKDOWN, NO EXPLANATIONS.`,
+            mindvoice: (topic, template) => `Create a comprehensive, educational mindmap as a JSON object on the topic: "${topic}". STRICTLY follow this exact JSON structure. Ensure the 'script' fields contain engaging, conversational narration (2-3 sentences). The map should have at least 3 levels of hierarchy where appropriate. TEMPLATE: ${JSON.stringify(template, null, 2)} OUTPUT ONLY THE RAW JSON. NO MARKDOWN, NO EXPLANATIONS.`,
+            'chem-mechanism': (topic, template) => `Generate a comprehensive JSON for visualizing the mechanism of a: "${topic}". STRICTLY follow this exact JSON structure. Ensure all 'position' coordinates create a chemically plausible 2D representation. The 'from' and 'to' in actions must correctly reference molecule and atom/bond IDs. TEMPLATE: ${JSON.stringify(template, null, 2)} OUTPUT ONLY THE RAW JSON. NO MARKDOWN, NO EXPLANATIONS.`
+        };
+
+        const globalState = {
+            mode: null,
+            activePlayer: null
+        };
+        const E = {
+            selectionScreen: document.getElementById('selection-screen'),
+            appContainer: document.getElementById('app-container'),
+            modeIndicator: document.getElementById('mode-indicator'),
+            aiTopicInput: document.getElementById('ai-topic-input'),
+            generatePromptBtn: document.getElementById('generate-prompt-btn'),
+            loadExampleBtn: document.getElementById('load-example-btn'),
+            cleanJsonBtn: document.getElementById('clean-json-btn'),
+            playBtn: document.getElementById('play-btn'),
+            jsonInput: document.getElementById('json-input'),
+            playerWrapper: document.getElementById('player-wrapper'),
+            notificationContainer: document.getElementById('notification-container'),
+            playerPanelHost: document.getElementById('player-panel-host'),
+        };
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                E.playerPanelHost.requestFullscreen().catch(err => alert(`Error: ${err.message}`));
+            } else {
+                document.exitFullscreen();
+            }
+        }
+        document.addEventListener('fullscreenchange', () => E.playerPanelHost.classList.toggle('fullscreen-active', !!document.fullscreenElement));
+
+        function showNotification(message, type = 'info', duration = 3000) {
+            const notif = document.createElement('div');
+            notif.className = `notification ${type}`;
+            notif.textContent = message;
+            E.notificationContainer.appendChild(notif);
+            setTimeout(() => notif.classList.add('show'), 10);
+            setTimeout(() => {
+                notif.classList.remove('show');
+                notif.addEventListener('transitionend', () => notif.remove());
+            }, duration);
+        }
+
+        const JsonFilter = {
+            cleanAndValidate(text) {
+                if (!text || !text.trim()) throw new Error('Input is empty.');
+
+                let jsonText = '';
+
+                const markdownMatch = text.match(/```(?:json)?\s*([\s\S]+?)\s*```/);
+                if (markdownMatch && markdownMatch[1]) {
+                    jsonText = markdownMatch[1];
+                } else {
+                    const firstBrace = text.indexOf('{');
+                    const firstBracket = text.indexOf('[');
+
+                    let startIndex = -1;
+                    if (firstBrace === -1 && firstBracket === -1) {
+                        throw new Error('No JSON object or array found.');
+                    }
+
+                    if (firstBrace !== -1 && (firstBracket === -1 || firstBrace < firstBracket)) {
+                        startIndex = firstBrace;
+                    } else {
+                        startIndex = firstBracket;
+                    }
+
+                    let openBraces = 0;
+                    let openBrackets = 0;
+                    let inString = false;
+                    let isEscaped = false;
+                    let endIndex = -1;
+
+                    for (let i = startIndex; i < text.length; i++) {
+                        const char = text[i];
+
+                        if (char === '"' && !isEscaped) {
+                            inString = !inString;
+                        }
+
+                        isEscaped = !isEscaped && char === '\\';
+
+                        if (!inString) {
+                            if (text[startIndex] === '{') {
+                                if (char === '{') openBraces++;
+                                if (char === '}') openBraces--;
+                            } else {
+                                if (char === '[') openBrackets++;
+                                if (char === ']') openBrackets--;
+                            }
+                        }
+
+                        if ((text[startIndex] === '{' && openBraces === 0) || (text[startIndex] === '[' && openBrackets === 0)) {
+                            endIndex = i;
+                            break;
+                        }
+                    }
+
+                    if (endIndex === -1) {
+                        throw new Error('Could not find the end of the JSON structure.');
+                    }
+
+                    jsonText = text.substring(startIndex, endIndex + 1);
+                }
+
+                try {
+                    const parsed = JSON.parse(jsonText);
+                    return JSON.stringify(parsed, null, 2);
+                } catch (e) {
+                    throw new Error(`Invalid JSON format: ${e.message}`);
+                }
+            }
+        };
+
+        const P5_CORE = {
+            camera: {
+                x: 0,
+                y: 0,
+                zoom: 1,
+                targetX: 0,
+                targetY: 0,
+                targetZoom: 1
+            },
+            isDragging: false,
+            lastMouse: {
+                x: 0,
+                y: 0
+            },
+            setupInteraction(p, onCanvasClick) {
+                p.mousePressed = () => {
+                    const worldPos = this.screenToWorld(p, p.mouseX, p.mouseY);
+                    if (onCanvasClick && onCanvasClick(worldPos)) return;
+                    this.isDragging = true;
+                    this.lastMouse = {
+                        x: p.mouseX,
+                        y: p.mouseY
+                    };
+                };
+                p.mouseReleased = () => {
+                    this.isDragging = false;
+                };
+                p.mouseDragged = () => {
+                    if (this.isDragging) {
+                        this.camera.targetX -= (p.mouseX - this.lastMouse.x) / this.camera.zoom;
+                        this.camera.targetY -= (p.mouseY - this.lastMouse.y) / this.camera.zoom;
+                        this.lastMouse = {
+                            x: p.mouseX,
+                            y: p.mouseY
+                        };
+                    }
+                };
+                p.mouseWheel = (event) => {
+                    event.preventDefault();
+                    const zoomFactor = event.delta > 0 ? 0.9 : 1.1;
+                    const newZoom = p.constrain(this.camera.targetZoom * zoomFactor, 0.2, 5);
+                    const worldPos = this.screenToWorld(p, p.mouseX, p.mouseY);
+                    this.camera.targetX = worldPos.x - (p.mouseX - p.width / 2) / newZoom;
+                    this.camera.targetY = worldPos.y - (p.mouseY - p.height / 2) / newZoom;
+                    this.camera.targetZoom = newZoom;
+                };
+            },
+            transform(p) {
+                this.camera.x = p.lerp(this.camera.x, this.camera.targetX, 0.1);
+                this.camera.y = p.lerp(this.camera.y, this.camera.targetY, 0.1);
+                this.camera.zoom = p.lerp(this.camera.zoom, this.camera.targetZoom, 0.1);
+                p.translate(p.width / 2, p.height / 2);
+                p.scale(this.camera.zoom);
+                p.translate(-this.camera.x, -this.camera.y);
+            },
+            screenToWorld(p, sx, sy) {
+                return {
+                    x: this.camera.x + (sx - p.width / 2) / this.camera.zoom,
+                    y: this.camera.y + (sy - p.height / 2) / this.camera.zoom
+                };
+            }
+        };
+
+        class GraphPresenter {
+            constructor(jsonData, container) {
+                this.data = jsonData;
+                this.container = container;
+                this.state = {
+                    currentSceneIndex: 0,
+                    currentScriptStep: -1,
+                    isPlaying: false,
+                    isSpeaking: false,
+                    currentChart: null,
+                    speechSpeed: 1.0,
+                    speechUtterance: null,
+                    titleSceneTimer: null
+                };
+                this.dom = {};
+            }
+            destroy() {
+                this.stopCurrentSpeech();
+                if (this.state.currentChart) this.state.currentChart.destroy();
+                document.removeEventListener('keydown', this.handleKeydown);
+                this.container.innerHTML = '';
+            }
+            load() {
+                return new Promise(resolve => {
+                    const theme = this.data.theme || {};
+                    this.container.innerHTML = `<div class="player-content-container" style="background:${theme['--surface-color'] || '#0f172a'}; color:${theme['--text-color'] || '#f3f4f6'};"><div class="scene-display" style="flex:1; display:flex; padding:5%; min-height:0;"><div class="canvas-wrapper" style="width:100%; height:100%; position: relative;"></div></div><div class="p5-controls-overlay" style="bottom:1rem; left:50%; transform:translateX(-50%);"><button class="p5-control-btn prevBtn"></button><button class="p5-control-btn playPauseBtn"></button><button class="p5-control-btn nextBtn"></button></div></div>`;
+                    this.dom = {
+                        canvasWrapper: this.container.querySelector('.canvas-wrapper'),
+                        prevBtn: this.container.querySelector('.prevBtn'),
+                        playPauseBtn: this.container.querySelector('.playPauseBtn'),
+                        nextBtn: this.container.querySelector('.nextBtn')
+                    };
+                    this.icons = {
+                        play: `<i class="bi bi-play-fill"></i>`,
+                        pause: `<i class="bi bi-pause-fill"></i>`,
+                        prevScene: `<i class="bi bi-skip-start-fill"></i>`,
+                        nextScene: `<i class="bi bi-skip-end-fill"></i>`
+                    };
+                    this.initControls();
+                    this.registerPlugins();
+                    const start = () => {
+                        this.renderScene(0);
+                        this.updateButtonIcons();
+                        resolve();
+                    };
+                    if (speechSynthesis.getVoices().length > 0) start();
+                    else speechSynthesis.onvoiceschanged = start;
+                });
+            }
+            play() {
+                this.togglePlayPause(true);
+            }
+            registerPlugins() {
+                Chart.register(ChartVenn.VennDiagramController, ChartVenn.ArcSlice);
+            }
+            initControls() {
+                this.dom.prevBtn.addEventListener('click', () => {
+                    this.stopCurrentSpeech();
+                    this.goToPrevScene();
+                });
+                this.dom.nextBtn.addEventListener('click', () => {
+                    this.stopCurrentSpeech();
+                    this.goToNextScene();
+                });
+                this.dom.playPauseBtn.addEventListener('click', () => this.togglePlayPause());
+                this.handleKeydown = e => {
+                    if (e.target.tagName !== 'TEXTAREA' && e.code === 'Space') {
+                        e.preventDefault();
+                        this.togglePlayPause();
+                    }
+                };
+                document.addEventListener('keydown', this.handleKeydown);
+            }
+            updateButtonIcons() {
+                this.dom.playPauseBtn.innerHTML = this.state.isPlaying ? this.icons.pause : this.icons.play;
+                this.dom.prevBtn.innerHTML = this.icons.prevScene;
+                this.dom.nextBtn.innerHTML = this.icons.nextScene;
+            }
+            renderScene(index) {
+                this.stopCurrentSpeech();
+                this.state.currentScriptStep = -1;
+                const sceneKey = this.data.sceneOrder[index];
+                const scene = this.data.scenes[sceneKey];
+                this.dom.canvasWrapper.innerHTML = '';
+                if (this.state.currentChart) {
+                    this.state.currentChart.destroy();
+                    this.state.currentChart = null;
+                }
+                if (scene && (scene.type === 'title' || scene.type === 'end')) {
+                    this.dom.canvasWrapper.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;text-align:center;"><h1 style="font-size:clamp(2rem, 5vw, 4rem);">${scene.content.title}</h1></div>`;
+                } else if (scene && scene.type === 'scripted_chart') {
+                    this.renderScriptedChartScene(scene);
+                }
+                if (this.state.isPlaying) this.startScenePlayback(scene);
+            }
+            renderScriptedChartScene(scene) {
+                this.dom.canvasWrapper.innerHTML = `<canvas></canvas>`;
+                const ctx = this.dom.canvasWrapper.querySelector('canvas').getContext('2d');
+                const theme = this.data.theme || {};
+                const defaultOptions = {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 1000
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: scene.content.title,
+                            color: theme['--text-color'],
+                            font: {
+                                size: 22,
+                                family: 'Inter'
+                            }
+                        },
+                        legend: {
+                            labels: {
+                                color: theme['--text-color'],
+                                font: {
+                                    family: 'Inter'
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: theme['--text-color'],
+                                font: {
+                                    family: 'Inter'
+                                }
+                            },
+                            grid: {
+                                color: "rgba(255,255,255,0.08)"
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                color: theme['--text-color'],
+                                font: {
+                                    family: 'Inter'
+                                }
+                            },
+                            grid: {
+                                color: "rgba(255,255,255,0.08)"
+                            }
+                        }
+                    }
+                };
+                this.state.currentChart = new Chart(ctx, {
+                    type: scene.content.chartConfig.type,
+                    data: scene.content.chartConfig.data,
+                    options: defaultOptions
+                });
+            }
+            startScenePlayback(scene) {
+                if (scene.type === 'title' || scene.type === 'end') {
+                    this.speakWithPerfectSync(scene.content.narration, null, () => {
+                        if (this.state.isPlaying) this.state.titleSceneTimer = setTimeout(() => this.goToNextScene(), 1000);
+                    });
+                } else {
+                    this.speakWithPerfectSync(scene.content.intro_narration, null, () => {
+                        if (this.state.isPlaying) this.playNextStep();
+                    });
+                }
+            }
+            playNextStep() {
+                const scene = this.data.scenes[this.data.sceneOrder[this.state.currentSceneIndex]];
+                if (scene && scene.type === 'scripted_chart' && scene.content.script_steps) {
+                    this.state.currentScriptStep++;
+                    if (this.state.currentScriptStep < scene.content.script_steps.length) {
+                        const step = scene.content.script_steps[this.state.currentScriptStep];
+                        this.speakWithPerfectSync(step.narration, step.highlight, () => {
+                            if (this.state.isPlaying) this.playNextStep();
+                        });
+                    } else {
+                        this.highlightChartElement(null);
+                        this.goToNextScene();
+                    }
+                } else {
+                    this.goToNextScene();
+                }
+            }
+            speakWithPerfectSync(text, highlight, onEndCallback) {
+                if (!text) {
+                    onEndCallback?.();
+                    return;
+                }
+                this.state.isSpeaking = true;
+                if (highlight) this.highlightChartElement(highlight);
+                this.state.speechUtterance = new SpeechSynthesisUtterance(text);
+                this.state.speechUtterance.rate = this.state.speechSpeed;
+                this.state.speechUtterance.onend = () => {
+                    this.state.isSpeaking = false;
+                    this.state.speechUtterance = null;
+                    onEndCallback?.();
+                };
+                window.speechSynthesis.speak(this.state.speechUtterance);
+            }
+            highlightChartElement(highlight) {
+                if (!this.state.currentChart) return;
+                this.state.currentChart.setActiveElements(highlight ? [{
+                    datasetIndex: highlight.datasetIndex,
+                    index: highlight.dataIndex
+                }] : []);
+                this.state.currentChart.update('none');
+            }
+            stopCurrentSpeech() {
+                if (this.state.speechUtterance) window.speechSynthesis.cancel();
+                if (this.state.titleSceneTimer) clearTimeout(this.state.titleSceneTimer);
+                this.state.isSpeaking = false;
+                this.state.speechUtterance = null;
+                this.state.titleSceneTimer = null;
+            }
+            goToNextScene() {
+                if (this.state.currentSceneIndex + 1 < this.data.sceneOrder.length) {
+                    this.state.currentSceneIndex++;
+                    this.renderScene(this.state.currentSceneIndex);
+                } else {
+                    this.state.isPlaying = false;
+                    this.updateButtonIcons();
+                }
+            }
+            goToPrevScene() {
+                if (this.state.currentSceneIndex - 1 >= 0) {
+                    this.state.currentSceneIndex--;
+                    this.renderScene(this.state.currentSceneIndex);
+                }
+            }
+            togglePlayPause(forcePlay = false) {
+                if (this.state.isSpeaking && !forcePlay) {
+                    this.stopCurrentSpeech();
+                    this.state.isPlaying = false;
+                } else {
+                    this.state.isPlaying = forcePlay ? true : !this.state.isPlaying;
+                }
+                this.updateButtonIcons();
+                if (this.state.isPlaying) {
+                    const scene = this.data.scenes[this.data.sceneOrder[this.state.currentSceneIndex]];
+                    this.startScenePlayback(scene);
+                }
+            }
+        }
+
+        class CreativeVideoRenderer {
+            constructor(jsonData, container) {
+                this.data = jsonData;
+                this.container = container;
+                this.dom = {};
+                this.state = {
+                    isRunning: false,
+                    isPaused: false,
+                    masterTimelineStart: 0,
+                    pausedTime: 0,
+                    totalDuration: 0,
+                    currentSceneIndex: -1,
+                    rafId: null,
+                    images: new Map(),
+                    particles: [],
+                    maleVoices: [],
+                    femaleVoices: []
+                };
+                this.easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+            }
+            destroy() {
+                if (this.state.rafId) cancelAnimationFrame(this.state.rafId);
+                speechSynthesis.cancel();
+                document.removeEventListener('keydown', this.handleKeydown);
+                this.container.innerHTML = '';
+            }
+            load() {
+                return new Promise(async (resolve, reject) => {
+                    this.container.innerHTML = `<div class="player-content-container" style="background: #020617;"><canvas id="creativeCanvas"></canvas><div class="p5-controls-overlay" style="bottom:1rem; left:1rem; right:1rem; display:flex; align-items:center; gap:1rem;"><button id="playPauseBtn" class="p5-control-btn" disabled><i class="bi bi-play-fill"></i></button><div id="progressBar" style="flex-grow:1; height:8px; background:rgba(255,255,255,0.2); border-radius:4px; cursor:pointer;"><div id="progressFill" style="height:100%; width:0%; background:var(--accent-secondary); border-radius:4px;"></div></div></div></div>`;
+                    this.dom = {
+                        canvas: this.container.querySelector('#creativeCanvas'),
+                        ctx: this.container.querySelector('#creativeCanvas').getContext('2d'),
+                        playPauseBtn: this.container.querySelector('#playPauseBtn'),
+                        progressBar: this.container.querySelector('#progressBar'),
+                        progressFill: this.container.querySelector('#progressFill')
+                    };
+                    this.dom.canvas.width = this.data.width || 1280;
+                    this.dom.canvas.height = this.data.height || 720;
+                    this.dom.canvas.style.cssText = 'display: block; width: 100%; height: 100%; object-fit: contain;';
+                    try {
+                        let accumulatedTime = 0;
+                        this.data.scenes.forEach(scene => {
+                            const narrationDuration = (scene.narration.split(' ').length / 2.2) * 1000;
+                            scene.duration = scene.duration || (narrationDuration + 2000);
+                            scene.startTime = accumulatedTime;
+                            accumulatedTime += scene.duration;
+                        });
+                        this.state.totalDuration = accumulatedTime;
+                        await this.preloadAssets();
+                        this.dom.playPauseBtn.disabled = false;
+                        this.createParticles();
+                        this.draw(this.data.scenes[0], 0);
+                        this.dom.playPauseBtn.addEventListener('click', () => this.state.isPaused || !this.state.isRunning ? this.play() : this.pause());
+                        this.dom.progressBar.addEventListener('click', e => this.seek(e));
+                        this.handleKeydown = e => {
+                            if (e.target.tagName !== 'TEXTAREA' && e.code === 'Space') {
+                                e.preventDefault();
+                                this.dom.playPauseBtn.click();
+                            }
+                        };
+                        document.addEventListener('keydown', this.handleKeydown);
+                        resolve();
+                    } catch (err) {
+                        reject(err);
+                    }
+                });
+            }
+            play() {
+                if (this.state.isRunning && !this.state.isPaused) return;
+                this.state.isRunning = true;
+                this.state.isPaused = false;
+                this.dom.playPauseBtn.innerHTML = `<i class="bi bi-pause-fill"></i>`;
+                if (this.state.pausedTime > 0) {
+                    this.state.masterTimelineStart += (performance.now() - this.state.pausedTime);
+                } else {
+                    this.state.masterTimelineStart = performance.now();
+                }
+                speechSynthesis.resume();
+                if (!this.state.rafId) this.state.rafId = requestAnimationFrame(t => this.mainLoop(t));
+            }
+            pause() {
+                if (!this.state.isRunning || this.state.isPaused) return;
+                this.state.isPaused = true;
+                this.dom.playPauseBtn.innerHTML = `<i class="bi bi-play-fill"></i>`;
+                this.state.pausedTime = performance.now();
+                speechSynthesis.pause();
+                cancelAnimationFrame(this.state.rafId);
+                this.state.rafId = null;
+            }
+            seek(e) {
+                const rect = this.dom.progressBar.getBoundingClientRect();
+                const percent = (e.clientX - rect.left) / rect.width;
+                const seekTime = this.state.totalDuration * percent;
+                this.state.masterTimelineStart = performance.now() - seekTime;
+                if (this.state.isPaused) this.state.pausedTime = this.state.masterTimelineStart + seekTime;
+                speechSynthesis.cancel();
+                this.mainLoop(performance.now());
+                if (!this.state.isPaused && !this.state.rafId) requestAnimationFrame(t => this.mainLoop(t));
+            }
+            mainLoop(timestamp) {
+                if (!this.state.isRunning || this.state.isPaused) {
+                    this.state.rafId = null;
+                    return;
+                }
+                const elapsed = timestamp - this.state.masterTimelineStart;
+                let newSceneIndex = this.data.scenes.findIndex(s => elapsed < s.startTime + s.duration);
+                if (newSceneIndex === -1 || elapsed >= this.state.totalDuration) {
+                    this.pause();
+                    this.dom.playPauseBtn.innerHTML = `<i class="bi bi-arrow-clockwise"></i>`;
+                    return;
+                }
+                if (newSceneIndex !== this.state.currentSceneIndex) {
+                    this.state.currentSceneIndex = newSceneIndex;
+                    const scene = this.data.scenes[newSceneIndex];
+                    speechSynthesis.cancel();
+                    const utterance = new SpeechSynthesisUtterance(scene.narration);
+                    const voicePool = scene.voiceGender === 'male' ? this.state.maleVoices : this.state.femaleVoices;
+                    if (voicePool.length > 0) utterance.voice = voicePool[Math.floor(Math.random() * voicePool.length)];
+                    speechSynthesis.speak(utterance);
+                }
+                const scene = this.data.scenes[this.state.currentSceneIndex];
+                const progress = Math.min((elapsed - scene.startTime) / scene.duration, 1.0);
+                this.dom.progressFill.style.width = `${(elapsed / this.state.totalDuration) * 100}%`;
+                this.draw(scene, progress);
+                this.state.rafId = requestAnimationFrame(t => this.mainLoop(t));
+            }
+            draw(scene, progress) {
+                const {
+                    ctx,
+                    canvas
+                } = this.dom;
+                const bgGradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height * 0.75);
+                bgGradient.addColorStop(0, '#0f172a');
+                bgGradient.addColorStop(1, '#312e81');
+                ctx.fillStyle = bgGradient;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                this.drawParticles();
+                const bgImg = this.state.images.get(scene.bgUrl);
+                if (bgImg?.complete) {
+                    ctx.globalAlpha = 0.1;
+                    const hRatio = canvas.width / bgImg.width;
+                    const vRatio = canvas.height / bgImg.height;
+                    const ratio = Math.max(hRatio, vRatio);
+                    const centerX = (canvas.width - bgImg.width * ratio) / 2;
+                    const centerY = (canvas.height - bgImg.height * ratio) / 2;
+                    ctx.drawImage(bgImg, centerX, centerY, bgImg.width * ratio, bgImg.height * ratio);
+                }
+                ctx.globalAlpha = Math.min(1, this.easeOutCubic(progress) * 4);
+                const drawFns = {
+                    title: this.drawTitle,
+                    paragraph: this.drawParagraph,
+                    bullet_points: this.drawBulletPoints,
+                    chart: this.drawChart,
+                    table: this.drawTable,
+                    quiz: this.drawQuiz,
+                    end: this.drawTitle
+                };
+                (drawFns[scene.type] || this.drawTitle).call(this, scene, progress);
+                ctx.globalAlpha = 1.0;
+            }
+            createParticles() {
+                for (let i = 0; i < 50; i++) this.state.particles.push({
+                    x: Math.random() * this.dom.canvas.width,
+                    y: Math.random() * this.dom.canvas.height,
+                    r: Math.random() * 2 + 0.5,
+                    a: Math.random() * 0.2 + 0.05,
+                    s: Math.random() * 0.3 + 0.1
+                });
+            }
+            drawParticles() {
+                const {
+                    ctx
+                } = this.dom;
+                ctx.fillStyle = '#ffffff';
+                this.state.particles.forEach(p => {
+                    p.y -= p.s;
+                    if (p.y < 0) p.y = this.dom.canvas.height;
+                    ctx.globalAlpha = p.a;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                ctx.globalAlpha = 1.0;
+            }
+            drawWithGlow(drawCommands, glowColor = '#f472b6', blur = 20) {
+                const {
+                    ctx
+                } = this.dom;
+                ctx.shadowColor = glowColor;
+                ctx.shadowBlur = blur;
+                drawCommands();
+                ctx.shadowBlur = 0;
+            }
+            wrapText(text, maxWidth) {
+                const words = text.split(' ');
+                let lines = [],
+                    currentLine = words[0] || '';
+                for (let i = 1; i < words.length; i++) {
+                    if (this.dom.ctx.measureText(`${currentLine} ${words[i]}`).width < maxWidth) {
+                        currentLine += ` ${words[i]}`;
+                    } else {
+                        lines.push(currentLine);
+                        currentLine = words[i];
+                    }
+                }
+                lines.push(currentLine);
+                return lines;
+            }
+            drawTitle(scene, progress) {
+                const {
+                    ctx,
+                    canvas
+                } = this.dom;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                const eased = this.easeOutCubic(progress);
+                this.drawWithGlow(() => {
+                    ctx.font = `800 ${90 * eased}px Inter, sans-serif`;
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+                    ctx.fillText(scene.text, canvas.width / 2, canvas.height / 2);
+                });
+            }
+            drawParagraph(scene, progress) {
+                const {
+                    ctx,
+                    canvas
+                } = this.dom;
+                const eased = this.easeOutCubic(progress);
+                ctx.textAlign = 'center';
+                ctx.font = '800 50px Inter, sans-serif';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.globalAlpha = Math.min(1, eased * 3);
+                ctx.fillText(scene.text, canvas.width / 2, canvas.height * 0.3);
+                ctx.font = '400 32px Inter, sans-serif';
+                ctx.fillStyle = 'rgba(224, 231, 255, 0.85)';
+                const lines = this.wrapText(scene.narration, canvas.width * 0.7);
+                lines.forEach((line, i) => {
+                    const lineProgress = Math.max(0, Math.min(1, (eased - i * 0.1) / 0.5));
+                    ctx.globalAlpha = lineProgress;
+                    ctx.fillText(line, canvas.width / 2, canvas.height * 0.5 + i * 50);
+                });
+            }
+            drawBulletPoints(scene, progress) {
+                const {
+                    ctx,
+                    canvas
+                } = this.dom;
+                const eased = this.easeOutCubic(progress);
+                ctx.textAlign = 'center';
+                ctx.font = '800 50px Inter, sans-serif';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.fillText(scene.text, canvas.width / 2, canvas.height * 0.2);
+                ctx.font = '700 32px Inter, sans-serif';
+                ctx.textAlign = 'left';
+                scene.points.forEach((point, i) => {
+                    const pointProgress = Math.max(0, Math.min(1, (eased - 0.1 - i * 0.2) / 0.5));
+                    if (pointProgress > 0) {
+                        ctx.globalAlpha = pointProgress;
+                        const y = canvas.height * 0.4 + i * 80;
+                        ctx.fillStyle = '#38bdf8';
+                        ctx.fillText('✓', canvas.width * 0.2, y);
+                        ctx.fillStyle = '#e0e7ff';
+                        ctx.fillText(point, canvas.width * 0.2 + 50, y);
+                    }
+                });
+            }
+            drawChart(scene, progress) {
+                const {
+                    ctx,
+                    canvas
+                } = this.dom;
+                const eased = this.easeOutCubic(progress);
+                ctx.textAlign = 'center';
+                ctx.font = '800 50px Inter, sans-serif';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.fillText(scene.text, canvas.width / 2, canvas.height * 0.15);
+                const data = scene.chartData || [];
+                const area = {
+                    x: canvas.width * 0.15,
+                    y: canvas.height * 0.25,
+                    w: canvas.width * 0.7,
+                    h: canvas.height * 0.5
+                };
+                const maxVal = Math.max(...data.map(d => d.value));
+                const barWidth = area.w / (data.length * 1.5);
+                data.forEach((item, i) => {
+                    const itemProgress = Math.max(0, Math.min(1, (eased - i * 0.1) / 0.6));
+                    const barHeight = (item.value / maxVal) * area.h * itemProgress;
+                    const x = area.x + (i * barWidth * 1.5);
+                    const y = area.y + area.h - barHeight;
+                    const gradient = ctx.createLinearGradient(x, y, x, y + barHeight);
+                    gradient.addColorStop(0, '#38bdf8');
+                    gradient.addColorStop(1, '#f472b6');
+                    ctx.fillStyle = gradient;
+                    this.drawWithGlow(() => ctx.fillRect(x, y, barWidth, barHeight), '#38bdf8');
+                    ctx.fillStyle = '#c7d2fe';
+                    ctx.font = `700 20px Inter, sans-serif`;
+                    ctx.globalAlpha = itemProgress;
+                    ctx.fillText(item.label, x + barWidth / 2, area.y + area.h + 30);
+                });
+            }
+            async preloadAssets() {
+                await new Promise(resolve => {
+                    const loadVoices = () => {
+                        const voices = speechSynthesis.getVoices();
+                        if (voices.length > 0) {
+                            this.state.maleVoices = voices.filter(v => v.lang.startsWith('en') && /male/i.test(v.name));
+                            this.state.femaleVoices = voices.filter(v => v.lang.startsWith('en') && /female/i.test(v.name));
+                            resolve();
+                        }
+                    };
+                    if (speechSynthesis.getVoices().length > 0) loadVoices();
+                    else speechSynthesis.onvoiceschanged = loadVoices;
+                });
+                const urls = new Set(this.data.scenes.flatMap(s => s.bgUrl).filter(Boolean));
+                if (urls.size === 0) return;
+                await Promise.all(Array.from(urls).map(url => new Promise(resolve => {
+                    const img = new Image();
+                    img.crossOrigin = "anonymous";
+                    img.onload = () => {
+                        this.state.images.set(url, img);
+                        resolve();
+                    };
+                    img.onerror = () => {
+                        console.warn(`Failed to load image: ${url}`);
+                        resolve();
+                    };
+                    img.src = url;
+                })));
+            }
+        }
+
+        class ChemMechanismPresenter {
+            constructor(jsonData, container) {
+                this.data = jsonData;
+                this.container = container;
+                this.p5Instance = null;
+                this.module = this.createModule();
+            }
+            destroy() {
+                if (this.p5Instance) this.p5Instance.remove();
+                speechSynthesis.cancel();
+                this.container.innerHTML = '';
+            }
+            load() {
+                return new Promise(resolve => {
+                    this.container.innerHTML = `<div class="player-content-container"><div class="player-canvas-wrapper" id="chemCanvasWrapper"></div><div id="step-info-box" class="p5-controls-overlay"></div><div id="mechanism-timeline" class="p5-controls-overlay"></div><div id="chemistryControls" class="p5-controls-overlay"><button class="p5-control-btn" onclick="globalState.activePlayer.module.prevStep()" title="Previous Step"><i class="bi bi-skip-start-fill"></i></button><button id="chem-playPauseBtn" class="p5-control-btn" onclick="globalState.activePlayer.module.toggleAnimation()" title="Play/Pause"><i class="bi bi-play-fill"></i></button><button class="p5-control-btn" onclick="globalState.activePlayer.module.nextStep()" title="Next Step"><i class="bi bi-skip-end-fill"></i></button><button class="p5-control-btn" onclick="globalState.activePlayer.module.toggleNarration(this)" title="Toggle Narration"><i class="bi bi-volume-up"></i></button></div></div>`;
+                    this.p5Instance = new p5(this.module.sketch.bind(this.module), 'chemCanvasWrapper');
+                    resolve();
+                });
+            }
+            createModule() {
+                const self = this;
+                let p;
+                return {
+                    state: {
+                        currentStep: 0,
+                        isPlaying: false,
+                        narrationEnabled: true,
+                        stepStartTime: 0,
+                        molecules: {}
+                    },
+                    initialize(p5instance) {
+                        p = p5instance;
+                        this.state.molecules = JSON.parse(JSON.stringify(self.data.molecules));
+                        this.state.currentStep = 0;
+                        this.state.isPlaying = false;
+                        this.updateStepInfo();
+                        this.buildTimeline();
+                        this.centerCamera();
+                    },
+                    centerCamera() {
+                        let minX = Infinity,
+                            minY = Infinity,
+                            maxX = -Infinity,
+                            maxY = -Infinity;
+                        Object.values(this.state.molecules).forEach(mol => {
+                            mol.atoms?.forEach(atom => {
+                                const absX = (mol.position?.x || 0) + atom.position.x;
+                                const absY = (mol.position?.y || 0) + atom.position.y;
+                                minX = Math.min(minX, absX);
+                                minY = Math.min(minY, absY);
+                                maxX = Math.max(maxX, absX);
+                                maxY = Math.max(maxY, absY);
+                            });
+                        });
+                        if (isFinite(minX)) {
+                            const centerX = (minX + maxX) / 2;
+                            const centerY = (minY + maxY) / 2;
+                            const sceneWidth = Math.max(1, maxX - minX);
+                            const sceneHeight = Math.max(1, maxY - minY);
+                            const initialZoom = Math.min(p.width / (sceneWidth * 1.8), p.height / (sceneHeight * 1.8));
+                            Object.assign(P5_CORE.camera, {
+                                x: centerX,
+                                y: centerY,
+                                zoom: initialZoom,
+                                targetX: centerX,
+                                targetY: centerY,
+                                targetZoom: initialZoom
+                            });
+                        }
+                    },
+                    toggleAnimation() {
+                        this.state.isPlaying = !this.state.isPlaying;
+                        document.getElementById('chem-playPauseBtn').innerHTML = this.state.isPlaying ? `<i class="bi bi-pause-fill"></i>` : `<i class="bi bi-play-fill"></i>`;
+                        if (this.state.isPlaying) {
+                            this.state.stepStartTime = Date.now();
+                            this.playCurrentStep();
+                        } else {
+                            speechSynthesis.cancel();
+                        }
+                    },
+                    playCurrentStep() {
+                        if (!this.state.isPlaying || this.state.currentStep >= self.data.mechanism.length) {
+                            this.state.isPlaying = false;
+                            document.getElementById('chem-playPauseBtn').innerHTML = `<i class="bi bi-play-fill"></i>`;
+                            return;
+                        }
+                        const step = self.data.mechanism[this.state.currentStep];
+                        const onEnd = () => setTimeout(() => {
+                            if (this.state.isPlaying) this.nextStep();
+                        }, 1500);
+                        if (this.state.narrationEnabled && step.narration) {
+                            const u = new SpeechSynthesisUtterance(step.narration);
+                            u.onend = onEnd;
+                            speechSynthesis.speak(u);
+                        } else {
+                            let maxDuration = 2000;
+                            step.actions?.forEach(a => maxDuration = Math.max(maxDuration, (a.delay || 0) + (a.duration || 2000)));
+                            setTimeout(onEnd, maxDuration);
+                        }
+                    },
+                    nextStep() {
+                        this.state.currentStep = (this.state.currentStep + 1) % self.data.mechanism.length;
+                        this.state.stepStartTime = Date.now();
+                        this.updateStepInfo();
+                        if (this.state.isPlaying) this.playCurrentStep();
+                    },
+                    prevStep() {
+                        this.state.currentStep = (this.state.currentStep - 1 + self.data.mechanism.length) % self.data.mechanism.length;
+                        this.state.stepStartTime = Date.now();
+                        this.updateStepInfo();
+                        speechSynthesis.cancel();
+                    },
+                    toggleNarration(btn) {
+                        this.state.narrationEnabled = !this.state.narrationEnabled;
+                        btn.innerHTML = this.state.narrationEnabled ? `<i class="bi bi-volume-up"></i>` : `<i class="bi bi-volume-mute"></i>`;
+                        if (!this.state.narrationEnabled) speechSynthesis.cancel();
+                    },
+                    updateStepInfo() {
+                        const step = self.data.mechanism[this.state.currentStep];
+                        if (!step) return;
+                        document.getElementById('step-info-box').innerHTML = `<strong>${step.title}</strong>: ${step.description || step.narration || ''}`;
+                        this.updateTimeline();
+                    },
+                    buildTimeline() {
+                        const container = document.getElementById('mechanism-timeline');
+                        container.innerHTML = '';
+                        self.data.mechanism.forEach((step, index) => {
+                            const stepBox = document.createElement('div');
+                            stepBox.className = 'step-box';
+                            stepBox.id = `step-box-${index}`;
+                            stepBox.textContent = `Step ${step.step || index + 1}`;
+                            stepBox.onclick = () => {
+                                this.state.currentStep = index;
+                                this.state.stepStartTime = Date.now();
+                                this.updateStepInfo();
+                                if (this.state.isPlaying) this.playCurrentStep();
+                            };
+                            container.appendChild(stepBox);
+                            if (index < self.data.mechanism.length - 1) container.innerHTML += '<div class="step-arrow">&rarr;</div>';
+                        });
+                    },
+                    updateTimeline() {
+                        document.querySelectorAll('#mechanism-timeline .step-box').forEach((box, i) => box.classList.toggle('active', i === this.state.currentStep));
+                        document.querySelector(`#step-box-${this.state.currentStep}`)?.scrollIntoView({
+                            behavior: 'smooth',
+                            inline: 'center',
+                            block: 'nearest'
+                        });
+                    },
+                    getAtomWorldPosition(target) {
+                        if (!target?.includes('.')) return null;
+                        const [molKey, atomId] = target.split('.');
+                        const molecule = this.state.molecules[molKey];
+                        const atom = molecule?.atoms.find(a => a.id === atomId);
+                        if (!atom) return null;
+                        return {
+                            x: (molecule.position?.x || 0) + atom.position.x,
+                            y: (molecule.position?.y || 0) + atom.position.y
+                        };
+                    },
+                    sketch(p5) {
+                        p = p5;
+                        p.setup = () => {
+                            p.createCanvas(p.canvas.parentElement.offsetWidth, p.canvas.parentElement.offsetHeight);
+                            p.textFont('Inter');
+                            this.initialize(p);
+                            P5_CORE.setupInteraction(p);
+                        };
+                        p.draw = () => {
+                            p.background(2, 6, 23);
+                            p.push();
+                            P5_CORE.transform(p);
+                            this.drawMolecules();
+                            this.drawAnimations();
+                            p.pop();
+                        };
+                        p.windowResized = () => {
+                            p.resizeCanvas(p.canvas.parentElement.offsetWidth, p.canvas.parentElement.offsetHeight);
+                            this.centerCamera();
+                        };
+                    },
+                    drawMolecules() {
+                        const step = self.data.mechanism[this.state.currentStep];
+                        if (!step) return;
+                        const colors = {
+                            C: '#404040',
+                            H: '#ffffff',
+                            O: '#ef4444',
+                            N: '#3b82f6',
+                            Br: '#a16207',
+                            Cl: '#16a34a',
+                            Al: '#6b7280'
+                        };
+                        step.displayMolecules?.forEach(molKey => {
+                            const molecule = this.state.molecules[molKey];
+                            if (!molecule) return;
+                            p.push();
+                            p.translate(molecule.position?.x || 0, molecule.position?.y || 0);
+                            molecule.bonds?.forEach(bond => {
+                                const a1 = molecule.atoms.find(a => a.id === bond.from);
+                                const a2 = molecule.atoms.find(a => a.id === bond.to);
+                                if (!a1 || !a2) return;
+                                p.stroke(bond.runtimeColor || '#94a3b8');
+                                p.strokeWeight(bond.type === 'double' ? 6 : 4);
+                                p.strokeCap(p.ROUND);
+                                p.line(a1.position.x, a1.position.y, a2.position.x, a2.position.y);
+                            });
+                            molecule.atoms?.forEach(atom => {
+                                p.fill(colors[atom.element] || '#94a3b8');
+                                p.noStroke();
+                                p.ellipse(atom.position.x, atom.position.y, 25);
+                                p.fill(atom.element === 'H' ? 0 : 255);
+                                p.textAlign(p.CENTER, p.CENTER);
+                                p.textSize(14);
+                                p.textStyle(p.BOLD);
+                                p.text(atom.element, atom.position.x, atom.position.y + 1);
+                            });
+                            p.pop();
+                        });
+                    },
+                    drawAnimations() {
+                        const step = self.data.mechanism[this.state.currentStep];
+                        if (!step?.actions) return;
+                        const elapsed = Date.now() - this.state.stepStartTime;
+                        Object.values(this.state.molecules).forEach(mol => mol.bonds?.forEach(b => delete b.runtimeColor));
+                        step.actions.forEach(action => {
+                            if (elapsed < (action.delay || 0)) return;
+                            const progress = p.constrain((elapsed - (action.delay || 0)) / (action.duration || 2000), 0, 1);
+                            if (action.type === 'ELECTRON_ARROW') {
+                                const fromPos = this.getAtomWorldPosition(action.from);
+                                const toPos = this.getAtomWorldPosition(action.to);
+                                if (!fromPos || !toPos) return;
+                                const d = p.dist(fromPos.x, fromPos.y, toPos.x, toPos.y);
+                                const mid = {
+                                    x: (fromPos.x + toPos.x) / 2,
+                                    y: (fromPos.y + toPos.y) / 2
+                                };
+                                const perpAngle = p.atan2(toPos.y - fromPos.y, toPos.x - fromPos.x) - p.HALF_PI;
+                                const ctrl = {
+                                    x: mid.x + p.cos(perpAngle) * d * 0.2,
+                                    y: mid.y + p.sin(perpAngle) * d * 0.2
+                                };
+                                const current = {
+                                    x: p.bezierPoint(fromPos.x, ctrl.x, ctrl.x, toPos.x, progress),
+                                    y: p.bezierPoint(fromPos.y, ctrl.y, ctrl.y, toPos.y, progress)
+                                };
+                                p.noFill();
+                                p.stroke(action.color || '#fbbf24');
+                                p.strokeWeight(3);
+                                p.bezier(fromPos.x, fromPos.y, ctrl.x, ctrl.y, ctrl.x, ctrl.y, current.x, current.y);
+                                if (progress > 0.95) {
+                                    p.push();
+                                    p.translate(current.x, current.y);
+                                    p.fill(action.color || '#fbbf24');
+                                    p.noStroke();
+                                    const tangent = p.atan2(p.bezierTangent(fromPos.y, ctrl.y, ctrl.y, toPos.y, progress), p.bezierTangent(fromPos.x, ctrl.x, ctrl.x, toPos.x, progress));
+                                    p.rotate(tangent);
+                                    p.triangle(0, 0, -12, 6, -12, -6);
+                                    p.pop();
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+        }
+
+        class MindmapPresenter {
+            constructor(jsonData, container) {
+                this.data = jsonData;
+                this.container = container;
+                this.p5Instance = null;
+                this.module = this.createModule();
+            }
+            destroy() {
+                this.module.stopNarration();
+                if (this.p5Instance) this.p5Instance.remove();
+                this.container.innerHTML = '';
+            }
+            load() {
+                return new Promise(resolve => {
+                    this.container.innerHTML = `<div class="player-content-container"><div class="player-canvas-wrapper" id="mindmapCanvasWrapper"></div><div id="mindmapInfoBox" class="p5-controls-overlay"><h3 id="mindmapInfoBoxTitle"></h3><p id="mindmapInfoBoxContent"></p></div><button id="podcastBtn" class="p5-control-btn" onclick="globalState.activePlayer.module.handlePodcast()"><i class="bi bi-broadcast"></i></button></div>`;
+                    this.p5Instance = new p5(this.module.sketch.bind(this.module), 'mindmapCanvasWrapper');
+                    resolve();
+                });
+            }
+            createModule() {
+                const self = this;
+                let p;
+                return {
+                    state: {
+                        rootNode: null,
+                        isNarrating: false,
+                        narrationScript: []
+                    },
+                    initialize(p5) {
+                        p = p5;
+                        this.state.rootNode = new this.MindNode(self.data);
+                        this.updateLayout();
+                        this.centerOnRoot();
+                        this.updateInfoBox(this.state.rootNode);
+                    },
+                    handlePodcast() {
+                        this.state.isNarrating ? this.stopNarration() : this.startNarration();
+                    },
+                    startNarration() {
+                        this.state.isNarrating = true;
+                        this.narrationScript = [];
+                        (function buildScript(node) {
+                            this.narrationScript.push({
+                                text: node.script || node.notes,
+                                node: node
+                            });
+                            if (node.expanded) node.children.forEach(buildScript.bind(this));
+                        }).call(this, this.state.rootNode);
+                        this.currentNarrationIndex = 0;
+                        document.getElementById('podcastBtn').innerHTML = `<i class="bi bi-pause-fill"></i>`;
+                        document.getElementById('podcastBtn').classList.add('playing');
+                        speechSynthesis.cancel();
+                        this.narrateNext();
+                    },
+                    narrateNext() {
+                        if (!this.state.isNarrating || this.currentNarrationIndex >= this.narrationScript.length) return this.stopNarration();
+                        const step = this.narrationScript[this.currentNarrationIndex];
+                        this.state.rootNode.getAllNodes().forEach(n => n.highlighted = false);
+                        step.node.highlighted = true;
+                        P5_CORE.camera.targetX = step.node.x;
+                        P5_CORE.camera.targetY = step.node.y;
+                        P5_CORE.camera.targetZoom = 1.2;
+                        this.updateInfoBox(step.node);
+                        const u = new SpeechSynthesisUtterance(step.text);
+                        u.onend = () => {
+                            this.currentNarrationIndex++;
+                            setTimeout(() => this.narrateNext(), 800);
+                        };
+                        speechSynthesis.speak(u);
+                    },
+                    stopNarration() {
+                        this.state.isNarrating = false;
+                        speechSynthesis.cancel();
+                        this.state.rootNode?.getAllNodes().forEach(n => n.highlighted = false);
+                        const btn = document.getElementById('podcastBtn');
+                        if (btn) {
+                            btn.innerHTML = `<i class="bi bi-broadcast"></i>`;
+                            btn.classList.remove('playing');
+                        }
+                        P5_CORE.camera.targetZoom = 1;
+                    },
+                    updateInfoBox(node) {
+                        const box = document.getElementById('mindmapInfoBox');
+                        if (!box) return;
+                        if (node) {
+                            box.querySelector('h3').textContent = node.title;
+                            box.querySelector('p').textContent = node.notes || "No notes.";
+                            box.classList.add('show');
+                        } else {
+                            box.classList.remove('show');
+                        }
+                    },
+                    updateLayout() {
+                        if (!this.state.rootNode) return;
+                        const ySpacing = 80,
+                            xSpacing = 250;
+                        const getSubtreeHeight = n => (!n.expanded || n.children.length === 0) ? ySpacing : n.children.reduce((acc, c) => acc + getSubtreeHeight(c), 0);
+                        (function layout(node, x, y) {
+                            node.targetX = x;
+                            node.targetY = y;
+                            if (!node.expanded || node.children.length === 0) return;
+                            let childrenHeight = getSubtreeHeight(node) - ySpacing;
+                            let currentY = y - childrenHeight / 2;
+                            node.children.forEach(c => {
+                                const childHeight = getSubtreeHeight(c);
+                                layout(c, x + xSpacing, currentY + childHeight / 2);
+                                currentY += childHeight;
+                            });
+                        })(this.state.rootNode, 0, 0);
+                    },
+                    centerOnRoot() {
+                        if (this.state.rootNode) {
+                            P5_CORE.camera.targetX = 0;
+                            P5_CORE.camera.targetY = 0;
+                            P5_CORE.camera.x = 0;
+                            P5_CORE.camera.y = 0;
+                            P5_CORE.camera.targetZoom = 1;
+                            P5_CORE.camera.zoom = 1;
+                        }
+                    },
+                    MindNode: class {
+                        constructor(data, parent = null, level = 0, siblingIndex = 0) {
+                            Object.assign(this, {
+                                id: data.id,
+                                title: data.title || '',
+                                notes: data.notes || '',
+                                script: data.script || '',
+                                children: (data.children || []).map((c, i) => new this.constructor(c, this, level + 1, i)),
+                                parent,
+                                level,
+                                expanded: level < 2,
+                                x: 0,
+                                y: 0,
+                                targetX: 0,
+                                targetY: 0,
+                                width: 100,
+                                height: 50,
+                                highlighted: false
+                            });
+                            const hue = (siblingIndex * 137.5) % 360;
+                            this.color = level === 0 ? 'var(--accent-tertiary)' : `hsl(${hue}, 70%, 60%)`;
+                        }
+                        toggle() {
+                            this.expanded = !this.expanded;
+                            self.module.updateLayout();
+                        }
+                        getVisibleNodes() {
+                            return [this].concat(this.expanded ? this.children.flatMap(c => c.getVisibleNodes()) : []);
+                        }
+                        getAllNodes() {
+                            return [this].concat(this.children.flatMap(c => c.getAllNodes()));
+                        }
+                        update() {
+                            this.x = p.lerp(this.x, this.targetX, 0.1);
+                            this.y = p.lerp(this.y, this.targetY, 0.1);
+                            p.textSize(12 + Math.max(0, 3 - this.level) * 2);
+                            this.width = p.constrain(p.textWidth(this.title) + 40, 100, 300);
+                        }
+                        draw() {
+                            p.push();
+                            if (this.highlighted) {
+                                p.fill(this.color);
+                                p.stroke(255);
+                                p.strokeWeight(3);
+                            } else {
+                                p.fill(p.color(15, 23, 42, 200));
+                                p.stroke(this.color);
+                                p.strokeWeight(2);
+                            }
+                            p.rect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height, 8);
+                            p.fill(this.highlighted ? 0 : 240);
+                            p.noStroke();
+                            p.textAlign(p.CENTER, p.CENTER);
+                            p.textSize(12 + Math.max(0, 3 - this.level) * 2);
+                            p.textStyle(this.level === 0 ? p.BOLD : p.NORMAL);
+                            p.text(this.title, this.x, this.y);
+                            if (this.children.length > 0) {
+                                p.fill(this.color);
+                                p.textSize(20);
+                                p.text(this.expanded ? '−' : '+', this.x + this.width / 2 - 12, this.y - this.height / 2 + 12);
+                            }
+                            p.pop();
+                        }
+                        drawConnection() {
+                            if (this.parent?.expanded) {
+                                p.stroke(this.color);
+                                p.strokeWeight(2);
+                                p.line(this.parent.x + this.parent.width / 2, this.parent.y, this.x - this.width / 2, this.y);
+                            }
+                        }
+                        contains(x, y) {
+                            return p.abs(x - this.x) < this.width / 2 && p.abs(y - this.y) < this.height / 2;
+                        }
+                    },
+                    sketch(p5) {
+                        p = p5;
+                        p.setup = () => {
+                            p.createCanvas(p.canvas.parentElement.offsetWidth, p.canvas.parentElement.offsetHeight);
+                            p.textFont('Inter');
+                            this.initialize(p);
+                            P5_CORE.setupInteraction(p, worldPos => {
+                                const clickedNode = this.state.rootNode.getVisibleNodes().find(n => n.contains(worldPos.x, worldPos.y));
+                                if (clickedNode) {
+                                    clickedNode.toggle();
+                                    this.updateInfoBox(clickedNode);
+                                    return true;
+                                }
+                                return false;
+                            });
+                        };
+                        p.draw = () => {
+                            p.background(2, 6, 23);
+                            if (!this.state.rootNode) return;
+                            p.push();
+                            P5_CORE.transform(p);
+                            const visibleNodes = this.state.rootNode.getVisibleNodes();
+                            visibleNodes.forEach(n => n.update());
+                            visibleNodes.forEach(n => n.drawConnection());
+                            visibleNodes.forEach(n => n.draw());
+                            p.pop();
+                        };
+                        p.windowResized = () => {
+                            p.resizeCanvas(p.canvas.parentElement.offsetWidth, p.canvas.parentElement.offsetHeight);
+                            this.updateLayout();
+                        };
+                    }
+                }
+            }
+        }
+
+        function init() {
+            document.querySelectorAll('.mode-card').forEach(card => card.addEventListener('click', () => startApp(card.dataset.mode)));
+            E.cleanJsonBtn.addEventListener('click', () => {
+                try {
+                    E.jsonInput.value = JsonFilter.cleanAndValidate(E.jsonInput.value);
+                    showNotification('JSON formatted!', 'success');
+                } catch (err) {
+                    showNotification(err.message, 'error');
+                }
+            });
+            E.loadExampleBtn.addEventListener('click', () => {
+                E.jsonInput.value = JSON.stringify(TEMPLATES[globalState.mode], null, 2);
+                showNotification(`Example for ${globalState.mode} loaded!`, 'info');
+            });
+            E.generatePromptBtn.addEventListener('click', () => {
+                const topic = E.aiTopicInput.value.trim();
+                if (!topic) {
+                    showNotification('Please enter a topic first.', 'error');
+                    return;
+                }
+                const prompt = AI_PROMPTS[globalState.mode](topic, TEMPLATES[globalState.mode]);
+                navigator.clipboard.writeText(prompt).then(() => showNotification('AI prompt copied to clipboard!', 'success'), () => showNotification('Failed to copy prompt.', 'error'));
+            });
+            E.playBtn.addEventListener('click', playCurrentScript);
+        }
+
+        function startApp(mode) {
+            globalState.mode = mode;
+            E.selectionScreen.style.display = 'none';
+            E.appContainer.style.display = 'flex';
+            const config = {
+                'graph': {
+                    name: 'Graph Presentation',
+                    color: 'var(--accent-primary)',
+                    placeholder: 'e.g., Global EV Market Growth'
+                },
+                'creative': {
+                    name: 'Creative Video',
+                    color: 'var(--accent-secondary)',
+                    placeholder: 'e.g., The Power of Storytelling'
+                },
+                'mindvoice': {
+                    name: 'MindVoice Map',
+                    color: 'var(--accent-tertiary)',
+                    placeholder: 'e.g., The Process of Photosynthesis'
+                },
+                'chem-mechanism': {
+                    name: 'Chem Mechanism',
+                    color: 'var(--accent-quaternary)',
+                    placeholder: 'e.g., Friedel-Crafts Acylation'
+                }
+            } [mode];
+            E.modeIndicator.textContent = config.name;
+            E.modeIndicator.style.color = config.color;
+            E.aiTopicInput.placeholder = config.placeholder;
+            E.loadExampleBtn.click();
+        }
+
+        async function playCurrentScript() {
+            if (globalState.activePlayer) {
+                globalState.activePlayer.destroy();
+            }
+            E.playerWrapper.innerHTML = `<button id="fullscreen-btn" onclick="toggleFullscreen()"><i class="bi bi-arrows-fullscreen"></i></button>`;
+            let jsonData;
+            try {
+                jsonData = JSON.parse(E.jsonInput.value);
+            } catch (err) {
+                showNotification(`Invalid JSON: ${err.message}`, 'error');
+                return;
+            }
+            const PlayerClass = {
+                'graph': GraphPresenter,
+                'creative': CreativeVideoRenderer,
+                'mindvoice': MindmapPresenter,
+                'chem-mechanism': ChemMechanismPresenter
+            } [globalState.mode];
+            if (!PlayerClass) {
+                showNotification('Unknown player mode.', 'error');
+                return;
+            }
+            globalState.activePlayer = new PlayerClass(jsonData, E.playerWrapper);
+            try {
+                showNotification(`Loading ${globalState.mode} player...`, 'info');
+                await globalState.activePlayer.load();
+                if ((globalState.mode === 'graph' || globalState.mode === 'creative') && globalState.activePlayer.play) {
+                    globalState.activePlayer.play();
+                }
+            } catch (err) {
+                showNotification(`Error loading player: ${err.message}`, 'error');
+                console.error(err);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+
+</html>
