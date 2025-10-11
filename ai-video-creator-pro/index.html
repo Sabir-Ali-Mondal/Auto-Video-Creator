@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -16,9 +15,18 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script type="importmap">
+        {
+  "imports": {
+    "express": "https://aistudiocdn.com/express@^5.1.0",
+    "cors": "https://aistudiocdn.com/cors@^2.8.5",
+    "body-parser": "https://aistudiocdn.com/body-parser@^2.2.0",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.22.0",
+    "dotenv/": "https://aistudiocdn.com/dotenv@^17.2.3/"
+  }
+}
+</script>
     <style>
         :root {
             --primary: #e60073;
@@ -48,88 +56,304 @@
             color: var(--text);
             background: var(--stage-bg);
         }
-        
+
         /* --- LOADER --- */
         .loader-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #101020; display: flex; flex-direction: column; justify-content: center;
-            align-items: center; z-index: 9999; opacity: 1; transition: opacity 0.5s ease-out;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #101020;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
         }
+
         .loader-spinner {
-            width: 60px; height: 60px; border: 5px solid rgba(255, 255, 255, 0.2);
-            border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite;
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255, 255, 255, 0.2);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
-        .loader-text { margin-top: 20px; font-size: 1.2rem; color: var(--text); }
-        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loader-text {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: var(--text);
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
 
         /* --- MAIN LAYOUT --- */
         #app-container {
-            width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center;
-            align-items: center; padding: 2rem; background: radial-gradient(circle, #16222A 0%, #1a1a2e 100%);
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            background: radial-gradient(circle, #16222A 0%, #1a1a2e 100%);
         }
+
         #player-host {
-            width: 100%; height: 100%; max-width: 1600px; aspect-ratio: 16 / 9;
-            background: var(--stage-bg); border: 1px solid var(--border-color);
+            width: 100%;
+            height: 100%;
+            max-width: 1600px;
+            aspect-ratio: 16 / 9;
+            background: var(--stage-bg);
+            border: 1px solid var(--border-color);
             box-shadow: 0 0 100px -20px rgba(255, 0, 255, 0.3);
-            display: flex; flex-direction: column; position: relative;
+            display: flex;
+            flex-direction: column;
+            position: relative;
             transition: background 0.5s ease;
         }
-        #scene-wrapper { flex-grow: 1; position: relative; overflow: hidden; perspective: 1200px; }
+
+        #scene-wrapper {
+            flex-grow: 1;
+            position: relative;
+            overflow: hidden;
+            perspective: 1200px;
+        }
+
         #scene-content {
-            width: 100%; height: 100%; padding: 4%;
-            display: flex; justify-content: center; align-items: center;
+            width: 100%;
+            height: 100%;
+            padding: 4%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             text-align: center;
         }
-        
+
         /* --- SCENE TRANSITIONS --- */
         .animate__animated {
             animation-duration: var(--transition-duration);
             animation-fill-mode: both;
         }
-        @keyframes animate__fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
-        .animate__fadeIn { animation-name: animate__fadeIn; }
-        @keyframes animate__fadeOut { 0% { opacity: 1; } 100% { opacity: 0; } }
-        .animate__fadeOut { animation-name: animate__fadeOut; }
-        @keyframes animate__slideInRight { 0% { transform: translateX(100%); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
-        .animate__slideInRight { animation-name: animate__slideInRight; }
-        @keyframes animate__slideOutLeft { 0% { transform: translateX(0); opacity: 1; } 100% { transform: translateX(-100%); opacity: 0; } }
-        .animate__slideOutLeft { animation-name: animate__slideOutLeft; }
-        @keyframes animate__zoomIn { 0% { opacity: 0; transform: scale(0.5); } 100% { opacity: 1; transform: scale(1); } }
-        .animate__zoomIn { animation-name: animate__zoomIn; }
-        @keyframes animate__zoomOut { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(0.5); } }
-        .animate__zoomOut { animation-name: animate__zoomOut; }
+
+        @keyframes animate__fadeIn {
+            0% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .animate__fadeIn {
+            animation-name: animate__fadeIn;
+        }
+
+        @keyframes animate__fadeOut {
+            0% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        .animate__fadeOut {
+            animation-name: animate__fadeOut;
+        }
+
+        @keyframes animate__slideInRight {
+            0% {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            100% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .animate__slideInRight {
+            animation-name: animate__slideInRight;
+        }
+
+        @keyframes animate__slideOutLeft {
+            0% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+        }
+
+        .animate__slideOutLeft {
+            animation-name: animate__slideOutLeft;
+        }
+
+        @keyframes animate__zoomIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .animate__zoomIn {
+            animation-name: animate__zoomIn;
+        }
+
+        @keyframes animate__zoomOut {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+        }
+
+        .animate__zoomOut {
+            animation-name: animate__zoomOut;
+        }
 
 
         /* --- CONTROLS --- */
         #controls {
-            flex-shrink: 0; display: flex; justify-content: space-between; align-items: center;
-            padding: 1rem 2rem; border-top: 1px solid var(--border-color);
-            background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(10px);
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            border-top: 1px solid var(--border-color);
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
             gap: 1.5rem;
         }
-        #music-controls { display: flex; align-items: center; gap: 1rem; position: relative; }
-        #music-options { display: flex; align-items: center; gap: 1rem; }
-        #music-options select { background: none; border: 1px solid var(--border-color); color: var(--text); padding: 0.5rem; border-radius: 4px; }
-        #music-options input[type="range"] { -webkit-appearance: none; appearance: none; background: transparent; cursor: pointer; width: 100px; }
-        #music-options input[type="range"]::-webkit-slider-runnable-track { background: var(--border-color); height: 4px; border-radius: 2px; }
-        #music-options input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; margin-top: -6px; background-color: var(--primary); height: 16px; width: 16px; border-radius: 50%; }
-        .upload-btn { display: inline-block; background: var(--border-color); padding: 0.5rem 1rem; cursor: pointer; border-radius: 4px; }
-        .upload-btn:hover { background: var(--primary); }
-        .upload-btn input[type="file"] { display: none; }
-        #music-options-toggle { display: none; } /* Hidden on desktop */
-        
-        .control-btn {
-            background: none; border: 1px solid var(--border-color); color: var(--text);
-            width: 44px; height: 44px; font-size: 1.5rem;
-            border-radius: 50%; display: inline-flex; justify-content: center; align-items: center;
-            cursor: pointer; transition: all 0.2s ease;
+
+        #music-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            position: relative;
         }
-        .control-btn:hover { background-color: var(--primary); border-color: var(--primary); color: white; transform: scale(1.1); }
-        .control-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        
+
+        #music-options {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        #music-options select {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text);
+            padding: 0.5rem;
+            border-radius: 4px;
+        }
+
+        #music-options input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+            width: 100px;
+        }
+
+        #music-options input[type="range"]::-webkit-slider-runnable-track {
+            background: var(--border-color);
+            height: 4px;
+            border-radius: 2px;
+        }
+
+        #music-options input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            margin-top: -6px;
+            background-color: var(--primary);
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+        }
+
+        .upload-btn {
+            display: inline-block;
+            background: var(--border-color);
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .upload-btn:hover {
+            background: var(--primary);
+        }
+
+        .upload-btn input[type="file"] {
+            display: none;
+        }
+
+        #music-options-toggle {
+            display: none;
+        }
+
+        /* Hidden on desktop */
+
+        .control-btn {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text);
+            width: 44px;
+            height: 44px;
+            font-size: 1.5rem;
+            border-radius: 50%;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .control-btn:hover {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         @media (max-width: 800px) {
-            #controls { padding: 0.8rem 1rem; gap: 1rem; }
-            #music-options-toggle { display: inline-flex; }
+            #controls {
+                padding: 0.8rem 1rem;
+                gap: 1rem;
+            }
+
+            #music-options-toggle {
+                display: inline-flex;
+            }
+
             #music-options {
                 display: none;
                 position: absolute;
@@ -144,46 +368,163 @@
                 gap: 1rem;
                 z-index: 10;
             }
-            #music-options.visible { display: flex; }
+
+            #music-options.visible {
+                display: flex;
+            }
         }
 
 
         /* --- SCENE STYLES --- */
         .scene-title-splash {
-            width:100%; height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center;
-            background-size: cover; background-position: center;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-size: cover;
+            background-position: center;
         }
-        .scene-title-splash h1 {
-            font-size: clamp(3rem, 7vw, 6rem); font-weight: 800; margin: 0;
-            color: white; text-shadow: 0 0 30px rgba(0,0,0,0.8);
-        }
-        .scene-title-splash h2 {
-            font-size: clamp(1.2rem, 3vw, 2rem); font-weight: 500;
-            color: white; text-shadow: 0 0 20px rgba(0,0,0,0.8);
-            background: var(--primary); padding: 0.2rem 1.5rem;
-        }
-        .scene-image-showcase { display: flex; align-items: center; gap: 2rem; width: 100%; height: 100%; flex-direction: column; }
-        .scene-image-showcase img, .scene-image-showcase .img-fallback {
-            flex-shrink: 0; width: 80%; height: 60%; object-fit: cover; border: 2px solid var(--border-color);
-        }
-        .img-fallback { display: flex; justify-content: center; align-items: center; background: rgba(0,0,0,0.3); font-size: 1.5rem; text-align: center; padding: 1rem; }
-        .scene-image-showcase figcaption { font-size: 1.2rem; text-align: center; margin-top: 1rem; }
-        
-        .scene-timeline { width: 100%; }
-        .scene-timeline h2 { margin-bottom: 3rem; font-size: 2.5rem; }
-        .timeline-container { display: flex; justify-content: space-between; position: relative; }
-        .timeline-container::before { content: ''; position: absolute; top: 10px; left: 5%; width: 90%; height: 4px; background: var(--border-color); }
-        .timeline-event { display: flex; flex-direction: column; align-items: center; position: relative; text-align: center; }
-        .timeline-event::before { content: ''; width: 24px; height: 24px; border-radius: 50%; background: var(--stage-bg); border: 4px solid var(--primary); position: absolute; top: 0; }
-        .timeline-event .year { font-size: 1.5rem; font-weight: 700; margin-top: 3rem; }
-        .timeline-event .title { font-size: 1rem; color: #aaa; }
 
-        .scene-comparison { width: 100%; }
-        .scene-comparison h2 { margin-bottom: 2rem; font-size: 2.5rem; }
-        .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
-        .comparison-side { border: 1px solid var(--border-color); padding: 1.5rem; text-align: left; }
-        .comparison-side h3 { margin-top: 0; color: var(--primary); font-size: 1.5rem; }
-        .comparison-side ul { list-style: '✓  '; padding-left: 1.5rem; }
+        .scene-title-splash h1 {
+            font-size: clamp(3rem, 7vw, 6rem);
+            font-weight: 800;
+            margin: 0;
+            color: white;
+            text-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+        }
+
+        .scene-title-splash h2 {
+            font-size: clamp(1.2rem, 3vw, 2rem);
+            font-weight: 500;
+            color: white;
+            text-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+            background: var(--primary);
+            padding: 0.2rem 1.5rem;
+        }
+
+        .scene-image-showcase {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            width: auto;
+            height: auto;
+            max-width: 70vw;
+            flex-direction: column;
+        }
+
+        .scene-image-showcase img,
+        .scene-image-showcase .img-fallback {
+            flex-shrink: 0;
+            width: 80%;
+            height: 60%;
+            object-fit: cover;
+            border: 2px solid var(--border-color);
+        }
+
+        .img-fallback {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.3);
+            font-size: 1.5rem;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .scene-image-showcase figcaption {
+            font-size: 1.2rem;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .scene-timeline {
+            width: 100%;
+        }
+
+        .scene-timeline h2 {
+            margin-bottom: 3rem;
+            font-size: 2.5rem;
+        }
+
+        .timeline-container {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .timeline-container::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 5%;
+            width: 90%;
+            height: 4px;
+            background: var(--border-color);
+        }
+
+        .timeline-event {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            text-align: center;
+        }
+
+        .timeline-event::before {
+            content: '';
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--stage-bg);
+            border: 4px solid var(--primary);
+            position: absolute;
+            top: 0;
+        }
+
+        .timeline-event .year {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-top: 3rem;
+        }
+
+        .timeline-event .title {
+            font-size: 1rem;
+            color: #aaa;
+        }
+
+        .scene-comparison {
+            width: 100%;
+        }
+
+        .scene-comparison h2 {
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .comparison-side {
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            text-align: left;
+        }
+
+        .comparison-side h3 {
+            margin-top: 0;
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+
+        .comparison-side ul {
+            list-style: '✓  ';
+            padding-left: 1.5rem;
+        }
 
         .scene-code pre {
             font-size: 1rem;
@@ -195,64 +536,196 @@
             overflow-wrap: break-word;
             overflow: auto;
         }
-        .scene-network svg { width: 100%; height: 100%; max-height: 400px; }
-        .scene-progress, .scene-gauge { width: 60%; }
-        .progress-bar, .gauge-bar { background: var(--border-color); border-radius: 10px; overflow: hidden; height: 30px; }
-        .progress-fill { background: var(--primary); height: 100%; transition: width 1s ease-out; }
-        .scene-quote blockquote { font-size: 2rem; font-style: italic; border-left: 5px solid var(--primary); padding-left: 2rem; }
-        .scene-quote cite { display: block; margin-top: 1rem; font-size: 1.2rem; }
-        .scene-table table { width: 100%; border-collapse: collapse; }
-        .scene-table th, .scene-table td { border: 1px solid var(--border-color); padding: 0.8rem; }
-        .scene-table thead { background: rgba(0,0,0,0.3); }
-        .scene-quiz .options { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 2rem; }
-        .scene-quiz .option-btn { background: var(--border-color); border: none; padding: 1.5rem; font-size: 1.2rem; cursor: pointer; transition: all 0.2s; }
-        .scene-quiz .option-btn:hover { background: var(--primary); }
-        .scene-quiz .option-btn.correct { background: var(--success); color: black; }
-        .scene-quiz .option-btn.incorrect { background: var(--error); }
+
+        .scene-network svg {
+            width: 100%;
+            height: 100%;
+            max-height: 400px;
+        }
+
+        .scene-progress,
+        .scene-gauge {
+            width: 60%;
+        }
+
+        .progress-bar,
+        .gauge-bar {
+            background: var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+            height: 30px;
+        }
+
+        .progress-fill {
+            background: var(--primary);
+            height: 100%;
+            transition: width 1s ease-out;
+        }
+
+        .scene-quote blockquote {
+            font-size: 2rem;
+            font-style: italic;
+            border-left: 5px solid var(--primary);
+            padding-left: 2rem;
+        }
+
+        .scene-quote cite {
+            display: block;
+            margin-top: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .scene-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .scene-table th,
+        .scene-table td {
+            border: 1px solid var(--border-color);
+            padding: 0.8rem;
+        }
+
+        .scene-table thead {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .scene-quiz .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .scene-quiz .option-btn {
+            background: var(--border-color);
+            border: none;
+            padding: 1.5rem;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .scene-quiz .option-btn:hover {
+            background: var(--primary);
+        }
+
+        .scene-quiz .option-btn.correct {
+            background: var(--success);
+            color: black;
+        }
+
+        .scene-quiz .option-btn.incorrect {
+            background: var(--error);
+        }
 
         /* --- FLOATING ACTION BUTTONS --- */
-        #ai-button-container { position: fixed; top: 2rem; left: 2rem; z-index: 1000; }
-        .fab {
-            width: 56px; height: 56px; background-color: var(--primary); color: white; border: none;
-            border-radius: 50%; font-size: 1.8rem; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-            cursor: pointer; transition: all 0.2s ease;
+        #ai-button-container {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1000;
         }
-        .fab:hover { transform: scale(1.1); background-color: var(--accent); }
+
+        .fab {
+            width: 56px;
+            height: 56px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 1.8rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+            background-color: var(--accent);
+        }
 
         /* --- MODAL STYLES --- */
         .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(10px); z-index: 2000; display: flex; justify-content: center; align-items: center;
-            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
         }
-        .modal-overlay.visible { opacity: 1; pointer-events: all; }
+
+        .modal-overlay.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+
         .modal-content {
-            background: var(--stage-bg); border: 1px solid var(--border-color);
-            padding: 2rem; width: 90%; max-width: 700px;
-            display: flex; flex-direction: column; gap: 1rem;
-            max-height: 90vh; /* Make modal scrollable */
-            overflow-y: auto;   /* Make modal scrollable */
+            background: var(--stage-bg);
+            border: 1px solid var(--border-color);
+            padding: 2rem;
+            width: 90%;
+            max-width: 700px;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-height: 90vh;
+            /* Make modal scrollable */
+            overflow-y: auto;
+            /* Make modal scrollable */
         }
-        .modal-content h2 { margin-top: 0; }
-        .modal-content textarea { width: 100%; padding: 0.8rem; background: #101020; border: 1px solid var(--border-color); color: var(--text); font-size: 1rem; min-height: 120px; resize: vertical; }
-        .modal-buttons { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
-        .modal-btn { background: var(--primary); border: none; color: white; padding: 0.8rem 1.5rem; font-size: 1rem; cursor: pointer; transition: background-color 0.2s; border-radius: 4px; }
-        .modal-btn:hover { background: var(--accent); }
-        .modal-btn:disabled { background: var(--border-color); cursor: not-allowed; }
-        
+
+        .modal-content h2 {
+            margin-top: 0;
+        }
+
+        .modal-content textarea {
+            width: 100%;
+            padding: 0.8rem;
+            background: #101020;
+            border: 1px solid var(--border-color);
+            color: var(--text);
+            font-size: 1rem;
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .modal-btn {
+            background: var(--primary);
+            border: none;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border-radius: 4px;
+        }
+
+        .modal-btn:hover {
+            background: var(--accent);
+        }
+
+        .modal-btn:disabled {
+            background: var(--border-color);
+            cursor: not-allowed;
+        }
     </style>
-<script type="importmap">
-{
-  "imports": {
-    "express": "https://aistudiocdn.com/express@^5.1.0",
-    "cors": "https://aistudiocdn.com/cors@^2.8.5",
-    "body-parser": "https://aistudiocdn.com/body-parser@^2.2.0",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.22.0",
-    "dotenv/": "https://aistudiocdn.com/dotenv@^17.2.3/"
-  }
-}
-</script>
-<link rel="stylesheet" href="/index.css">
 </head>
 
 <body>
@@ -262,7 +735,7 @@
     </div>
 
     <audio id="background-music" loop></audio>
-    
+
     <div id="ai-button-container">
         <button id="ai-fab" class="fab" title="AI Assistant"><i class="bi bi-stars"></i></button>
     </div>
@@ -274,16 +747,16 @@
             </div>
             <div id="controls">
                 <div id="music-controls">
-                     <button id="music-options-toggle" class="control-btn" title="Music Options"><i class="bi bi-sliders"></i></button>
-                     <div id="music-options">
+                    <button id="music-options-toggle" class="control-btn" title="Music Options"><i class="bi bi-sliders"></i></button>
+                    <div id="music-options">
                         <input id="music-volume-slider" type="range" min="0" max="1" step="0.05" value="0.3" title="Music Volume">
                         <select id="music-track-select">
                         </select>
                         <label for="music-upload-input" class="upload-btn" title="Upload custom music">
-                           <i class="bi bi-upload"></i>
-                           <input type="file" id="music-upload-input" accept="audio/*">
+                            <i class="bi bi-upload"></i>
+                            <input type="file" id="music-upload-input" accept="audio/*">
                         </label>
-                     </div>
+                    </div>
                 </div>
                 <div class="nav-buttons" style="display: flex; gap: 1rem;">
                     <button id="prev-btn" class="control-btn" title="Previous"><i class="bi bi-arrow-left"></i></button>
@@ -298,9 +771,9 @@
         <div class="modal-content">
             <h2><i class="bi bi-stars"></i> AI Assistant</h2>
             <p>To generate a new presentation, enter a topic like "The History of Space Exploration". To improve the current one, describe a change like "Make the narration more professional" or "Add a quiz scene about Alan Turing."</p>
-            <textarea id="ai-prompt-input" placeholder="Enter topic or improvement prompt..."></textarea>
+            <textarea id="ai-prompt-input" placeholder="Enter topic or improvement text..."></textarea>
             <div class="modal-buttons">
-                 <div>
+                <div>
                     <button id="generate-script-btn" class="modal-btn">Generate New</button>
                     <button id="improve-script-btn" class="modal-btn">Improve Current</button>
                 </div>
@@ -313,6 +786,9 @@
     <script type="module">
         'use strict';
         // --- GLOBAL STATE & DOM ELEMENTS ---
+        const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ?
+            'http://localhost:3000' :
+            ''; // For Vercel, the API route is relative
         let presentationData = null;
         let currentSceneIndex = 0;
         let isPlaying = false;
@@ -320,7 +796,7 @@
         let p5Instance = null;
         let sceneTimeout = null;
         let originalMusicVolume = 0.3;
-        
+
         const E = {
             loader: document.getElementById('loader-overlay'),
             loaderText: document.getElementById('loader-text'),
@@ -347,7 +823,7 @@
             play: `<i class="bi bi-play-fill"></i>`,
             pause: `<i class="bi bi-pause-fill"></i>`,
         };
-        
+
         const DEFAULT_AUDIO_TRACKS = {
             "Ambient Study": "https://res.cloudinary.com/dmttn34te/video/upload/v1759780545/study-110111_at7lye.mp3",
             "Epic Cinematic": "https://res.cloudinary.com/dmttn34te/video/upload/v1759780548/study-music-181044_jbuwpq.mp3",
@@ -391,8 +867,273 @@
             }
         };
 
-        const DEFAULT_SCRIPT = {"theme":{"primary":"#007aff","accent":"#ff2d55","stage-bg":"#000000","text":"#ffffff","success":"#34c759","error":"#ff3b30","border-color":"#545458"},"backgroundCss":"radial-gradient(circle, #1e3a8a 0%, #000000 100%)","scenes":[{"id":"scene_splash_01","type":"title_splash","text":"AI Presentation Showcase","subtitle":"Demonstrating All Scene Capabilities","imageUrl":"https://images.unsplash.com/photo-1518770660439-4636190af475?w=1280&auto=format&fit=crop&q=80","narration":"Welcome to this special presentation, designed to showcase the full range of creative and data visualization capabilities of this AI-powered suite.","transition":{"type":"zoom","duration":800}},{"id":"scene_image_02","type":"image_showcase","caption":"Visuals are key to engaging storytelling. This scene highlights a single, impactful image with a supporting caption.","imageUrl":"https://images.unsplash.com/photo-1620712943543-2858200f745a?w=1280&auto=format&fit=crop&q=80","narration":"First, the image showcase. A powerful tool for focusing the audience's attention on a single visual concept, accompanied by a clear, concise message."},{"id":"scene_barchart_03","type":"chart","text":"Feature Adoption Rate (%)","narration":"Data visualization is crucial. Here, a bar chart clearly displays the adoption rates of different features, making complex data easy to understand.","chartConfig":{"type":"bar","data":{"labels":["AI Generation","Timeline Scene","Chart Variety","P5.js Scenes"],"datasets":[{"label":"Adoption Rate","data":[85,60,92,45],"backgroundColor":["#007aff","#ff9500","#34c759","#ff2d55"]}]},"options":{"scales":{"y":{"beginAtZero":true,"max":100}}}}},{"id":"scene_linechart_04","type":"chart","text":"User Engagement Over Time","narration":"Line charts are perfect for showing trends. This example tracks user engagement over the first six months, highlighting growth patterns.","chartConfig":{"type":"line","data":{"labels":["Jan","Feb","Mar","Apr","May","Jun"],"datasets":[{"label":"Active Users","data":[1200,1800,2100,2800,3500,4200],"borderColor":"#ff9500","tension":0.4}]}}},{"id":"scene_donutchart_05","type":"chart","text":"Browser Market Share","narration":"Doughnut charts provide a clean way to show proportions. Here we see a breakdown of browser usage among our audience.","chartConfig":{"type":"doughnut","data":{"labels":["Chrome","Safari","Firefox","Edge"],"datasets":[{"data":[65,20,10,5],"backgroundColor":["#34c759","#007aff","#ff9500","#5856d6"]}]}}},{"id":"scene_venn_06","type":"chart","text":"Customer Skill Sets","narration":"Venn diagrams beautifully illustrate overlapping data. This one shows the intersection of skills within our user base: Design, Development, and Marketing.","chartConfig":{"type":"venn","data":{"labels":["Design","Development","Marketing"],"datasets":[{"data":[{"sets":["Design"],"value":150},{"sets":["Development"],"value":220},{"sets":["Marketing"],"value":100},{"sets":["Design","Development"],"value":75},{"sets":["Development","Marketing"],"value":40},{"sets":["Design","Marketing"],"value":25},{"sets":["Design","Development","Marketing"],"value":15}]}]}}},{"id":"scene_timeline_07","type":"timeline","text":"Project Milestone Timeline","narration":"The timeline scene lays out key events chronologically. It’s perfect for roadmaps, historical overviews, or project stages.","events":[{"year":"Q1","title":"Project Kickoff"},{"year":"Q2","title":"Alpha Release"},{"year":"Q3","title":"Beta Testing"},{"year":"Q4","title":"Public Launch"}]},{"id":"scene_comparison_08","type":"comparison","text":"Old vs. New System","leftTitle":"Legacy System","leftPoints":["Manual Data Entry","Slow Processing","Limited Features"],"rightTitle":"New AI Suite","rightPoints":["Automated Scripting","Real-time Rendering","Infinite Possibilities"],"narration":"A comparison scene allows for a direct, side-by-side analysis of two subjects, highlighting their key differences and advantages."},{"id":"scene_bullets_09","type":"bullet_points","text":"Key Takeaways","points":["Versatility in scene types","Data-driven storytelling","AI-powered content creation","Seamless user experience"],"narration":"Sometimes, simple is best. The bullet points scene is ideal for summarizing key information or listing important features."},{"id":"scene_quote_10","type":"quote","quote":"The best way to predict the future is to invent it.","author":"Alan Kay","narration":"A quote can add authority and inspiration. This scene type elegantly presents a quote and its author."},{"id":"scene_code_11","type":"code","text":"Example: Simple Function","language":"javascript","code":"function greet(name) {\n  // This function greets the user by their name.\n  console.log(`Hello, ${name}!`);\n}","narration":"For technical presentations, the code scene displays formatted code snippets with syntax highlighting, which is essential for clarity."},{"id":"scene_network_12","type":"network","text":"Simple Social Network","narration":"Network graphs visualize connections between entities. This is great for showing relationships in data, like a social network or system architecture.","nodes":[{"id":"A","label":"You"},{"id":"B","label":"Friend 1"},{"id":"C","label":"Friend 2"},{"id":"D","label":"Friend 3"}],"links":[{"from":"A","to":"B"},{"from":"A","to":"C"},{"from":"A","to":"D"}]},{"id":"scene_progress_13","type":"progress","text":"Project Completion","label":"Tasks Completed","progress":75,"narration":"The progress bar is a clean and simple way to visualize completion, whether for a project, a funding goal, or a loading state."},{"id":"scene_gauge_14","type":"gauge","text":"System Performance","value":92,"min":0,"max":100,"unit":"%","narration":"Gauges are excellent for displaying a single metric that falls within a range, such as system performance, user satisfaction, or speed."},{"id":"scene_table_15","type":"table","text":"Quarterly Sales Data","tableHeaders":["Product","Q1 Sales","Q2 Sales","Growth"],"tableData":[["Alpha", "$150,000","$180,000","20%"],["Bravo","$220,000","$250,000","13.6%"],["Charlie","$95,000","$130,000","36.8%"]],"narration":"For structured data, the table scene presents information in a clear, organized format that is easy to read and compare."},{"id":"scene_memorytree_16","type":"memory_tree","text":"Application Structure","narration":"The memory tree visualizes hierarchical data, branching out from a central concept. It’s perfect for mind maps, org charts, or sitemaps.","root":{"name":"App","children":[{"name":"Frontend","children":[{"name":"UI"},{"name":"State"}]},{"name":"Backend","children":[{"name":"API"},{"name":"Database"}]}]}},{"id":"scene_quiz_17","type":"quiz","question":"Which scene type is best for showing trends over time?","options":["Bar Chart","Timeline","Line Chart","Venn Diagram"],"correctAnswer":2,"answerText":"That's correct! Line charts are ideal for trends.","narration":"To boost engagement, the interactive quiz scene lets you test your audience's knowledge with a multiple-choice question."},{"id":"scene_p5_18","type":"p5_js_3d","text":"Creative Coding with P5.js","p5jsCode":"p.setup = function() {\n  p.createCanvas(p.width, p.height, p.WEBGL);\n};\np.draw = function() {\n  p.background(0);\n  p.rotateX(p.frameCount * 0.01);\n  p.rotateY(p.frameCount * 0.01);\n  p.normalMaterial();\n  p.box(p.width / 4);\n};","narration":"Finally, for ultimate creativity, the P5.js scene allows for custom, interactive 3D animations, rendered live in the presentation."},{"id":"scene_end_19","type":"end","text":"Thank You","subtitle":"The possibilities are endless.","imageUrl":"https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1280&auto=format&fit=crop&q=80","narration":"Thank you for watching. This showcase demonstrates just a fraction of what's possible when you combine structured data with the creative power of AI."}]};
-        
+        const DEFAULT_SCRIPT = {
+            "theme": {
+                "primary": "#007aff",
+                "accent": "#ff2d55",
+                "stage-bg": "#000000",
+                "text": "#ffffff",
+                "success": "#34c759",
+                "error": "#ff3b30",
+                "border-color": "#545458"
+            },
+            "backgroundCss": "radial-gradient(circle, #1e3a8a 0%, #000000 100%)",
+            "scenes": [{
+                "id": "scene_splash_01",
+                "type": "title_splash",
+                "text": "AI Presentation Showcase",
+                "subtitle": "Demonstrating All Scene Capabilities",
+                "imageUrl": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=1280&auto=format&fit=crop&q=80",
+                "narration": "Welcome to this special presentation, designed to showcase the full range of creative and data visualization capabilities of this AI-powered suite.",
+                "transition": {
+                    "type": "zoom",
+                    "duration": 800
+                }
+            }, {
+                "id": "scene_image_02",
+                "type": "image_showcase",
+                "caption": "Visuals are key to engaging storytelling. This scene highlights a single, impactful image with a supporting caption.",
+                "imageUrl": "https://cdn.prod.website-files.com/642c503cbd04708343968443/643607c55ab90fd7c5a088b1_Featured-Image-Blog-Post_Full-Chemistry-Cluster-1024x580.png",
+                "narration": "First, the image showcase. A powerful tool for focusing the audience's attention on a single visual concept, accompanied by a clear, concise message."
+            }, {
+                "id": "scene_barchart_03",
+                "type": "chart",
+                "text": "Feature Adoption Rate (%)",
+                "narration": "Data visualization is crucial. Here, a bar chart clearly displays the adoption rates of different features, making complex data easy to understand.",
+                "chartConfig": {
+                    "type": "bar",
+                    "data": {
+                        "labels": ["AI Generation", "Timeline Scene", "Chart Variety", "P5.js Scenes"],
+                        "datasets": [{
+                            "label": "Adoption Rate",
+                            "data": [85, 60, 92, 45],
+                            "backgroundColor": ["#007aff", "#ff9500", "#34c759", "#ff2d55"]
+                        }]
+                    },
+                    "options": {
+                        "scales": {
+                            "y": {
+                                "beginAtZero": true,
+                                "max": 100
+                            }
+                        }
+                    }
+                }
+            }, {
+                "id": "scene_linechart_04",
+                "type": "chart",
+                "text": "User Engagement Over Time",
+                "narration": "Line charts are perfect for showing trends. This example tracks user engagement over the first six months, highlighting growth patterns.",
+                "chartConfig": {
+                    "type": "line",
+                    "data": {
+                        "labels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+                        "datasets": [{
+                            "label": "Active Users",
+                            "data": [1200, 1800, 2100, 2800, 3500, 4200],
+                            "borderColor": "#ff9500",
+                            "tension": 0.4
+                        }]
+                    }
+                }
+            }, {
+                "id": "scene_donutchart_05",
+                "type": "chart",
+                "text": "Browser Market Share",
+                "narration": "Doughnut charts provide a clean way to show proportions. Here we see a breakdown of browser usage among our audience.",
+                "chartConfig": {
+                    "type": "doughnut",
+                    "data": {
+                        "labels": ["Chrome", "Safari", "Firefox", "Edge"],
+                        "datasets": [{
+                            "data": [65, 20, 10, 5],
+                            "backgroundColor": ["#34c759", "#007aff", "#ff9500", "#5856d6"]
+                        }]
+                    }
+                }
+            }, {
+                "id": "scene_venn_06",
+                "type": "chart",
+                "text": "Customer Skill Sets",
+                "narration": "Venn diagrams beautifully illustrate overlapping data. This one shows the intersection of skills within our user base: Design, Development, and Marketing.",
+                "chartConfig": {
+                    "type": "venn",
+                    "data": {
+                        "labels": ["Design", "Development", "Marketing"],
+                        "datasets": [{
+                            "data": [{
+                                "sets": ["Design"],
+                                "value": 150
+                            }, {
+                                "sets": ["Development"],
+                                "value": 220
+                            }, {
+                                "sets": ["Marketing"],
+                                "value": 100
+                            }, {
+                                "sets": ["Design", "Development"],
+                                "value": 75
+                            }, {
+                                "sets": ["Development", "Marketing"],
+                                "value": 40
+                            }, {
+                                "sets": ["Design", "Marketing"],
+                                "value": 25
+                            }, {
+                                "sets": ["Design", "Development", "Marketing"],
+                                "value": 15
+                            }]
+                        }]
+                    }
+                }
+            }, {
+                "id": "scene_timeline_07",
+                "type": "timeline",
+                "text": "Project Milestone Timeline",
+                "narration": "The timeline scene lays out key events chronologically. It’s perfect for roadmaps, historical overviews, or project stages.",
+                "events": [{
+                    "year": "Q1",
+                    "title": "Project Kickoff"
+                }, {
+                    "year": "Q2",
+                    "title": "Alpha Release"
+                }, {
+                    "year": "Q3",
+                    "title": "Beta Testing"
+                }, {
+                    "year": "Q4",
+                    "title": "Public Launch"
+                }]
+            }, {
+                "id": "scene_comparison_08",
+                "type": "comparison",
+                "text": "Old vs. New System",
+                "leftTitle": "Legacy System",
+                "leftPoints": ["Manual Data Entry", "Slow Processing", "Limited Features"],
+                "rightTitle": "New AI Suite",
+                "rightPoints": ["Automated Scripting", "Real-time Rendering", "Infinite Possibilities"],
+                "narration": "A comparison scene allows for a direct, side-by-side analysis of two subjects, highlighting their key differences and advantages."
+            }, {
+                "id": "scene_bullets_09",
+                "type": "bullet_points",
+                "text": "Key Takeaways",
+                "points": ["Versatility in scene types", "Data-driven storytelling", "AI-powered content creation", "Seamless user experience"],
+                "narration": "Sometimes, simple is best. The bullet points scene is ideal for summarizing key information or listing important features."
+            }, {
+                "id": "scene_quote_10",
+                "type": "quote",
+                "quote": "The best way to predict the future is to invent it.",
+                "author": "Alan Kay",
+                "narration": "A quote can add authority and inspiration. This scene type elegantly presents a quote and its author."
+            }, {
+                "id": "scene_code_11",
+                "type": "code",
+                "text": "Example: Simple Function",
+                "language": "javascript",
+                "code": "function greet(name) {\n  // This function greets the user by their name.\n  console.log(`Hello, ${name}!`);\n}",
+                "narration": "For technical presentations, the code scene displays formatted code snippets with syntax highlighting, which is essential for clarity."
+            }, {
+                "id": "scene_network_12",
+                "type": "network",
+                "text": "Simple Social Network",
+                "narration": "Network graphs visualize connections between entities. This is great for showing relationships in data, like a social network or system architecture.",
+                "nodes": [{
+                    "id": "A",
+                    "label": "You"
+                }, {
+                    "id": "B",
+                    "label": "Friend 1"
+                }, {
+                    "id": "C",
+                    "label": "Friend 2"
+                }, {
+                    "id": "D",
+                    "label": "Friend 3"
+                }],
+                "links": [{
+                    "from": "A",
+                    "to": "B"
+                }, {
+                    "from": "A",
+                    "to": "C"
+                }, {
+                    "from": "A",
+                    "to": "D"
+                }]
+            }, {
+                "id": "scene_progress_13",
+                "type": "progress",
+                "text": "Project Completion",
+                "label": "Tasks Completed",
+                "progress": 75,
+                "narration": "The progress bar is a clean and simple way to visualize completion, whether for a project, a funding goal, or a loading state."
+            }, {
+                "id": "scene_gauge_14",
+                "type": "gauge",
+                "text": "System Performance",
+                "value": 92,
+                "min": 0,
+                "max": 100,
+                "unit": "%",
+                "narration": "Gauges are excellent for displaying a single metric that falls within a range, such as system performance, user satisfaction, or speed."
+            }, {
+                "id": "scene_table_15",
+                "type": "table",
+                "text": "Quarterly Sales Data",
+                "tableHeaders": ["Product", "Q1 Sales", "Q2 Sales", "Growth"],
+                "tableData": [
+                    ["Alpha", "$150,000", "$180,000", "20%"],
+                    ["Bravo", "$220,000", "$250,000", "13.6%"],
+                    ["Charlie", "$95,000", "$130,000", "36.8%"]
+                ],
+                "narration": "For structured data, the table scene presents information in a clear, organized format that is easy to read and compare."
+            }, {
+                "id": "scene_memorytree_16",
+                "type": "memory_tree",
+                "text": "Application Structure",
+                "narration": "The memory tree visualizes hierarchical data, branching out from a central concept. It’s perfect for mind maps, org charts, or sitemaps.",
+                "root": {
+                    "name": "App",
+                    "children": [{
+                        "name": "Frontend",
+                        "children": [{
+                            "name": "UI"
+                        }, {
+                            "name": "State"
+                        }]
+                    }, {
+                        "name": "Backend",
+                        "children": [{
+                            "name": "API"
+                        }, {
+                            "name": "Database"
+                        }]
+                    }]
+                }
+            }, {
+                "id": "scene_quiz_17",
+                "type": "quiz",
+                "question": "Which scene type is best for showing trends over time?",
+                "options": ["Bar Chart", "Timeline", "Line Chart", "Venn Diagram"],
+                "correctAnswer": 2,
+                "answerText": "That's correct! Line charts are ideal for trends.",
+                "narration": "To boost engagement, the interactive quiz scene lets you test your audience's knowledge with a multiple-choice question."
+            }, {
+                "id": "scene_p5_18",
+                "type": "p5_js_3d",
+                "text": "Responsive DNA Helix",
+                "p5jsCode": "p.setup = function() {\n  p.createCanvas(p.windowWidth, p.windowHeight, p.WEBGL);\n  p.pixelDensity(2);\n};\np.windowResized = function() {\n  p.resizeCanvas(p.windowWidth, p.windowHeight);\n};\np.draw = function() {\n  p.background(0);\n  p.orbitControl();\n  p.rotateY(p.frameCount * 0.01);\n  p.stroke(0, 255, 255);\n  p.noFill();\n  let spacing = 20;\n  let radius = Math.min(p.width, p.height) / 8;\n  let helixHeight = Math.min(p.height, p.width) / 1.5;\n  p.beginShape();\n  for (let i = -helixHeight; i < helixHeight; i += spacing) {\n    let angle = i * 0.1 + p.frameCount * 0.05;\n    let x = radius * p.cos(angle);\n    let y = i;\n    let z = radius * p.sin(angle);\n    p.vertex(x, y, z);\n  }\n  p.endShape();\n  p.stroke(255, 0, 255);\n  p.beginShape();\n  for (let i = -helixHeight; i < helixHeight; i += spacing) {\n    let angle = i * 0.1 + p.frameCount * 0.05 + p.PI;\n    let x = radius * p.cos(angle);\n    let y = i;\n    let z = radius * p.sin(angle);\n    p.vertex(x, y, z);\n  }\n  p.endShape();\n  p.stroke(255);\n  for (let i = -helixHeight; i < helixHeight; i += spacing) {\n    let angle1 = i * 0.1 + p.frameCount * 0.05;\n    let angle2 = angle1 + p.PI;\n    let x1 = radius * p.cos(angle1);\n    let z1 = radius * p.sin(angle1);\n    let x2 = radius * p.cos(angle2);\n    let z2 = radius * p.sin(angle2);\n    p.line(x1, i, z1, x2, i, z2);\n  }\n};",
+                "narration": "An interactive, full-screen 3D DNA double helix rotates smoothly in high resolution, symbolizing the beauty of science and creativity in code."
+            }, {
+                "id": "scene_end_19",
+                "type": "end",
+                "text": "Thank You",
+                "subtitle": "The possibilities are endless.",
+                "imageUrl": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1280&auto=format&fit=crop&q=80",
+                "narration": "Thank you for watching. This showcase demonstrates just a fraction of what's possible when you combine structured data with the creative power of AI."
+            }]
+        };
+
         // --- RENDERER MAP ---
         const sceneRenderers = {
             title_splash: renderTitleSplash,
@@ -415,9 +1156,18 @@
         };
 
         const animationMap = {
-            fade: { exit: 'animate__fadeOut', enter: 'animate__fadeIn' },
-            slide: { exit: 'animate__slideOutLeft', enter: 'animate__slideInRight' },
-            zoom: { exit: 'animate__zoomOut', enter: 'animate__zoomIn' },
+            fade: {
+                exit: 'animate__fadeOut',
+                enter: 'animate__fadeIn'
+            },
+            slide: {
+                exit: 'animate__slideOutLeft',
+                enter: 'animate__slideInRight'
+            },
+            zoom: {
+                exit: 'animate__zoomOut',
+                enter: 'animate__zoomIn'
+            },
         };
 
         // --- CORE APPLICATION LOGIC ---
@@ -427,10 +1177,10 @@
 
             E.loaderText.textContent = "Caching default audio...";
             await cacheDefaultAudio();
-            
+
             E.loaderText.textContent = "Registering Chart Plugins...";
             Chart.register(ChartVenn.VennDiagramController, ChartVenn.ArcSlice);
-            
+
             E.loaderText.textContent = "Loading default script...";
             loadScript(DEFAULT_SCRIPT);
 
@@ -445,7 +1195,7 @@
 
             E.musicAudio.volume = originalMusicVolume;
             setupEventListeners();
-            
+
             E.loader.style.opacity = '0';
             E.loader.addEventListener('transitionend', () => E.loader.style.display = 'none');
         }
@@ -487,17 +1237,23 @@
             const newScene = presentationData.scenes[currentSceneIndex];
             if (!newScene) return;
 
-            const transitionConfig = newScene.transition || { type: 'fade', duration: 600 };
+            const transitionConfig = newScene.transition || {
+                type: 'fade',
+                duration: 600
+            };
             const anim = animationMap[transitionConfig.type] || animationMap.fade;
-            
-            if (p5Instance) { p5Instance.remove(); p5Instance = null; }
+
+            if (p5Instance) {
+                p5Instance.remove();
+                p5Instance = null;
+            }
             if (sceneTimeout) clearTimeout(sceneTimeout);
 
             const performRender = () => {
                 E.sceneContent.innerHTML = '';
                 E.sceneContent.style.opacity = 0;
                 applyTheme(presentationData, newScene.colors);
-                
+
                 const renderer = sceneRenderers[newScene.type] || renderFallback;
                 renderer(newScene);
                 updateControls();
@@ -505,24 +1261,28 @@
                 if (isPlaying) {
                     playNarration(newScene);
                 }
-                
+
                 E.sceneContent.style.animationDuration = `${transitionConfig.duration}ms`;
                 E.sceneContent.classList.remove(...Object.values(animationMap).flatMap(a => [a.exit, a.enter]));
                 E.sceneContent.classList.add('animate__animated', anim.enter);
                 E.sceneContent.style.opacity = 1;
-                
+
                 E.sceneContent.addEventListener('animationend', () => {
                     E.sceneContent.classList.remove('animate__animated', anim.enter);
-                }, { once: true });
+                }, {
+                    once: true
+                });
             };
 
             if (isInitialLoad) {
                 performRender();
             } else {
-                 E.sceneContent.style.animationDuration = `${transitionConfig.duration}ms`;
-                 E.sceneContent.classList.remove(...Object.values(animationMap).flatMap(a => [a.exit, a.enter]));
-                 E.sceneContent.classList.add('animate__animated', anim.exit);
-                 E.sceneContent.addEventListener('animationend', performRender, { once: true });
+                E.sceneContent.style.animationDuration = `${transitionConfig.duration}ms`;
+                E.sceneContent.classList.remove(...Object.values(animationMap).flatMap(a => [a.exit, a.enter]));
+                E.sceneContent.classList.add('animate__animated', anim.exit);
+                E.sceneContent.addEventListener('animationend', performRender, {
+                    once: true
+                });
             }
         }
 
@@ -536,7 +1296,7 @@
                 E.playerHost.style.background = data.backgroundCss;
             }
         }
-        
+
         function updateControls() {
             E.prevBtn.disabled = currentSceneIndex === 0;
             E.nextBtn.disabled = currentSceneIndex === presentationData.scenes.length - 1;
@@ -546,28 +1306,28 @@
         function playNarration(scene) {
             speechSynthesis.cancel();
             if (E.musicAudio) E.musicAudio.volume = originalMusicVolume * 0.2;
-        
+
             if (!scene.narration) {
                 if (isPlaying) sceneTimeout = setTimeout(nextScene, 5000);
                 return;
             }
-        
+
             currentSpeech = new SpeechSynthesisUtterance(scene.narration);
-            
+
             const voices = window.speechSynthesis.getVoices().filter(v => v.lang.startsWith('en'));
             if (voices.length > 0) {
-                const isFemaleTurn = currentSceneIndex % 2 !== 0; 
+                const isFemaleTurn = currentSceneIndex % 2 !== 0;
                 let targetVoice;
                 if (isFemaleTurn) {
-                    targetVoice = voices.find(v => v.name.toLowerCase().includes('female')) || 
-                                voices.find(v => v.name.includes('Zira')) || 
-                                voices.find(v => v.name.includes('Samantha'));
+                    targetVoice = voices.find(v => v.name.toLowerCase().includes('female')) ||
+                        voices.find(v => v.name.includes('Zira')) ||
+                        voices.find(v => v.name.includes('Samantha'));
                     currentSpeech.pitch = 1.1;
                     currentSpeech.rate = 1.05;
                 } else {
-                    targetVoice = voices.find(v => v.name.toLowerCase().includes('male')) || 
-                                voices.find(v => v.name.includes('David')) ||
-                                voices.find(v => v.name.includes('Alex'));
+                    targetVoice = voices.find(v => v.name.toLowerCase().includes('male')) ||
+                        voices.find(v => v.name.includes('David')) ||
+                        voices.find(v => v.name.includes('Alex'));
                     currentSpeech.pitch = 0.9;
                     currentSpeech.rate = 1.0;
                 }
@@ -576,7 +1336,7 @@
 
             let speechEnded = false;
             // Failsafe timeout: (word count / words per second) * 1000ms + buffer
-            const failsafeDuration = (scene.narration.split(' ').length / 2.5) * 1000 + 1500; 
+            const failsafeDuration = (scene.narration.split(' ').length / 2.5) * 1000 + 1500;
 
             const onSpeechEnd = () => {
                 if (speechEnded) return;
@@ -597,7 +1357,7 @@
             isPlaying = !isPlaying;
             if (isPlaying) {
                 if (E.musicAudio.src && E.musicAudio.src !== window.location.href) {
-                     E.musicAudio.play().catch(e => console.error("Music playback failed:", e));
+                    E.musicAudio.play().catch(e => console.error("Music playback failed:", e));
                 }
                 E.playBtn.innerHTML = icons.pause;
                 playNarration(presentationData.scenes[currentSceneIndex]);
@@ -608,7 +1368,7 @@
 
         function stopPlayback() {
             isPlaying = false;
-            if(sceneTimeout) clearTimeout(sceneTimeout);
+            if (sceneTimeout) clearTimeout(sceneTimeout);
             speechSynthesis.cancel();
             E.musicAudio.pause();
             if (E.musicAudio) E.musicAudio.volume = originalMusicVolume;
@@ -629,63 +1389,215 @@
                 renderScene(currentSceneIndex - 1);
             }
         }
-        
+
         // --- SCENE RENDERER IMPLEMENTATIONS ---
-        function renderFallback(scene) { E.sceneContent.innerHTML = `<h2>Unsupported Scene Type: ${scene.type}</h2><p>Please check your JSON script.</p>`; }
-        function renderTitleSplash(scene) { E.sceneContent.innerHTML = `<div class="scene-title-splash" style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${scene.imageUrl || ''})"><h1>${scene.text || ''}</h1>${scene.subtitle ? `<h2>${scene.subtitle}</h2>` : ''}</div>`; }
-        function renderImageShowcase(scene) { E.sceneContent.innerHTML = `<div class="scene-image-showcase"><img src="${scene.imageUrl}" alt="${scene.caption}" onerror="this.onerror=null;this.outerHTML='<div class=img-fallback>Image Not Found</div>';"><figcaption>${scene.caption || ''}</figcaption></div>`; }
-        function renderTimeline(scene) { const eventsHtml = scene.events.map(event => `<div class="timeline-event"><div class="year">${event.year}</div><div class="title">${event.title}</div></div>`).join(''); E.sceneContent.innerHTML = `<div class="scene-timeline"><h2>${scene.text}</h2><div class="timeline-container">${eventsHtml}</div></div>`; }
-        function renderComparison(scene) { const leftPoints = scene.leftPoints.map(p => `<li>${p}</li>`).join(''); const rightPoints = scene.rightPoints.map(p => `<li>${p}</li>`).join(''); E.sceneContent.innerHTML = `<div class="scene-comparison"><h2>${scene.text}</h2><div class="comparison-grid"><div class="comparison-side"><h3>${scene.leftTitle}</h3><ul>${leftPoints}</ul></div><div class="comparison-side"><h3>${scene.rightTitle}</h3><ul>${rightPoints}</ul></div></div></div>`; }
-        function renderBulletPoints(scene) { const pointsHtml = scene.points.map(p => `<li>${p}</li>`).join(''); E.sceneContent.innerHTML = `<div class="scene-comparison"><h2>${scene.text}</h2><ul style="text-align:left; max-width: 60%; margin: 0 auto; font-size: 1.5rem;">${pointsHtml}</ul></div>`; }
-        function renderCode(scene) { const escapedCode = scene.code.replace(/</g, "&lt;").replace(/>/g, "&gt;"); E.sceneContent.innerHTML = `<div class="scene-code" style="width:100%"><h2>${scene.text}</h2><pre><code class="language-${scene.language}">${escapedCode}</code></pre></div>`; Prism.highlightAll(); }
-        function renderNetwork(scene) { const { nodes, links } = scene; const width = E.sceneContent.clientWidth; const height = E.sceneContent.clientHeight * 0.8; const positions = nodes.reduce((acc, node, i) => { const angle = (i / nodes.length) * 2 * Math.PI; acc[node.id] = { x: width / 2 + (width/3) * Math.cos(angle), y: height / 2 + (height/3) * Math.sin(angle) }; return acc; }, {}); const linksHtml = links.map(link => `<line x1="${positions[link.from].x}" y1="${positions[link.from].y}" x2="${positions[link.to].x}" y2="${positions[link.to].y}" stroke="var(--border-color)" stroke-width="2"/>`).join(''); const nodesHtml = nodes.map(node => `<g transform="translate(${positions[node.id].x}, ${positions[node.id].y})"><circle r="40" fill="var(--stage-bg)" stroke="var(--primary)" stroke-width="3"/><text fill="var(--text)" text-anchor="middle" dy=".3em">${node.label}</text></g>`).join(''); E.sceneContent.innerHTML = `<div class="scene-network" style="width:100%"><h2>${scene.text}</h2><svg viewbox="0 0 ${width} ${height}">${linksHtml}${nodesHtml}</svg></div>`; }
-        function renderProgress(scene) { E.sceneContent.innerHTML = `<div class="scene-progress"><h2>${scene.text}</h2><div class="progress-bar"><div id="p-fill" class="progress-fill"></div></div><h3>${scene.label}: ${scene.progress}%</h3></div>`; setTimeout(() => { E.sceneContent.querySelector('#p-fill').style.width = `${scene.progress}%`; }, 100); }
-        function renderGauge(scene) { const circumference = 2 * Math.PI * 45; const pct = (scene.value - scene.min) / (scene.max - scene.min); const offset = circumference * (1 - pct); E.sceneContent.innerHTML = `<div class="scene-gauge"><h2>${scene.text}</h2><svg viewBox="0 0 100 60"><path d="M 5 50 A 45 45 0 0 1 95 50" fill="none" stroke="var(--border-color)" stroke-width="10" /><path d="M 5 50 A 45 45 0 0 1 95 50" fill="none" stroke="var(--primary)" stroke-width="10" stroke-linecap="round" stroke-dasharray="${circumference}" stroke-dashoffset="${circumference}" style="transition: stroke-dashoffset 1s ease-out;" id="gauge-fill"/><text x="50" y="45" text-anchor="middle" fill="var(--text)" font-size="20">${scene.value}${scene.unit || ''}</text></svg></div>`; setTimeout(() => { E.sceneContent.querySelector('#gauge-fill').style.strokeDashoffset = offset; }, 100); }
-        function renderQuote(scene) { E.sceneContent.innerHTML = `<div class="scene-quote"><blockquote>${scene.quote}</blockquote><cite>— ${scene.author}</cite></div>`; }
-        function renderTable(scene) { const headers = `<tr>${scene.tableHeaders.map(h => `<th>${h}</th>`).join('')}</tr>`; const rows = scene.tableData.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`).join(''); E.sceneContent.innerHTML = `<div class="scene-table" style="width:100%"><h2>${scene.text}</h2><table><thead>${headers}</thead><tbody>${rows}</tbody></table></div>`; }
-        function renderQuiz(scene) { const optionsHtml = scene.options.map((opt, i) => `<button class="option-btn" data-index="${i}">${opt}</button>`).join(''); E.sceneContent.innerHTML = `<div class="scene-quiz"><h2>${scene.question}</h2><div class="options">${optionsHtml}</div></div>`; E.sceneContent.querySelectorAll('.option-btn').forEach(btn => { btn.onclick = () => { const selected = parseInt(btn.dataset.index); const isCorrect = selected === scene.correctAnswer; btn.classList.add(isCorrect ? 'correct' : 'incorrect'); if (!isCorrect) { E.sceneContent.querySelector(`[data-index='${scene.correctAnswer}']`).classList.add('correct'); } E.sceneContent.querySelectorAll('.option-btn').forEach(b => b.disabled = true); if (isCorrect && scene.answerText) { const answerSpeech = new SpeechSynthesisUtterance(scene.answerText); speechSynthesis.speak(answerSpeech); } }; }); }
-        function renderP5(scene) { E.sceneContent.innerHTML = `<div class="scene-p5"><h2>${scene.text}</h2><div id="p5-canvas-host" style="width:100%; height:400px;"></div></div>`; const sketch = new Function('p', `p.width = p.select('#p5-canvas-host').width; p.height = p.select('#p5-canvas-host').height; ${scene.p5jsCode}`); p5Instance = new p5(sketch, 'p5-canvas-host'); }
-        
+        function renderFallback(scene) {
+            E.sceneContent.innerHTML = `<h2>Unsupported Scene Type: ${scene.type}</h2><p>Please check your JSON script.</p>`;
+        }
+
+        function renderTitleSplash(scene) {
+            E.sceneContent.innerHTML = `<div class="scene-title-splash" style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${scene.imageUrl || ''})"><h1>${scene.text || ''}</h1>${scene.subtitle ? `<h2>${scene.subtitle}</h2>` : ''}</div>`;
+        }
+
+        function renderImageShowcase(scene) {
+            E.sceneContent.innerHTML = `<div class="scene-image-showcase"><img src="${scene.imageUrl}" alt="${scene.caption}" onerror="this.onerror=null;this.outerHTML='<div class=img-fallback>Image Not Found</div>';"><figcaption>${scene.caption || ''}</figcaption></div>`;
+        }
+
+        function renderTimeline(scene) {
+            const eventsHtml = scene.events.map(event => `<div class="timeline-event"><div class="year">${event.year}</div><div class="title">${event.title}</div></div>`).join('');
+            E.sceneContent.innerHTML = `<div class="scene-timeline"><h2>${scene.text}</h2><div class="timeline-container">${eventsHtml}</div></div>`;
+        }
+
+        function renderComparison(scene) {
+            const leftPoints = scene.leftPoints.map(p => `<li>${p}</li>`).join('');
+            const rightPoints = scene.rightPoints.map(p => `<li>${p}</li>`).join('');
+            E.sceneContent.innerHTML = `<div class="scene-comparison"><h2>${scene.text}</h2><div class="comparison-grid"><div class="comparison-side"><h3>${scene.leftTitle}</h3><ul>${leftPoints}</ul></div><div class="comparison-side"><h3>${scene.rightTitle}</h3><ul>${rightPoints}</ul></div></div></div>`;
+        }
+
+        function renderBulletPoints(scene) {
+            const pointsHtml = scene.points.map(p => `<li>${p}</li>`).join('');
+            E.sceneContent.innerHTML = `<div class="scene-comparison"><h2>${scene.text}</h2><ul style="text-align:left; max-width: 60%; margin: 0 auto; font-size: 1.5rem;">${pointsHtml}</ul></div>`;
+        }
+
+        function renderCode(scene) {
+            const escapedCode = scene.code.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            E.sceneContent.innerHTML = `<div class="scene-code" style="width:100%"><h2>${scene.text}</h2><pre><code class="language-${scene.language}">${escapedCode}</code></pre></div>`;
+            Prism.highlightAll();
+        }
+
+        function renderNetwork(scene) {
+            const {
+                nodes,
+                links
+            } = scene;
+            const width = E.sceneContent.clientWidth;
+            const height = E.sceneContent.clientHeight * 0.8;
+            const positions = nodes.reduce((acc, node, i) => {
+                const angle = (i / nodes.length) * 2 * Math.PI;
+                acc[node.id] = {
+                    x: width / 2 + (width / 3) * Math.cos(angle),
+                    y: height / 2 + (height / 3) * Math.sin(angle)
+                };
+                return acc;
+            }, {});
+            const linksHtml = links.map(link => `<line x1="${positions[link.from].x}" y1="${positions[link.from].y}" x2="${positions[link.to].x}" y2="${positions[link.to].y}" stroke="var(--border-color)" stroke-width="2"/>`).join('');
+            const nodesHtml = nodes.map(node => `<g transform="translate(${positions[node.id].x}, ${positions[node.id].y})"><circle r="40" fill="var(--stage-bg)" stroke="var(--primary)" stroke-width="3"/><text fill="var(--text)" text-anchor="middle" dy=".3em">${node.label}</text></g>`).join('');
+            E.sceneContent.innerHTML = `<div class="scene-network" style="width:100%"><h2>${scene.text}</h2><svg viewbox="0 0 ${width} ${height}">${linksHtml}${nodesHtml}</svg></div>`;
+        }
+
+        function renderProgress(scene) {
+            E.sceneContent.innerHTML = `<div class="scene-progress"><h2>${scene.text}</h2><div class="progress-bar"><div id="p-fill" class="progress-fill"></div></div><h3>${scene.label}: ${scene.progress}%</h3></div>`;
+            setTimeout(() => {
+                E.sceneContent.querySelector('#p-fill').style.width = `${scene.progress}%`;
+            }, 100);
+        }
+
+        function renderGauge(scene) {
+            const circumference = 2 * Math.PI * 45;
+            const pct = (scene.value - scene.min) / (scene.max - scene.min);
+            const offset = circumference * (1 - pct);
+            E.sceneContent.innerHTML = `<div class="scene-gauge"><h2>${scene.text}</h2><svg viewBox="0 0 100 60"><path d="M 5 50 A 45 45 0 0 1 95 50" fill="none" stroke="var(--border-color)" stroke-width="10" /><path d="M 5 50 A 45 45 0 0 1 95 50" fill="none" stroke="var(--primary)" stroke-width="10" stroke-linecap="round" stroke-dasharray="${circumference}" stroke-dashoffset="${circumference}" style="transition: stroke-dashoffset 1s ease-out;" id="gauge-fill"/><text x="50" y="45" text-anchor="middle" fill="var(--text)" font-size="20">${scene.value}${scene.unit || ''}</text></svg></div>`;
+            setTimeout(() => {
+                E.sceneContent.querySelector('#gauge-fill').style.strokeDashoffset = offset;
+            }, 100);
+        }
+
+        function renderQuote(scene) {
+            E.sceneContent.innerHTML = `<div class="scene-quote"><blockquote>${scene.quote}</blockquote><cite>— ${scene.author}</cite></div>`;
+        }
+
+        function renderTable(scene) {
+            const headers = `<tr>${scene.tableHeaders.map(h => `<th>${h}</th>`).join('')}</tr>`;
+            const rows = scene.tableData.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`).join('');
+            E.sceneContent.innerHTML = `<div class="scene-table" style="width:100%"><h2>${scene.text}</h2><table><thead>${headers}</thead><tbody>${rows}</tbody></table></div>`;
+        }
+
+        function renderQuiz(scene) {
+            const optionsHtml = scene.options.map((opt, i) => `<button class="option-btn" data-index="${i}">${opt}</button>`).join('');
+            E.sceneContent.innerHTML = `<div class="scene-quiz"><h2>${scene.question}</h2><div class="options">${optionsHtml}</div></div>`;
+            E.sceneContent.querySelectorAll('.option-btn').forEach(btn => {
+                btn.onclick = () => {
+                    const selected = parseInt(btn.dataset.index);
+                    const isCorrect = selected === scene.correctAnswer;
+                    btn.classList.add(isCorrect ? 'correct' : 'incorrect');
+                    if (!isCorrect) {
+                        E.sceneContent.querySelector(`[data-index='${scene.correctAnswer}']`).classList.add('correct');
+                    }
+                    E.sceneContent.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+                    if (isCorrect && scene.answerText) {
+                        const answerSpeech = new SpeechSynthesisUtterance(scene.answerText);
+                        speechSynthesis.speak(answerSpeech);
+                    }
+                };
+            });
+        }
+
+        function renderP5(scene) {
+            E.sceneContent.innerHTML = `<div class="scene-p5"><h2>${scene.text}</h2><div id="p5-canvas-host" style="width:100%; height:400px;"></div></div>`;
+            const sketch = new Function('p', `p.width = p.select('#p5-canvas-host').width; p.height = p.select('#p5-canvas-host').height; ${scene.p5jsCode}`);
+            p5Instance = new p5(sketch, 'p5-canvas-host');
+        }
+
         function renderMemoryTree(scene) {
             const width = E.sceneContent.clientWidth * 0.9;
             const height = E.sceneContent.clientHeight * 0.9;
             const positions = {};
             const links = [];
-            
+
             function calculatePositions(node, x, y, level, widthSpread) {
-                positions[node.name] = { x, y };
+                positions[node.name] = {
+                    x,
+                    y
+                };
                 if (node.children && node.children.length) {
                     const childCount = node.children.length;
                     const childWidthSpread = widthSpread / childCount;
                     let currentX = x - (widthSpread / 2) + (childWidthSpread / 2);
 
                     node.children.forEach(child => {
-                        links.push({ from: { x, y }, to: { x: currentX, y: y + 90 } });
+                        links.push({
+                            from: {
+                                x,
+                                y
+                            },
+                            to: {
+                                x: currentX,
+                                y: y + 90
+                            }
+                        });
                         calculatePositions(child, currentX, y + 90, level + 1, childWidthSpread);
                         currentX += childWidthSpread;
                     });
                 }
             }
             calculatePositions(scene.root, width / 2, 60, 0, width);
-            
+
             const linksHtml = links.map(link => `<path d="M ${link.from.x} ${link.from.y + 15} C ${link.from.x} ${link.from.y + 50}, ${link.to.x} ${link.to.y - 50}, ${link.to.x} ${link.to.y - 15}" stroke="var(--border-color)" stroke-width="2" fill="none"/>`).join('');
             const nodesHtml = Object.entries(positions).map(([name, pos]) => `<g transform="translate(${pos.x}, ${pos.y})"><rect x="-70" y="-15" width="140" height="30" rx="5" fill="var(--stage-bg)" stroke="var(--primary)" stroke-width="2"/><text fill="var(--text)" text-anchor="middle" dy=".3em" font-size="12px" style="pointer-events:none;">${name}</text></g>`).join('');
-            
+
             E.sceneContent.innerHTML = `<div class="scene-network" style="width:100%; height:100%;"><h2>${scene.text}</h2><svg viewBox="0 0 ${width} ${height}">${linksHtml}${nodesHtml}</svg></div>`;
         }
-        
+
         function renderChart(scene) {
             E.sceneContent.innerHTML = `<div class="scene-chart" style="width: 100%; height: 100%; position: relative;"><canvas id="chart-canvas"></canvas></div>`;
             const ctx = document.getElementById('chart-canvas').getContext('2d');
             const chartConfig = scene.chartConfig || {};
-            const defaultOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: 'var(--text)' } }, title: { display: true, text: scene.text, color: 'var(--text)', font: { size: 18 } } }, scales: { x: { ticks: { color: 'var(--text)' }, grid: { color: 'rgba(192, 192, 255, 0.2)' } }, y: { ticks: { color: 'var(--text)' }, grid: { color: 'rgba(192, 192, 255, 0.2)' } } } };
-            const finalOptions = { ...defaultOptions, ...(chartConfig.options || {}) };
-            finalOptions.plugins = { ...defaultOptions.plugins, ...(chartConfig.options?.plugins || {}) };
-            finalOptions.scales = { ...defaultOptions.scales, ...(chartConfig.options?.scales || {}) };
-            if (chartConfig.type === 'venn' || chartConfig.type === 'doughnut' || chartConfig.type === 'pie') { delete finalOptions.scales; }
-            new Chart(ctx, { type: chartConfig.type || 'bar', data: chartConfig.data || {}, options: finalOptions });
+            const defaultOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'var(--text)'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: scene.text,
+                        color: 'var(--text)',
+                        font: {
+                            size: 18
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            color: 'var(--text)'
+                        },
+                        grid: {
+                            color: 'rgba(192, 192, 255, 0.2)'
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            color: 'var(--text)'
+                        },
+                        grid: {
+                            color: 'rgba(192, 192, 255, 0.2)'
+                        }
+                    }
+                }
+            };
+            const finalOptions = { ...defaultOptions,
+                ...(chartConfig.options || {})
+            };
+            finalOptions.plugins = { ...defaultOptions.plugins,
+                ...(chartConfig.options?.plugins || {})
+            };
+            finalOptions.scales = { ...defaultOptions.scales,
+                ...(chartConfig.options?.scales || {})
+            };
+            if (chartConfig.type === 'venn' || chartConfig.type === 'doughnut' || chartConfig.type === 'pie') {
+                delete finalOptions.scales;
+            }
+            new Chart(ctx, {
+                type: chartConfig.type || 'bar',
+                data: chartConfig.data || {},
+                options: finalOptions
+            });
         }
-        
+
         // --- EVENT LISTENERS & UI INTERACTIONS ---
         function setupEventListeners() {
             E.prevBtn.onclick = prevScene;
@@ -696,72 +1608,147 @@
             E.generateScriptBtn.onclick = handleGenerateScript;
             E.improveScriptBtn.onclick = handleImproveScript;
 
-            E.musicOptionsToggle.onclick = () => { E.musicOptions.classList.toggle('visible'); };
-            E.musicVolumeSlider.oninput = (e) => { originalMusicVolume = parseFloat(e.target.value); E.musicAudio.volume = isPlaying ? originalMusicVolume * 0.2 : originalMusicVolume; };
-            E.musicTrackSelect.onchange = async (e) => { const trackName = e.target.value; if(E.musicAudio.src) URL.revokeObjectURL(E.musicAudio.src); if (trackName) { const audioBlob = await AudioCacher.get(trackName); if (audioBlob) { E.musicAudio.src = URL.createObjectURL(audioBlob); if(isPlaying) E.musicAudio.play(); } } else { E.musicAudio.src = ""; E.musicAudio.pause(); } };
-            E.musicUploadInput.onchange = (e) => { const file = e.target.files[0]; if (file) { if(E.musicAudio.src) URL.revokeObjectURL(E.musicAudio.src); E.musicAudio.src = URL.createObjectURL(file); if(isPlaying) E.musicAudio.play(); E.musicTrackSelect.value = ""; } };
+            E.musicOptionsToggle.onclick = () => {
+                E.musicOptions.classList.toggle('visible');
+            };
+            E.musicVolumeSlider.oninput = (e) => {
+                originalMusicVolume = parseFloat(e.target.value);
+                E.musicAudio.volume = isPlaying ? originalMusicVolume * 0.2 : originalMusicVolume;
+            };
+            E.musicTrackSelect.onchange = async (e) => {
+                const trackName = e.target.value;
+                if (E.musicAudio.src) URL.revokeObjectURL(E.musicAudio.src);
+                if (trackName) {
+                    const audioBlob = await AudioCacher.get(trackName);
+                    if (audioBlob) {
+                        E.musicAudio.src = URL.createObjectURL(audioBlob);
+                        if (isPlaying) E.musicAudio.play();
+                    }
+                } else {
+                    E.musicAudio.src = "";
+                    E.musicAudio.pause();
+                }
+            };
+            E.musicUploadInput.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    if (E.musicAudio.src) URL.revokeObjectURL(E.musicAudio.src);
+                    E.musicAudio.src = URL.createObjectURL(file);
+                    if (isPlaying) E.musicAudio.play();
+                    E.musicTrackSelect.value = "";
+                }
+            };
+        }
+
+        async function handleAiRequest(prompt) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        prompt
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.statusText}`);
+                }
+
+                const responseJson = await response.json();
+                let jsonString = responseJson.content;
+
+                // Clean up potential markdown formatting from the AI response
+                const jsonMatch = jsonString.match(/```json\s*([\s\S]*?)\s*```|({[\s\S]*})/);
+                if (jsonMatch && (jsonMatch[1] || jsonMatch[2])) {
+                    jsonString = jsonMatch[1] || jsonMatch[2];
+                }
+
+                try {
+                    const newScript = JSON.parse(jsonString);
+                    loadScript(newScript);
+                    E.aiModal.classList.remove('visible');
+                } catch (parseError) {
+                    console.error("Failed to parse JSON from AI response:", parseError);
+                    console.error("Received string:", jsonString);
+                    alert("The AI returned an invalid format. Please try again.");
+                }
+
+            } catch (error) {
+                console.error("Failed to fetch from API:", error);
+                alert(error.message.includes('fetch') ? "Could not connect to the server." : "An error occurred during the AI request.");
+            }
         }
 
         async function handleGenerateScript() {
-            const topic = E.aiPromptInput.value.trim();
-            if(!topic) return;
+            const userTopic = E.aiPromptInput.value.trim();
+            if (!userTopic) return;
 
             E.generateScriptBtn.disabled = true;
             E.generateScriptBtn.textContent = "Generating...";
             E.improveScriptBtn.disabled = true;
 
-            try {
-                const response = await fetch('/api/generate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ topic, template: DEFAULT_SCRIPT })
-                });
-                if(!response.ok) throw new Error(`Server error: ${response.statusText}`);
-                const newScript = await response.json();
-                loadScript(newScript);
-                E.aiModal.classList.remove('visible');
-            } catch (error) {
-                console.error("Failed to generate script:", error);
-                alert(error.message.includes('fetch') ? "Could not connect to the server." : "Error generating script.");
-            } finally {
-                E.generateScriptBtn.disabled = false;
-                E.generateScriptBtn.textContent = "Generate New";
-                E.improveScriptBtn.disabled = false;
-            }
+            const systemPrompt = `
+You are an AI assistant that generates JSON data for a presentation application.
+Your task is to create a complete presentation script in JSON format based on the user's topic.
+The JSON output must be a single, valid JSON object and nothing else. Do not add any extra text, explanations, or markdown formatting like \`\`\`json before or after the JSON object.
+
+The user's topic is: "${userTopic}"
+
+Generate a JSON object with the following structure:
+- A "theme" object with CSS color variables.
+- A "backgroundCss" string.
+- An array of "scenes" (at least 5-7 scenes).
+
+Each scene object in the "scenes" array must have:
+- "id": A unique string identifier.
+- "type": One of the supported types (e.g., "title_splash", "image_showcase", "chart", "timeline", "comparison", "bullet_points", "code", "network", "quote", "table", "quiz", "end").
+- "narration": A string of text for text-to-speech.
+- Other properties specific to the scene type. For chart scenes, include a valid "chartConfig" object for Chart.js.
+
+Here is an example of the required JSON structure. Use it as a guide for the format, but create new content relevant to the user's topic. Do not just copy the example.
+${JSON.stringify(DEFAULT_SCRIPT, null, 2)}
+
+Now, generate the complete JSON for the topic: "${userTopic}".
+`;
+            await handleAiRequest(systemPrompt);
+
+            E.generateScriptBtn.disabled = false;
+            E.generateScriptBtn.textContent = "Generate New";
+            E.improveScriptBtn.disabled = false;
         }
-        
+
         async function handleImproveScript() {
-            const prompt = E.aiPromptInput.value.trim();
-            if(!prompt) return;
+            const userPrompt = E.aiPromptInput.value.trim();
+            if (!userPrompt) return;
 
             E.improveScriptBtn.disabled = true;
             E.improveScriptBtn.textContent = "Improving...";
             E.generateScriptBtn.disabled = true;
 
-            try {
-                const response = await fetch('/api/improve', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt, currentJson: presentationData })
-                });
-                if(!response.ok) throw new Error(`Server error: ${response.statusText}`);
-                const newScript = await response.json();
-                loadScript(newScript);
-                E.aiModal.classList.remove('visible');
-            } catch (error) {
-                console.error("Failed to improve script:", error);
-                alert(error.message.includes('fetch') ? "Could not connect to the server." : "Error improving script.");
-            } finally {
-                E.improveScriptBtn.disabled = false;
-                E.improveScriptBtn.textContent = "Improve Current";
-                E.generateScriptBtn.disabled = false;
-            }
+            const systemPrompt = `
+You are an AI assistant that improves JSON data for a presentation application.
+Your task is to take an existing presentation script in JSON format and a user's request for improvement, and then return a new, complete, updated JSON script.
+The JSON output must be a single, valid JSON object and nothing else. Do not add any extra text, explanations, or markdown formatting like \`\`\`json before or after the JSON object.
+
+The user's improvement request is: "${userPrompt}"
+
+Here is the current JSON script that you need to modify:
+${JSON.stringify(presentationData, null, 2)}
+
+Please apply the user's request to the JSON and return the full, updated JSON object.
+`;
+            await handleAiRequest(systemPrompt);
+
+            E.improveScriptBtn.disabled = false;
+            E.improveScriptBtn.textContent = "Improve Current";
+            E.generateScriptBtn.disabled = false;
         }
 
         // --- STARTUP ---
         document.addEventListener('DOMContentLoaded', initialize);
     </script>
-<script type="module" src="/index.tsx"></script>
 </body>
 
 </html>
