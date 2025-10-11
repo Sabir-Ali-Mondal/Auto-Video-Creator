@@ -1579,13 +1579,16 @@
                     }
                 }
             };
-            const finalOptions = { ...defaultOptions,
+            const finalOptions = {
+                ...defaultOptions,
                 ...(chartConfig.options || {})
             };
-            finalOptions.plugins = { ...defaultOptions.plugins,
+            finalOptions.plugins = {
+                ...defaultOptions.plugins,
                 ...(chartConfig.options?.plugins || {})
             };
-            finalOptions.scales = { ...defaultOptions.scales,
+            finalOptions.scales = {
+                ...defaultOptions.scales,
                 ...(chartConfig.options?.scales || {})
             };
             if (chartConfig.type === 'venn' || chartConfig.type === 'doughnut' || chartConfig.type === 'pie') {
@@ -1692,7 +1695,9 @@
             const systemPrompt = `
 You are an AI assistant that generates JSON data for a presentation application.
 Your task is to create a complete presentation script in JSON format based on the user's topic.
-The JSON output must be a single, valid JSON object and nothing else. Do not add any extra text, explanations, or markdown formatting like *\#\\`\`\`json before or after or inside the JSON object.
+The JSON output must be a single, valid JSON object and nothing else. Do not add any extra text or explanations.
+Specifically, do not wrap the JSON in a markdown code block (using triple backticks).
+Never use markdown or *...* #... or don't need any type of text modify, use simple clean text.
 
 The user's topic is: "${userTopic}"
 
@@ -1730,7 +1735,9 @@ Now, generate the complete JSON for the topic: "${userTopic}".
             const systemPrompt = `
 You are an AI assistant that improves JSON data for a presentation application.
 Your task is to take an existing presentation script in JSON format and a user's request for improvement, and then return a new, complete, updated JSON script.
-The JSON output must be a single, valid JSON object and nothing else. Do not add any extra text, explanations, or markdown formatting like *\#\\`\`\`json before or after or inside the JSON object.
+The JSON output must be a single, valid JSON object and nothing else. Do not add any extra text or explanations.
+Specifically, do not wrap the JSON in a markdown code block (using triple backticks).
+Never use markdown or *...* #... or don't need any type of text modify, use simple clean text.
 Here is an example of the required JSON structure. Use it as a guide for the format, but create new content relevant to the user's topic. Do not just copy the example.
 ${JSON.stringify(DEFAULT_SCRIPT, null, 2)}
 The user's improvement request is: "${userPrompt}"
