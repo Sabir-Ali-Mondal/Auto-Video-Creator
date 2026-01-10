@@ -1,0 +1,1793 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Data Visualization Suite - All Features</title>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <!-- ChartJS Venn -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-venn@4.3.1/build/index.umd.min.js"></script>
+    <!-- Plotly for 3D -->
+    <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist@2.27.0/plotly.min.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #0a0f1f;
+            --surface-color: #131829;
+            --border-color: #1e2638;
+            --primary-color: #ff6b35;
+            --text-color: #ffffff;
+            --glass-bg: rgba(255, 107, 53, 0.15);
+            --glass-hover-bg: rgba(255, 107, 53, 0.25);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body,
+        html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: linear-gradient(135deg, var(--bg-color) 0%, #1a1a2e 100%);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            color: var(--text-color);
+        }
+
+        .player-wrapper {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .player-container {
+            width: 100%;
+            height: 100%;
+            max-width: 95vw;
+            max-height: 95vh;
+            aspect-ratio: 16/9;
+            display: flex;
+            flex-direction: column;
+            background: var(--surface-color);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .scene-display {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 3%;
+            position: relative;
+        }
+
+        .canvas-wrapper {
+            width: 100%;
+            height: 100%;
+            transition: opacity 0.4s ease;
+        }
+
+        .canvas-wrapper.fade-out {
+            opacity: 0;
+        }
+
+        .title-scene,
+        .end-scene {
+            text-align: center;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .title-scene h1,
+        .end-scene h1 {
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            background: linear-gradient(135deg, var(--text-color) 0%, var(--primary-color) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .chart-highlight {
+            animation: pulse 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.8;
+                transform: scale(1.05);
+            }
+        }
+
+        /* Controls Panel */
+        .controls-panel {
+            height: 120px;
+            background: var(--surface-color);
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            padding: 0 30px;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            width: 60px;
+            height: 60px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: var(--glass-hover-bg);
+            transform: translateY(-2px);
+        }
+
+        .control-btn svg {
+            width: 26px;
+            height: 26px;
+            fill: var(--text-color);
+        }
+
+        .control-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* TTS Controls */
+        .tts-controls {
+            position: absolute;
+            bottom: 0px;
+            right: 20px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 200px;
+            z-index: 100;
+        }
+
+        .tts-voice-selector {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: var(--text-color);
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+
+        .tts-voice-selector:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .tts-slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .tts-slider-label {
+            font-size: 11px;
+            opacity: 0.8;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .tts-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .tts-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+        }
+
+        /* Voice Modal */
+        .voice-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .voice-modal.show {
+            display: flex;
+        }
+
+        .voice-modal-content {
+            background: var(--surface-color);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .voice-modal-header {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .voice-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .voice-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .voice-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .voice-item.selected {
+            border-color: var(--primary-color);
+            background: rgba(255, 107, 53, 0.15);
+        }
+
+        .voice-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .voice-lang {
+            font-size: 12px;
+            opacity: 0.7;
+            margin-top: 4px;
+        }
+
+        .modal-close {
+            background: var(--primary-color);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 16px;
+            width: 100%;
+        }
+
+        /* Audio Visualizer */
+        .audio-visualizer {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 3px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .audio-visualizer.speaking {
+            opacity: 1;
+        }
+
+        .audio-bar {
+            width: 4px;
+            height: 20px;
+            background: var(--primary-color);
+            border-radius: 2px;
+            animation: audioWave 0.8s ease-in-out infinite;
+        }
+
+        .audio-bar:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .audio-bar:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .audio-bar:nth-child(4) {
+            animation-delay: 0.3s;
+        }
+
+        .audio-bar:nth-child(5) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes audioWave {
+
+            0%,
+            100% {
+                transform: scaleY(0.5);
+            }
+
+            50% {
+                transform: scaleY(1.5);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .controls-panel {
+                height: 100px;
+                gap: 12px;
+                padding: 0 20px;
+            }
+
+            .control-btn {
+                width: 50px;
+                height: 50px;
+            }
+
+            .tts-controls {
+                display: none;
+            }
+
+            #stopBtn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="player-wrapper">
+        <div class="player-container">
+            <div class="scene-display" id="sceneDisplay">
+                <div class="canvas-wrapper" id="canvasWrapper"></div>
+
+                <!-- TTS Controls -->
+
+                <!-- Audio Visualizer -->
+                <div class="audio-visualizer" id="audioVisualizer">
+                    <div class="audio-bar"></div>
+                    <div class="audio-bar"></div>
+                    <div class="audio-bar"></div>
+                    <div class="audio-bar"></div>
+                    <div class="audio-bar"></div>
+                </div>
+            </div>
+            <div class="tts-controls" id="ttsControls">
+                <div class="tts-voice-selector" id="voiceSelector">
+                    🔊 Click to select voice
+                </div>
+                <div class="tts-slider-group">
+                    <div class="tts-slider-label">
+                        <span>Speed</span>
+                        <span id="speedValue">1.0x</span>
+                    </div>
+                    <input type="range" class="tts-slider" id="speedSlider" min="0.5" max="2.0" step="0.1" value="1.0">
+                </div>
+                <div class="tts-slider-group">
+                    <div class="tts-slider-label">
+                        <span>Pitch</span>
+                        <span id="pitchValue">1.0</span>
+                    </div>
+                    <input type="range" class="tts-slider" id="pitchSlider" min="0.5" max="2.0" step="0.1" value="1.0">
+                </div>
+            </div>
+
+            <div class="controls-panel">
+                <button class="control-btn" id="prevBtn" title="Previous">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+                    </svg>
+                </button>
+
+                <button class="control-btn" id="playPauseBtn" title="Play/Pause">
+                    <svg id="playIcon" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z" />
+                    </svg>
+                    <svg id="pauseIcon" viewBox="0 0 24 24" style="display:none;">
+                        <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+                    </svg>
+                </button>
+                <button class="control-btn" id="stopBtn" title="Stop TTS">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M6 6h12v12H6z" />
+                    </svg>
+                </button>
+                <button class="control-btn" id="nextBtn" title="Next">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Voice Selection Modal -->
+    <div class="voice-modal" id="voiceModal">
+        <div class="voice-modal-content">
+            <div class="voice-modal-header">Select TTS Voice</div>
+            <div class="voice-list" id="voiceList"></div>
+            <button class="modal-close" id="modalClose">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // ENHANCED TTS MANAGER WITH MANUAL CONTROL
+        // ============================================
+        class EnhancedTTSManager {
+            constructor() {
+                this.currentUtterance = null;
+                this.synth = window.speechSynthesis;
+                this.voices = [];
+                this.voicesLoaded = false;
+                this.selectedVoice = null;
+                this.rate = 1.0;
+                this.pitch = 1.0;
+                this.onEndCallback = null;
+
+                this.loadVoices();
+                if (speechSynthesis.onvoiceschanged !== undefined) {
+                    speechSynthesis.onvoiceschanged = () => this.loadVoices();
+                }
+
+                this.setupControls();
+            }
+
+            loadVoices() {
+                this.voices = this.synth.getVoices();
+                this.voicesLoaded = true;
+                console.log(`✅ Loaded ${this.voices.length} TTS voices`);
+                this.updateVoiceList();
+            }
+
+            setupControls() {
+                const speedSlider = document.getElementById('speedSlider');
+                const pitchSlider = document.getElementById('pitchSlider');
+                const speedValue = document.getElementById('speedValue');
+                const pitchValue = document.getElementById('pitchValue');
+                const voiceSelector = document.getElementById('voiceSelector');
+                const voiceModal = document.getElementById('voiceModal');
+                const modalClose = document.getElementById('modalClose');
+
+                speedSlider.addEventListener('input', (e) => {
+                    this.rate = parseFloat(e.target.value);
+                    speedValue.textContent = this.rate.toFixed(1) + 'x';
+                });
+
+                pitchSlider.addEventListener('input', (e) => {
+                    this.pitch = parseFloat(e.target.value);
+                    pitchValue.textContent = this.pitch.toFixed(1);
+                });
+
+                voiceSelector.addEventListener('click', () => {
+                    voiceModal.classList.add('show');
+                });
+
+                modalClose.addEventListener('click', () => {
+                    voiceModal.classList.remove('show');
+                });
+
+                voiceModal.addEventListener('click', (e) => {
+                    if (e.target === voiceModal) {
+                        voiceModal.classList.remove('show');
+                    }
+                });
+            }
+
+            updateVoiceList() {
+                const voiceList = document.getElementById('voiceList');
+                voiceList.innerHTML = '';
+
+                this.voices.forEach((voice, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'voice-item';
+                    item.innerHTML = `
+                        <div class="voice-name">${voice.name}</div>
+                        <div class="voice-lang">${voice.lang}</div>
+                    `;
+
+                    item.addEventListener('click', () => {
+                        document.querySelectorAll('.voice-item').forEach(el => {
+                            el.classList.remove('selected');
+                        });
+                        item.classList.add('selected');
+                        this.selectedVoice = voice;
+                        document.getElementById('voiceSelector').textContent =
+                            `🔊 ${voice.name.substring(0, 20)}...`;
+                        document.getElementById('voiceModal').classList.remove('show');
+                    });
+
+                    voiceList.appendChild(item);
+                });
+            }
+
+            normalizeLocale(locale) {
+                if (!locale) return 'en-US';
+                return locale.replace('_', '-').toLowerCase();
+            }
+
+            findBestVoice(locale) {
+                if (this.selectedVoice) return this.selectedVoice;
+
+                const normalized = this.normalizeLocale(locale);
+                const [lang, region] = normalized.split('-');
+
+                let voice = this.voices.find(v => v.lang.toLowerCase() === normalized);
+                if (!voice) voice = this.voices.find(v => v.lang.toLowerCase().startsWith(lang + '-'));
+                if (!voice) voice = this.voices.find(v => v.lang.toLowerCase().startsWith(lang));
+                if (!voice) voice = this.voices[0];
+
+                return voice;
+            }
+
+            speak(config) {
+                this.stop();
+
+                const {
+                    text,
+                    locale = 'en-US',
+                    onStart,
+                    onEnd
+                } = config;
+
+                if (!text) return;
+
+                this.onEndCallback = onEnd;
+
+                if (!this.voicesLoaded) {
+                    setTimeout(() => this.speak(config), 100);
+                    return;
+                }
+
+                const utterance = new SpeechSynthesisUtterance(text);
+                const voice = this.findBestVoice(locale);
+
+                utterance.voice = voice;
+                utterance.lang = this.normalizeLocale(locale);
+                utterance.rate = this.rate;
+                utterance.pitch = this.pitch;
+                utterance.volume = 1.0;
+
+                utterance.onstart = () => {
+                    document.getElementById('audioVisualizer').classList.add('speaking');
+                    onStart?.();
+                };
+
+                utterance.onend = () => {
+                    document.getElementById('audioVisualizer').classList.remove('speaking');
+                    this.currentUtterance = null;
+                    if (this.onEndCallback) {
+                        this.onEndCallback();
+                        this.onEndCallback = null;
+                    }
+                };
+
+                utterance.onerror = (event) => {
+                    console.error('❌ TTS Error:', event);
+                    document.getElementById('audioVisualizer').classList.remove('speaking');
+                    this.currentUtterance = null;
+                };
+
+                this.currentUtterance = utterance;
+                this.synth.speak(utterance);
+            }
+
+            stop() {
+                if (this.currentUtterance) {
+                    this.synth.cancel();
+                    this.currentUtterance = null;
+                    document.getElementById('audioVisualizer').classList.remove('speaking');
+                }
+            }
+
+            isSpeaking() {
+                return this.synth.speaking;
+            }
+        }
+
+        const ttsManager = new EnhancedTTSManager();
+
+        // ============================================
+        // COMPLETE PRESENTATION DATA
+        // ============================================
+        let presentationData = {
+            theme: {
+                "--bg-color": "#0a0f1f",
+                "--surface-color": "#131829",
+                "--primary-color": "#ff6b35"
+            },
+            sceneOrder: [
+                "intro",
+                "line_simple",
+                "line_multi_grid",
+                "bar_chart",
+                "pie_chart",
+                "doughnut_chart",
+                "venn_diagram",
+                "funnel_chart",
+                "waterfall_chart",
+                "radar_chart",
+                "scatter_quadrant",
+                "bubble_chart",
+                "polararea_chart",
+                "line3d_chart",
+                "conclusion"
+            ],
+            scenes: {
+                intro: {
+                    id: "intro",
+                    type: "title",
+                    content: {
+                        title: "Complete Visualization Suite",
+                        tts: {
+                            locale: "en-IN",
+                            text: "Welcome to the complete data visualization suite. We will explore all chart types including graph paper style charts, funnel analysis, radar comparisons, and three-dimensional visualizations."
+                        }
+                    }
+                },
+
+                line_simple: {
+                    id: "line_simple",
+                    type: "chart",
+                    content: {
+                        title: "Graph Paper - Single Line",
+                        chartType: "line",
+                        chartData: {
+                            labels: [-10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10],
+                            datasets: [{
+                                label: "f(x) = 2x + 3",
+                                data: [-17, -13, -9, -5, -1, 3, 7, 11, 15, 19, 23],
+                                borderColor: "rgb(255, 107, 53)",
+                                backgroundColor: "transparent",
+                                borderWidth: 3,
+                                pointRadius: 5,
+                                pointHoverRadius: 7,
+                                pointBackgroundColor: "rgb(255, 107, 53)",
+                                tension: 0
+                            }]
+                        },
+                        chartOptions: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    labels: {
+                                        color: "#ffffff",
+                                        font: {
+                                            size: 14
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    type: "linear",
+                                    position: "center",
+                                    min: -10,
+                                    max: 10,
+                                    ticks: {
+                                        stepSize: 2,
+                                        color: "#ffffff"
+                                    },
+                                    grid: {
+                                        color: "rgba(255, 255, 255, 0.15)",
+                                        drawBorder: true,
+                                        lineWidth: 1
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: "X Axis",
+                                        color: "#ffffff"
+                                    }
+                                },
+                                y: {
+                                    type: "linear",
+                                    position: "center",
+                                    min: -20,
+                                    max: 25,
+                                    ticks: {
+                                        stepSize: 5,
+                                        color: "#ffffff"
+                                    },
+                                    grid: {
+                                        color: "rgba(255, 255, 255, 0.15)",
+                                        drawBorder: true,
+                                        lineWidth: 1
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: "Y Axis",
+                                        color: "#ffffff"
+                                    }
+                                }
+                            }
+                        },
+                        tts: {
+                            locale: "en-IN",
+                            text: "This is a graph paper style chart showing a single linear function. The equation is f of x equals 2x plus 3. The graph crosses the y-axis at 3 and has a positive slope of 2. Notice how the grid lines create a proper coordinate system with both positive and negative values on both axes."
+                        }
+                    }
+                },
+
+                line_multi_grid: {
+                    id: "line_multi_grid",
+                    type: "chart",
+                    content: {
+                        title: "Graph Paper - Multiple Functions",
+                        chartType: "line",
+                        chartData: {
+                            labels: [-10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10],
+                            datasets: [{
+                                    label: "Linear: y = x",
+                                    data: [-10, -8, -6, -4, -2, 0, 2, 4, 6, 8, 10],
+                                    borderColor: "rgb(255, 107, 53)",
+                                    backgroundColor: "transparent",
+                                    borderWidth: 3,
+                                    pointRadius: 4,
+                                    tension: 0
+                                },
+                                {
+                                    label: "Quadratic: y = 0.5x²",
+                                    data: [50, 32, 18, 8, 2, 0, 2, 8, 18, 32, 50],
+                                    borderColor: "rgb(0, 217, 255)",
+                                    backgroundColor: "transparent",
+                                    borderWidth: 3,
+                                    pointRadius: 4,
+                                    tension: 0.3
+                                },
+                                {
+                                    label: "Inverse: y = -x",
+                                    data: [10, 8, 6, 4, 2, 0, -2, -4, -6, -8, -10],
+                                    borderColor: "rgb(50, 215, 75)",
+                                    backgroundColor: "transparent",
+                                    borderWidth: 3,
+                                    pointRadius: 4,
+                                    tension: 0
+                                }
+                            ]
+                        },
+                        chartOptions: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: "top",
+                                    labels: {
+                                        color: "#ffffff",
+                                        font: {
+                                            size: 13
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    type: "linear",
+                                    position: "center",
+                                    min: -10,
+                                    max: 10,
+                                    ticks: {
+                                        stepSize: 2,
+                                        color: "#ffffff"
+                                    },
+                                    grid: {
+                                        color: "rgba(255, 255, 255, 0.15)",
+                                        drawBorder: true,
+                                        lineWidth: 2
+                                    }
+                                },
+                                y: {
+                                    type: "linear",
+                                    position: "center",
+                                    min: -15,
+                                    max: 55,
+                                    ticks: {
+                                        stepSize: 10,
+                                        color: "#ffffff"
+                                    },
+                                    grid: {
+                                        color: "rgba(255, 255, 255, 0.15)",
+                                        drawBorder: true,
+                                        lineWidth: 2
+                                    }
+                                }
+                            }
+                        },
+                        tts: {
+                            locale: "en-IN",
+                            text: "Here we have multiple functions plotted on the same graph paper. The orange line shows a linear function y equals x, passing through the origin. The cyan curve represents a quadratic function y equals 0.5 x squared, forming a parabola. The green line shows the inverse function y equals negative x. All three functions intersect at the origin, demonstrating different mathematical relationships."
+                        }
+                    }
+                },
+
+                bar_chart: {
+                    id: "bar_chart",
+                    type: "chart",
+                    content: {
+                        title: "Bar Chart - Departmental Performance",
+                        chartType: "bar",
+                        chartData: {
+                            labels: ["Marketing", "Sales", "Tech", "Finance", "HR"],
+                            datasets: [{
+                                label: "Target Achievement (%)",
+                                data: [85, 92, 78, 88, 95],
+                                backgroundColor: [
+                                    "rgba(0, 217, 255, 0.8)",
+                                    "rgba(255, 107, 53, 0.8)",
+                                    "rgba(255, 217, 61, 0.8)",
+                                    "rgba(123, 97, 255, 0.8)",
+                                    "rgba(50, 215, 75, 0.8)"
+                                ],
+                                borderColor: [
+                                    "rgb(0, 217, 255)",
+                                    "rgb(255, 107, 53)",
+                                    "rgb(255, 217, 61)",
+                                    "rgb(123, 97, 255)",
+                                    "rgb(50, 215, 75)"
+                                ],
+                                borderWidth: 2,
+                                borderRadius: 8
+                            }]
+                        },
+                        chartOptions: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    ticks: {
+                                        color: "#ffffff"
+                                    },
+                                    grid: {
+                                        display: false
+                                    }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    max: 100,
+                                    ticks: {
+                                        color: "#ffffff"
+                                    },
+                                    grid: {
+                                        color: "rgba(255, 255, 255, 0.1)"
+                                    }
+                                }
+                            }
+                        },
+                        tts: {
+                            locale: "en-IN",
+                            text: "This bar chart displays departmental performance across five departments. Human Resources leads with 95 percent achievement, shown in green. Sales follows at 92 percent in orange. Finance achieved 88 percent, Marketing reached 85 percent, and Technology has 78 percent, indicating room for improvement."
+                        }
+                    }
+                },
+
+                pie_chart: {
+                    id: "pie_chart",
+                    type: "chart",
+                    content: {
+                        title: "Pie Chart - Market Share Distribution",
+                        chartType: "pie",
+                        chartData: {
+                            labels: ["Product A", "Product B", "Product C", "Product D", "Others"],
+                            datasets: [{
+                                data: [35, 25, 20, 12, 8],
+                                backgroundColor: [
+                                    "rgba(255, 107, 53, 0.9)",
+                                    "rgba(0, 217, 255, 0.9)",
+                                    "rgba(255, 217, 61, 0.9)",
+                                    "rgba(123, 97, 255, 0.9)",
+                                    "rgba(50, 215, 75, 0.9)"
+                                ],
+                                borderWidth: 3,
+                                borderColor: "#131829"
+                            }]
+                        },
+                        chartOptions: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: "right",
+                                    labels: {
+                                        color: "#ffffff",
+                                        font: {
+                                            size: 14
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        tts: {
+                            locale: "en-IN",
+                            text: "The pie chart illustrates our market share distribution. Product A dominates with 35 percent shown in orange. Product B holds 25 percent in cyan. Product C accounts for 20 percent in yellow. Product D has 12 percent in purple. The remaining 8 percent is distributed among other products shown in green."
+                        }
+                    }
+                },
+
+                doughnut_chart: {
+                    id: "doughnut_chart",
+                    type: "chart",
+                    content: {
+                        title: "Doughnut Chart - Budget Allocation",
+                        chartType: "doughnut",
+                        chartData: {
+                            labels: ["Research", "Development", "Marketing", "Operations", "Training"],
+                            datasets: [{
+                                data: [120, 180, 150, 200, 80],
+                                backgroundColor: [
+                                    "rgba(255, 107, 53, 0.85)",
+                                    "rgba(0, 217, 255, 0.85)",
+                                    "rgba(255, 217, 61, 0.85)",
+                                    "rgba(123, 97, 255, 0.85)",
+                                    "rgba(50, 215, 75, 0.85)"
+                                ],
+                                borderWidth: 4,
+                                borderColor: "#131829",
+                                hoverOffset: 15
+                            }]
+                        },
+                        chartOptions: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: "bottom",
+                                    labels: {
+                                        color: "#ffffff",
+                                        padding: 15
+                                    }
+                                }
+                            },
+                            cutout: "65%"
+                        },
+                        tts: {
+                            locale: "en-IN",
+                            text: "This doughnut chart represents our annual budget allocation. Operations receives the largest share at 200 million. Development gets 180 million. Marketing is allocated 150 million. Research receives 120 million. Training has the smallest allocation at 80 million."
+                        }
+                    }
+                },
+
+                venn_diagram: {
+                    id: "venn_diagram",
+                    type: "chart",
+                    content: {
+                        title: "Venn Diagram - Skill Overlaps",
+                        chartType: "venn",
+                        chartData: {
+                            datasets: [{
+                                label: "Skills",
+                                data: [{
+                                        sets: ["Python"],
+                                        value: 45
+                                    },
+                                    {
+                                        sets: ["JavaScript"],
+                                        value: 50
+                                    },
+                                    {
+                                        sets: ["Java"],
+                                        value: 40
+                                    },
+                                    {
+                                        sets: ["Python", "JavaScript"],
+                                        value: 18
+                                    },
+                                    {
+                                        sets: ["Python", "Java"],
+                                        value: 15
+                                    },
+                                    {
+                                        sets: ["JavaScript", "Java"],
+                                        value: 12
+                                    },
+                                    {
+                                        sets: ["Python", "JavaScript", "Java"],
+                                        value: 8
+                                    }
+                                ]
+                            }]
+                        },
+                        tts: {
+                            locale: "en-IN",
+                            text: "The Venn diagram shows technology skill overlaps among our developers. 45 know Python, 50 know JavaScript, and 40 know Java. 18 developers are skilled in both Python and JavaScript. 15 know Python and Java. 12 are proficient in JavaScript and Java. Most impressively, 8 developers are experts in all three languages."
+                        }
+                    }
+                },
+
+                funnel_chart: {
+                    id: "funnel_chart",
+                    type: "chart",
+                    content: {
+                        title: "Funnel Chart - Sales Conversion",
+                        chartType: "funnel",
+                        chartData: {
+                            labels: ["Website Visitors", "Leads", "Qualified", "Proposals", "Negotiations", "Closed"],
+                            datasets: [{
+                                data: [50000, 12000, 5000, 2000, 800, 350],
+                                backgroundColor: [
+                                    "rgba(255, 107, 53, 0.95)",
+                                    "rgba(255, 107, 53, 0.85)",
+                                    "rgba(255, 107, 53, 0.75)",
+                                    "rgba(255, 107, 53, 0.65)",
+                                    "rgba(255, 107, 53, 0.55)",
+                                    "rgba(255, 107, 53, 0.45)"
+                                ],
+                                borderColor: "rgb(255, 107, 53)",
+                                borderWidth: 2
+                            }]
+                        },
+                        tts: {
+                            locale: "en-IN",
+                            text: "This funnel chart visualizes our sales conversion process. We start with 50 thousand website visitors. 12 thousand become leads. 5 thousand are qualified prospects. 2 thousand receive proposals. 800 enter negotiations. Finally, 350 deals are closed, resulting in a 0.7 percent overall conversion rate."
+                        }
+                    }
+                },
+
+                waterfall_chart: {
+                    id: "waterfall_chart",
+                    type: "chart",
+                    content: {
+                        title: "Waterfall Chart - Revenue Changes",
+                        chartType: "waterfall",
+                        chartData: {
+                            labels: ["Q1", "New Sales", "Renewals", "Upsells", "Churn", "Discounts", "Q2"],
+                            datasets: [{
+                                data: [850, 180, 120, 75, -95, -45, 1085],
+                                backgroundColor: [
+                                    "rgba(0, 217, 255, 0.8)",
+                                    "rgba(50, 215, 75, 0.8)",
+                                    "rgba(50, 215, 75, 0.8)",
+                                    "rgba(50, 215, 75, 0.8)",
+                                    "rgba(255, 69, 58, 0.8)",
+                                    "rgba(255, 69, 58, 0.8)",
+                                    "rgba(123, 97, 255, 0.8)"
+                                ]
+                            }]
+                        },
+                        tts: {
+                            locale: "en-IN",
+                            text: "The waterfall chart shows revenue progression from Q1 to Q2. Starting at 850 million, we added 180 million from new sales, 120 million from renewals, and 75 million from upsells. We lost 95 million to churn and 45 million to discounts. Final Q2 revenue stands at 1085 million, a growth of 235 million."
+                        }
+                    }
+                },
+
+                radar_chart: {
+                    id: "radar_chart",
+                    type: "chart",
+                    content: {
+                        title: "Radar Chart - Team Skills Comparison",
+                        chartType: "radar",
+                        chartData: {
+                            labels: ["Leadership", "Communication", "Technical", "Creativity", "Teamwork", "Problem Solving"],
+                            datasets: [{
+                                    label: "Team A",
+                                    data: [88, 85, 92, 78, 90, 85],
+                                    backgroundColor: "rgba(255, 107, 53, 0.25)",
+                                    borderColor: "rgb(255, 107, 53)",
+                                    borderWidth: 3,
+                                    pointRadius: 5
+                                },
+                                {
+                                    label: "Team B",
+                                    data: [80, 92, 85, 90, 82, 88],
+                                    backgroundColor: "rgba(0, 217, 255, 0.25)",
+                                    borderColor: "rgb(0, 217, 255)",
+                                    borderWidth: 3,
+                                    pointRadius: 5
+                                }
+                            ]
+                        },
+                        chartOptions: {
+                            scales: {
+                                r: {
+                                    beginAtZero: true,
+                                    max: 100,
+                                    ticks: {
+                                        color: "#ffffff",
+                                        backdropColor: "transparent"
+                                    },
+                                    grid: {
+                                        color: "rgba(255, 255, 255, 0.15)"
+                                    },
+                                    pointLabels: {
+                                        color: "#ffffff"
+                                    }
+                                }
+                            }
+                        },
+                        tts: {
+                            locale: "en-IN",
+                            text: "The radar chart compares two teams across six skill dimensions. Team A, shown in orange, excels in technical skills with 92 points and teamwork with 90 points. Team B, in cyan, leads in communication at 92 and creativity at 90. Both teams show balanced capabilities across all areas."
+                        }
+                    }
+                },
+
+                scatter_quadrant: {
+                    id: "scatter_quadrant",
+                    type: "chart",
+                    content: {
+                        title: "Quadrant Analysis - Product Positioning",
+                        chartType: "scatter",
+                        chartData: {
+                            datasets: [{
+                                label: "Products",
+                                data: [{
+                                        x: 55,
+                                        y: 42
+                                    }, {
+                                        x: -30,
+                                        y: 55
+                                    },
+                                    {
+                                        x: -45,
+                                        y: -38
+                                    }, {
+                                        x: 65,
+                                        y: -22
+                                    },
+                                    {
+                                        x: 38,
+                                        y: 48
+                                    }, {
+                                        x: -18,
+                                        y: -28
+                                    }
+                                ],
+                                backgroundColor: [
+                                    "rgba(255, 107, 53, 0.7)",
+                                    "rgba(0, 217, 255, 0.7)",
+                                    "rgba(255, 217, 61, 0.7)",
+                                    "rgba(123, 97, 255, 0.7)",
+                                    "rgba(50, 215, 75, 0.7)",
+                                    "rgba(255, 105, 180, 0.7)"
+                                ],
+                                pointRadius: 10,
+                                pointHoverRadius: 14
+                            }]
+                        },
+                        chartOptions: {
+                            scales: {
+                                x: {
+                                    type: "linear",
+                                    position: "center",
+                                    min: -100,
+                                    max: 100,
+                                    title: {
+                                        display: true,
+                                        text: "Market Share Change",
+                                        color: "#ffffff"
+                                    },
+                                    ticks: {
+                                        color: "#ffffff"
+                                    },
+                                    grid: {
+                                        color: "rgba(255, 255, 255, 0.15)",
+                                        lineWidth: 2
+                                    }
+                                },
+                                y: {
+                                    type: "linear",
+                                    position: "center",
+                                    min: -100,
+                                    max: 100,
+                                    title: {
+                                        display: true,
+                                        text: "Revenue Growth",
+                                        color: "#ffffff"
+                                    },
+                                    ticks: {
+                                        color: "#ffffff"
+                                    },
+                                    grid: {
+                                        color: "rgba(255, 255, 255, 0.15)",
+                                        lineWidth: 2
+                                    }
+                                }
+                            }
+                        },
+                        tts: {
+                            locale: "en-IN",
+                            text: "The quadrant analysis positions products across market share and revenue growth axes. Products in the top-right quadrant show positive growth in both dimensions. The cyan product demonstrates high revenue growth despite market share decline. Products in the bottom-left quadrant require strategic attention."
+                        }
+                    }
+                },
+
+                bubble_chart: {
+                    id: "bubble_chart",
+                    type: "chart",
+                    content: {
+                        title: "Bubble Chart - Investment Analysis",
+                        chartType: "bubble",
+                        chartData: {
+                            datasets: [{
+                                data: [{
+                                        x: 60,
+                                        y: 75,
+                                        r: 25
+                                    },
+                                    {
+                                        x: 40,
+                                        y: 55,
+                                        r: 15
+                                    },
+                                    {
+                                        x: 85,
+                                        y: 82,
+                                        r: 30
+                                    },
+                                    {
+                                        x: 25,
+                                        y: 40,
+                                        r: 10
+                                    },
+                                    {
+                                        x: 70,
+                                        y: 65,
+                                        r: 20
+                                    }
+                                ],
+                                backgroundColor: [
+                                    "rgba(255, 107, 53, 0.6)",
+                                    "rgba(0, 217, 255, 0.6)",
+                                    "rgba(255, 217, 61, 0.6)",
+                                    "rgba(123, 97, 255, 0.6)",
+                                    "rgba(50, 215, 75, 0.6)"
+                                ]
+                            }]
+                        },
+                        chartOptions: {
+                            scales: {
+                                x: {
+                                    title: {
+                                        display: true,
+                                        text: "ROI",
+                                        color: "#ffffff"
+                                    }
+                                },
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: "Risk Score",
+                                        color: "#ffffff"
+                                    }
+                                }
+                            }
+                        },
+                        tts: {
+                            locale: "en-IN",
+                            text: "The bubble chart analyzes five investment projects. Bubble size represents investment amount. The largest project in yellow has 85 percent ROI and 82 risk score. The smallest purple project has lower returns but also lower risk. The orange bubble shows a balanced approach."
+                        }
+                    }
+                },
+
+                polararea_chart: {
+                    id: "polararea_chart",
+                    type: "chart",
+                    content: {
+                        title: "Polar Area - Regional Sales",
+                        chartType: "polarArea",
+                        chartData: {
+                            labels: ["North", "South", "East", "West", "Central"],
+                            datasets: [{
+                                data: [65, 85, 70, 55, 75],
+                                backgroundColor: [
+                                    "rgba(255, 107, 53, 0.7)",
+                                    "rgba(0, 217, 255, 0.7)",
+                                    "rgba(255, 217, 61, 0.7)",
+                                    "rgba(123, 97, 255, 0.7)",
+                                    "rgba(50, 215, 75, 0.7)"
+                                ]
+                            }]
+                        },
+                        tts: {
+                            locale: "en-IN",
+                            text: "The polar area chart displays regional sales performance. South region leads with 85 million, shown in cyan. Central region follows with 75 million in green. East has 70 million, North 65 million, and West region records 55 million, the lowest among all regions."
+                        }
+                    }
+                },
+
+                line3d_chart: {
+                    id: "line3d_chart",
+                    type: "chart",
+                    content: {
+                        title: "3D Line - Performance Trajectory",
+                        chartType: "line3d",
+                        chartData: {
+                            x: [0, 1, 2, 3, 4, 5, 6, 7],
+                            y: [15, 28, 42, 55, 62, 75, 88, 95],
+                            z: [25, 38, 45, 60, 72, 80, 90, 100],
+                            mode: "lines+markers",
+                            type: "scatter3d",
+                            marker: {
+                                size: 8,
+                                color: "rgba(255, 107, 53, 0.8)"
+                            },
+                            line: {
+                                color: "rgba(255, 107, 53, 0.9)",
+                                width: 5
+                            }
+                        },
+                        chartOptions: {
+                            scene: {
+                                xaxis: {
+                                    title: "Time (Months)",
+                                    color: "#ffffff"
+                                },
+                                yaxis: {
+                                    title: "Sales (Million)",
+                                    color: "#ffffff"
+                                },
+                                zaxis: {
+                                    title: "Profit (Million)",
+                                    color: "#ffffff"
+                                }
+                            }
+                        },
+                        tts: {
+                            locale: "en-IN",
+                            text: "The three-dimensional line chart visualizes our performance trajectory over eight months across time, sales, and profit dimensions. Sales grew from 15 million to 95 million. Profit increased from 25 million to 100 million. The trajectory shows consistent upward momentum in all dimensions."
+                        }
+                    }
+                },
+
+                conclusion: {
+                    id: "conclusion",
+                    type: "end",
+                    content: {
+                        title: "Complete Suite Demonstrated",
+                        tts: {
+                            locale: "en-IN",
+                            text: "Thank you for exploring our complete visualization suite. We demonstrated graph paper style charts with single and multiple functions, traditional charts including bar, pie, doughnut, and venn diagrams, advanced charts like funnel, waterfall, radar, scatter quadrant, bubble, and polar area, plus three-dimensional visualizations. All charts support manual TTS control with voice selection and speed pitch adjustment."
+                        }
+                    }
+                }
+            }
+        };
+        /**
+         * Simple Data Updater
+         * Updates the constant variable with data from URL hash
+         * If no URL data, does nothing - keeps original data
+         * 
+         * Place this AFTER your constant declaration:
+         * const presentationData = {...};
+         * // Then add this script
+         */
+
+        (function() {
+            const hash = window.location.hash;
+            if (!hash || !hash.includes('#data=')) return;
+
+            try {
+                const encodedData = hash.substring(hash.indexOf('#data=') + 6);
+                const jsonString = decodeURIComponent(encodedData);
+                presentationData = JSON.parse(jsonString);
+                console.log('✓ Data loaded from URL');
+            } catch (error) {
+                console.error('Failed to load data:', error);
+            }
+        })();
+        // ============================================
+        // CHART RENDERERS WITH HIGHLIGHTING
+        // ============================================
+
+        function renderFunnelChart(container, data) {
+            const canvas = document.createElement('canvas');
+            container.appendChild(canvas);
+
+            new Chart(canvas, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        data: data.datasets[0].data,
+                        backgroundColor: data.datasets[0].backgroundColor,
+                        borderColor: data.datasets[0].borderColor,
+                        borderWidth: data.datasets[0].borderWidth,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: '#ffffff'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                color: '#ffffff',
+                                font: {
+                                    size: 13
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderWaterfallChart(container, data) {
+            const canvas = document.createElement('canvas');
+            container.appendChild(canvas);
+
+            const values = data.datasets[0].data;
+            let cumulative = 0;
+            const chartData = values.map((val, idx) => {
+                if (idx === 0 || idx === values.length - 1) {
+                    cumulative = val;
+                    return val;
+                } else {
+                    cumulative += val;
+                    return cumulative;
+                }
+            });
+
+            new Chart(canvas, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        data: chartData,
+                        backgroundColor: data.datasets[0].backgroundColor,
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: '#ffffff'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        },
+                        y: {
+                            ticks: {
+                                color: '#ffffff'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function render3DLineChart(container, data, options) {
+            const plotDiv = document.createElement('div');
+            plotDiv.style.width = '100%';
+            plotDiv.style.height = '100%';
+            container.appendChild(plotDiv);
+
+            const trace = {
+                x: data.x,
+                y: data.y,
+                z: data.z,
+                mode: data.mode,
+                type: data.type,
+                marker: data.marker,
+                line: data.line
+            };
+
+            const layout = {
+                scene: options.scene || {},
+                paper_bgcolor: 'rgba(19, 24, 41, 0)',
+                plot_bgcolor: 'rgba(19, 24, 41, 0)',
+                margin: {
+                    l: 0,
+                    r: 0,
+                    t: 0,
+                    b: 0
+                },
+                font: {
+                    color: '#ffffff'
+                }
+            };
+
+            Plotly.newPlot(plotDiv, [trace], layout, {
+                responsive: true
+            });
+        }
+
+        // ============================================
+        // SCENE MANAGER WITH AUTO-PROGRESSION
+        // ============================================
+        class SceneManager {
+            constructor(data) {
+                this.data = data;
+                this.currentSceneIndex = 0;
+                this.isPlaying = false;
+                this.currentChart = null;
+            }
+
+            getCurrentScene() {
+                const sceneId = this.data.sceneOrder[this.currentSceneIndex];
+                return this.data.scenes[sceneId];
+            }
+
+            renderScene(scene) {
+                const wrapper = document.getElementById('canvasWrapper');
+                wrapper.classList.add('fade-out');
+
+                setTimeout(() => {
+                    wrapper.innerHTML = '';
+
+                    if (scene.type === 'title' || scene.type === 'end') {
+                        const div = document.createElement('div');
+                        div.className = scene.type === 'title' ? 'title-scene' : 'end-scene';
+                        div.innerHTML = `<h1>${scene.content.title}</h1>`;
+                        wrapper.appendChild(div);
+                    } else if (scene.type === 'chart') {
+                        const container = document.createElement('div');
+                        container.className = 'chart-container';
+                        wrapper.appendChild(container);
+
+                        const {
+                            chartType,
+                            chartData,
+                            chartOptions
+                        } = scene.content;
+
+                        if (chartType === 'funnel') {
+                            renderFunnelChart(container, chartData);
+                        } else if (chartType === 'waterfall') {
+                            renderWaterfallChart(container, chartData);
+                        } else if (chartType === 'line3d') {
+                            render3DLineChart(container, chartData, chartOptions);
+                        } else if (chartType === 'venn') {
+                            const canvas = document.createElement('canvas');
+                            container.appendChild(canvas);
+                            new Chart(canvas, {
+                                type: 'venn',
+                                data: chartData,
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: {
+                                            labels: {
+                                                color: '#ffffff'
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                        } else {
+                            const canvas = document.createElement('canvas');
+                            container.appendChild(canvas);
+                            new Chart(canvas, {
+                                type: chartType,
+                                data: chartData,
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    ...chartOptions,
+                                    plugins: {
+                                        ...chartOptions?.plugins,
+                                        legend: {
+                                            ...chartOptions?.plugins?.legend,
+                                            labels: {
+                                                ...chartOptions?.plugins?.legend?.labels,
+                                                color: '#ffffff'
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }
+
+                    wrapper.classList.remove('fade-out');
+                }, 300);
+            }
+
+            nextScene() {
+                if (this.currentSceneIndex < this.data.sceneOrder.length - 1) {
+                    this.currentSceneIndex++;
+                    this.renderScene(this.getCurrentScene());
+                    return true;
+                }
+                return false;
+            }
+
+            prevScene() {
+                if (this.currentSceneIndex > 0) {
+                    this.currentSceneIndex--;
+                    this.renderScene(this.getCurrentScene());
+                    return true;
+                }
+                return false;
+            }
+
+            play() {
+                if (this.isPlaying) return;
+
+                this.isPlaying = true;
+                const scene = this.getCurrentScene();
+
+                if (scene.content.tts) {
+                    // Speak and auto-advance when done
+                    ttsManager.speak({
+                        text: scene.content.tts.text,
+                        locale: scene.content.tts.locale || 'en-US',
+                        onEnd: () => {
+                            if (this.isPlaying) {
+                                setTimeout(() => {
+                                    if (!this.nextScene()) {
+                                        this.pause();
+                                        updatePlayButton();
+                                    } else if (this.isPlaying) {
+                                        this.play();
+                                    }
+                                }, 500);
+                            }
+                        }
+                    });
+                } else {
+                    // No TTS, just wait 3 seconds
+                    setTimeout(() => {
+                        if (this.isPlaying) {
+                            if (!this.nextScene()) {
+                                this.pause();
+                                updatePlayButton();
+                            } else {
+                                this.play();
+                            }
+                        }
+                    }, 3000);
+                }
+            }
+
+            pause() {
+                this.isPlaying = false;
+                ttsManager.stop();
+            }
+        }
+
+        // ============================================
+        // INITIALIZE
+        // ============================================
+        const sceneManager = new SceneManager(presentationData);
+
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const playIcon = document.getElementById('playIcon');
+        const pauseIcon = document.getElementById('pauseIcon');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const stopBtn = document.getElementById('stopBtn');
+
+        function updatePlayButton() {
+            if (sceneManager.isPlaying) {
+                playIcon.style.display = 'none';
+                pauseIcon.style.display = 'block';
+            } else {
+                playIcon.style.display = 'block';
+                pauseIcon.style.display = 'none';
+            }
+        }
+
+        playPauseBtn.addEventListener('click', () => {
+            if (sceneManager.isPlaying) {
+                sceneManager.pause();
+            } else {
+                sceneManager.play();
+            }
+            updatePlayButton();
+        });
+
+        prevBtn.addEventListener('click', () => {
+            sceneManager.pause();
+            sceneManager.prevScene();
+            updatePlayButton();
+        });
+
+        nextBtn.addEventListener('click', () => {
+            sceneManager.pause();
+            sceneManager.nextScene();
+            updatePlayButton();
+        });
+
+        stopBtn.addEventListener('click', () => {
+            ttsManager.stop();
+            sceneManager.pause();
+            updatePlayButton();
+        });
+
+        // Render first scene
+        sceneManager.renderScene(sceneManager.getCurrentScene());
+
+        console.log('✅ Complete Presentation System Ready');
+        console.log(`📊 ${presentationData.sceneOrder.length} scenes loaded`);
+        console.log('🎨 All chart types available');
+        console.log('🔊 Manual TTS control enabled');
+        console.log('⚙️ Voice selection & speed/pitch control active');
+    </script>
+</body>
+
+</html>
