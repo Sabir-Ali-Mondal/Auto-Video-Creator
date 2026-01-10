@@ -1,0 +1,947 @@
+<div id="VisualContainer-mechanism" class="visual-template">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        /* Scoped CSS Variables and Base Styles */
+        #VisualContainer-mechanism {
+            --mechanism-primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --mechanism-primary-solid: #667eea;
+            --mechanism-secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --mechanism-accent: #f093fb;
+            --mechanism-dark-bg: #0a0e27;
+            --mechanism-darker-bg: #060814;
+            --mechanism-card-bg: rgba(255, 255, 255, 0.03);
+            --mechanism-glass-border: rgba(255, 255, 255, 0.12);
+            --mechanism-text-primary: #ffffff;
+            --mechanism-text-secondary: #a0aec0;
+            --mechanism-shadow-glow: 0 0 30px rgba(102, 126, 234, 0.35);
+            --mechanism-radius-md: 12px;
+            --mechanism-radius-lg: 16px;
+            --mechanism-radius-xl: 24px;
+
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: var(--mechanism-darker-bg);
+            color: var(--mechanism-text-primary);
+            font-family: 'Inter', sans-serif;
+            overflow-y: auto;
+            z-index: 1;
+        }
+
+        #VisualContainer-mechanism * {
+            margin: 0;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+
+        #VisualContainer-mechanism::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at 20% 30%, rgba(102, 126, 234, 0.18) 0%, transparent 50%), radial-gradient(ellipse at 80% 70%, rgba(118, 75, 162, 0.18) 0%, transparent 50%), radial-gradient(ellipse at 50% 50%, rgba(245, 87, 108, 0.10) 0%, transparent 50%);
+            animation: mechanism-bgPulse 16s ease-in-out infinite;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes mechanism-bgPulse {
+
+            0%,
+            100% {
+                opacity: .6;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        #mechanism-overviewContainer {
+            position: relative;
+            z-index: 1;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .mechanism-message-state {
+            text-align: center;
+            margin: 15vh auto;
+            max-width: 600px;
+        }
+
+        .mechanism-message-state .mechanism-icon {
+            font-size: 4.6rem;
+            margin-bottom: 1rem;
+            background: var(--mechanism-primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .mechanism-message-state h2 {
+            font-size: 2.1rem;
+            font-weight: 900;
+        }
+
+        .mechanism-message-state p {
+            color: var(--mechanism-text-secondary);
+        }
+
+        .mechanism-step-container {
+            background: var(--mechanism-card-bg);
+            border: 1px solid var(--mechanism-glass-border);
+            border-radius: var(--mechanism-radius-xl);
+            padding: 2.2rem;
+            margin: 0 auto 2.2rem auto;
+            max-width: 1000px;
+            animation: mechanism-fadeInScale .45s ease;
+        }
+
+        @keyframes mechanism-fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(.965)
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1)
+            }
+        }
+
+        .mechanism-step-container h3 {
+            margin: 0 0 .7rem 0;
+            font-size: 1.6rem;
+            font-weight: 900;
+            background: var(--mechanism-primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .mechanism-step-container p {
+            margin: 0 0 1.3rem 0;
+            color: var(--mechanism-text-secondary);
+            line-height: 1.8;
+        }
+
+        .mechanism-badge-row {
+            display: flex;
+            gap: .5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+
+        .mechanism-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            padding: .35rem .6rem;
+            border-radius: 999px;
+            font-size: .78rem;
+            border: 1px solid var(--mechanism-glass-border);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .mechanism-canvas-box {
+            position: relative;
+            width: 100%;
+            height: 340px;
+            border: 1px solid var(--mechanism-glass-border);
+            background: rgba(0, 0, 0, .35);
+            border-radius: var(--mechanism-radius-lg);
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            cursor: grab;
+        }
+
+        .mechanism-canvas-controls {
+            position: absolute;
+            top: .75rem;
+            right: .75rem;
+            z-index: 5;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .mechanism-btn-control {
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            backdrop-filter: blur(5px);
+            transition: background 0.2s;
+        }
+
+        .mechanism-btn-control:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .mechanism-step-divider {
+            text-align: center;
+            font-size: 3.2rem;
+            background: var(--mechanism-primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0 auto 1.6rem auto;
+            max-width: 1000px;
+        }
+
+        /* --- TTS UI Styles (Smallified and Adapted) --- */
+ 
+.visualsuite-tts-controls {
+    position: fixed;
+    top: 25px;
+    left: 25px;
+    width: 55px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10%;
+    background: linear-gradient(45deg, #FFD54F, #FF8C00);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    cursor: pointer;
+    z-index: 1001;
+    transition: 0.3s;
+}
+
+.visualsuite-tts-controls:hover {
+    transform: scale(1.08);
+}
+
+#visualsuite-voiceSelector {
+    font-size: 12px;
+    background: none;
+    border: none;
+    color: #111;
+    cursor: pointer;
+}
+
+
+        .visualsuite-control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+
+
+        #visualsuite-audioVisualizer.visualsuite-speaking::after {
+            content: '';
+            display: block;
+            height: 100%;
+            background: linear-gradient(90deg, #FFD54F 0%, #FF8C00 100%);
+            width: 100%;
+            animation: visualsuite-wave 1.5s infinite linear;
+        }
+
+        @keyframes visualsuite-wave {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        /* Voice Modal */
+        .visualsuite-modal {
+            display: none;
+            position: fixed;
+            /* Must remain fixed to cover the entire viewport */
+            z-index: 1200;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .visualsuite-modal.visualsuite-show {
+            display: flex;
+        }
+
+        .visualsuite-modal-content {
+            background: #1a1a2e;
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 350px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .visualsuite-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .visualsuite-modal-header h4 {
+            margin: 0;
+            color: var(--mechanism-accent);
+        }
+
+        .visualsuite-close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .visualsuite-voice-item {
+            padding: 8px;
+            margin-bottom: 4px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .visualsuite-voice-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .visualsuite-voice-item.visualsuite-selected {
+            background: #3a3a5a;
+            border-color: var(--mechanism-accent);
+        }
+
+        .visualsuite-voice-name {
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .visualsuite-voice-lang {
+            font-size: 11px;
+            color: #bbb;
+        }
+    </style>
+
+    <div id="mechanism-overviewContainer">
+        <div class="mechanism-message-state" id="mechanism-initialState">
+            <div class="mechanism-icon"><i class="bi bi-gear-fill"></i></div>
+            <h2>Loading Content...</h2>
+            <p id="mechanism-statusMessage">Attempting to read mechanism data from URL fragment.</p>
+        </div>
+    </div>
+
+    <!-- REQUIRED TTS Controls (Simplified) -->
+    <div class="visualsuite-tts-controls mechanism-glass">
+        <div class="visualsuite-audio-bar">
+            <div id="visualsuite-audioVisualizer"></div>
+        </div>
+        <div class="visualsuite-control-group">
+            <button id="visualsuite-voiceSelector">🔊 Voice</button>
+        </div>
+    </div>
+
+    <div id="visualsuite-voiceModal" class="visualsuite-modal">
+        <div class="visualsuite-modal-content">
+            <div class="visualsuite-modal-header">
+                <h4>Select TTS Voice</h4>
+                <span class="visualsuite-close" id="visualsuite-modalClose">&times;</span>
+            </div>
+            <div id="visualsuite-voiceList">
+                Loading voices...
+            </div>
+        </div>
+    </div>
+    <!-- END REQUIRED TTS Controls -->
+
+
+    <script>
+        // ========= CONSTANTS =========
+        const ATOM_COLORS = {
+            C: "#404040",
+            H: "#ffffff",
+            O: "#ef4444",
+            N: "#3b82f6",
+            Br: "#a16207",
+            Cl: "#16a34a",
+            F: "#22c55e",
+            S: "#f59e0b",
+            Al: "#a8a29e",
+            R: "#9ca3af"
+        };
+        // Define accent color constant for P5.js drawing (since CSS variables are scoped)
+        const ACCENT_COLOR_HEX = "#f093fb";
+
+        let stepAnimations = [];
+        let globalBounds = null;
+        let narrationEnabled = false;
+
+        const $ = (id) => document.getElementById(id);
+
+        // ========= DEFAULT EXAMPLE DATA (RENAMED) =========
+        let ExampleJson = {};
+
+        // ========= INITIALIZATION =========
+        // Note: We use setTimeout to ensure p5.js setup runs after DOMContentLoaded, 
+        // as p5.js runs setup automatically. We wrap the initial viewer call.
+        setTimeout(() => {
+            initializeViewer();
+        }, 0);
+
+        function initializeViewer() {
+            // mechanismData renamed to ExampleJson
+            renderOverview();
+        }
+
+        function displayError(title, message) {
+            const container = $("mechanism-overviewContainer");
+            container.innerHTML = `
+                <div class="mechanism-message-state">
+                    <div class="mechanism-icon" style="background: var(--mechanism-secondary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"><i class="bi bi-x-circle-fill"></i></div>
+                    <h2>${title}</h2>
+                    <p class="mechanism-text-secondary">${message}</p>
+                </div>
+            `;
+        }
+
+        // ========= CORE RENDERING LOGIC =========
+        function renderOverview() {
+            stepAnimations.forEach(instance => instance.remove());
+            stepAnimations = [];
+            const container = $("mechanism-overviewContainer");
+            container.innerHTML = ""; // Clear initial message
+
+            globalBounds = calculateGlobalBounds(ExampleJson);
+
+            ExampleJson.mechanism.forEach((step, index) => {
+                const stepElement = createStepElement(step, index);
+                container.appendChild(stepElement);
+
+                const animation = new p5(createStepAnimation(step, globalBounds), `mechanism-canvas-box-${index}`);
+                stepAnimations.push(animation);
+
+                if (index < ExampleJson.mechanism.length - 1) {
+                    const divider = document.createElement("div");
+                    divider.className = "mechanism-step-divider";
+                    divider.innerHTML = "↓";
+                    container.appendChild(divider);
+                }
+            });
+        }
+
+        function createStepElement(step, index) {
+            const stepContainer = document.createElement("div");
+            stepContainer.className = "mechanism-step-container";
+            const badges = computeStepBadges(step);
+            const badgeHTML = badges.map(b => `<span class="mechanism-badge"><i class="bi ${b.icon}"></i> ${b.text}</span>`).join('');
+
+            stepContainer.innerHTML = `
+                <h3>Step ${step.step || index + 1}: ${step.title || "Untitled"}</h3>
+                <p>${step.description || "No description provided."}</p>
+                <div class="mechanism-badge-row">${badgeHTML}</div>
+                <div class="mechanism-canvas-box" id="mechanism-canvas-box-${index}">
+                     <div class="mechanism-canvas-controls">
+                        <button class="mechanism-btn-control" id="mechanism-narrate-btn-${index}" title="Narrate Step" onclick="startNarrationForStep(${index})"><i class="bi bi-volume-up-fill"></i></button>
+                        <button class="mechanism-btn-control" id="mechanism-reset-view-${index}" title="Reset View"><i class="bi bi-arrow-counterclockwise"></i></button>
+                    </div>
+                </div>`;
+            return stepContainer;
+        }
+
+        // ========= NARRATION INTEGRATION =========
+        function startNarrationForStep(index) {
+            ttsManager.stop();
+            const step = ExampleJson.mechanism[index];
+            const text = `Step ${step.step || index + 1}. ${step.title}. ${step.description}`;
+
+            ttsManager.speak({
+                text: text,
+                locale: 'en-US',
+                onEnd: () => {
+                    // Reset button state if needed, though the TTS manager handles visual cues.
+                }
+            });
+        }
+
+
+        // ========= P5.JS ANIMATION IMPLEMENTATION =========
+        function createStepAnimation(step, bounds) {
+            return (p) => {
+                let scaleFactor, panX, panY, initialScale, initialPanX, initialPanY;
+                let isDragging = false,
+                    lastMouseX = 0,
+                    lastMouseY = 0;
+
+                p.setup = () => {
+                    const parent = p.canvas.parentElement;
+                    p.createCanvas(parent.clientWidth, parent.clientHeight);
+                    p.textFont("Inter");
+
+                    const padding = 1.5;
+                    initialScale = Math.min(p.width / (bounds.width * padding), p.height / (bounds.height * padding));
+                    initialPanX = p.width / 2 - bounds.centerX * initialScale;
+                    initialPanY = p.height / 2 - bounds.centerY * initialScale;
+
+                    p.resetView = () => {
+                        scaleFactor = initialScale;
+                        panX = initialPanX;
+                        panY = initialPanY;
+                    };
+                    p.resetView();
+                    const resetBtn = parent.querySelector(`#mechanism-reset-view-${step.step - 1 || step.step || 0}`);
+                    if (resetBtn) resetBtn.onclick = p.resetView;
+                };
+
+                p.mousePressed = () => {
+                    if (p.mouseX > 0 && p.mouseX < p.width && p.mouseY > 0 && p.mouseY < p.height) {
+                        isDragging = true;
+                        lastMouseX = p.mouseX;
+                        lastMouseY = p.mouseY;
+                    }
+                };
+                p.mouseReleased = () => isDragging = false;
+                p.mouseDragged = () => {
+                    if (isDragging) {
+                        panX += p.mouseX - lastMouseX;
+                        panY += p.mouseY - lastMouseY;
+                        lastMouseX = p.mouseX;
+                        lastMouseY = p.mouseY;
+                    }
+                };
+                p.mouseWheel = (event) => {
+                    if (p.mouseX > 0 && p.mouseX < p.width && p.mouseY > 0 && p.mouseY < p.height) {
+                        event.preventDefault();
+                        const s = scaleFactor * (1 - event.delta * 0.001);
+                        if (s > 0.1 && s < 20) {
+                            const wx = (p.mouseX - panX) / scaleFactor,
+                                wy = (p.mouseY - panY) / scaleFactor;
+                            panX = p.mouseX - wx * s;
+                            panY = p.mouseY - wy * s;
+                            scaleFactor = s;
+                        }
+                    }
+                };
+
+                p.draw = () => {
+                    p.background(6, 8, 20);
+                    // Use ExampleJson.molecules directly
+                    const tempMolecules = JSON.parse(JSON.stringify(ExampleJson.molecules));
+
+                    p.push();
+                    p.translate(panX, panY);
+                    p.scale(scaleFactor);
+                    drawMolecules(p, step.displayMolecules, tempMolecules);
+
+                    const animationProgress = (p.millis() % 3000) / 3000.0;
+                    drawAnimationHints(p, step, tempMolecules, animationProgress);
+                    p.pop();
+                };
+            };
+        }
+
+        // ========= UTILITY FUNCTIONS =========
+        function calculateGlobalBounds(data) {
+            let minX = Infinity,
+                minY = Infinity,
+                maxX = -Infinity,
+                maxY = -Infinity,
+                c = 0;
+            const allMolKeys = new Set();
+            data.mechanism.forEach(s => s.displayMolecules.forEach(k => allMolKeys.add(k)));
+
+            for (const k of allMolKeys) {
+                const m = data.molecules[k];
+                if (!m || !m.atoms) continue;
+                const mx = m.position?.x || 0,
+                    my = m.position?.y || 0;
+                for (const a of m.atoms) {
+                    const x = a.position.x + mx,
+                        y = a.position.y + my;
+                    minX = Math.min(minX, x);
+                    maxX = Math.max(maxX, x);
+                    minY = Math.min(minY, y);
+                    maxY = Math.max(maxY, y);
+                    c++;
+                }
+            }
+
+            if (c === 0) return {
+                centerX: 0,
+                centerY: 0,
+                width: 100,
+                height: 100
+            };
+            return {
+                centerX: (minX + maxX) / 2,
+                centerY: (minY + maxY) / 2,
+                width: Math.max(100, maxX - minX),
+                height: Math.max(100, maxY - minY)
+            };
+        }
+
+        function computeStepBadges(step) {
+            const badges = [];
+            const title = (step.title || "").toLowerCase();
+            const desc = (step.description || "").toLowerCase();
+
+            if (title.includes("protonation") || desc.includes("protonation")) badges.push({
+                text: "Proton Transfer",
+                icon: "bi-plus-circle-fill"
+            });
+            if (title.includes("nucleophilic") || desc.includes("attack")) badges.push({
+                text: "Nucleophilic Attack",
+                icon: "bi-arrow-down-left"
+            });
+            if (title.includes("radical")) badges.push({
+                text: "Radical",
+                icon: "bi-lightning-fill"
+            });
+            if (title.includes("sn2") || desc.includes("sn2")) badges.push({
+                text: "SN2",
+                icon: "bi-arrow-left-right"
+            });
+            if (step.animationHints?.length > 0) badges.push({
+                text: "Animated",
+                icon: "bi-film"
+            });
+            return badges;
+        }
+
+        function drawMolecules(p, molKeys, allMolecules) {
+            for (const key of molKeys) {
+                const mol = allMolecules[key];
+                if (!mol) continue;
+                p.push();
+                p.translate(mol.position?.x || 0, mol.position?.y || 0);
+                if (mol.bonds) drawBonds(p, mol);
+                if (mol.atoms) drawAtoms(p, mol);
+                p.pop();
+            }
+        }
+
+        function drawBonds(p, molecule) {
+            for (const bond of molecule.bonds) {
+                const a1 = molecule.atoms.find(a => a.id === bond.from);
+                const a2 = molecule.atoms.find(a => a.id === bond.to);
+                if (!a1 || !a2) continue;
+                p.stroke(255, 150);
+                p.strokeWeight(4);
+                const [x1, y1, x2, y2] = [a1.position.x, a1.position.y, a2.position.x, a2.position.y];
+                switch (bond.type) {
+                    case "double": {
+                        const o = 5,
+                            a = p.atan2(y2 - y1, x2 - x1) + p.HALF_PI;
+                        const dx = o * p.cos(a),
+                            dy = o * p.sin(a);
+                        p.line(x1 + dx, y1 + dy, x2 + dx, y2 + dy);
+                        p.line(x1 - dx, y1 - dy, x2 - dx, y2 - dy);
+                        break;
+                    }
+                    case "wedge": {
+                        p.fill(255, 150);
+                        p.noStroke();
+                        const a = p.atan2(y2 - y1, x2 - x1) + p.HALF_PI;
+                        p.triangle(x1, y1, x2 + 8 * p.cos(a), y2 + 8 * p.sin(a), x2 - 8 * p.cos(a), y2 - 8 * p.sin(a));
+                        break;
+                    }
+                    case "dash": {
+                        p.drawingContext.setLineDash([6, 8]);
+                        p.line(x1, y1, x2, y2);
+                        p.drawingContext.setLineDash([]);
+                        break;
+                    }
+                    default:
+                        p.line(x1, y1, x2, y2);
+                }
+            }
+        }
+
+        function drawAtoms(p, molecule) {
+            for (const atom of molecule.atoms) {
+                const color = ATOM_COLORS[atom.element] || "#94a3b8";
+                const size = atom.element === "H" ? 12 : 16;
+                p.fill(color);
+                p.stroke(255, 120);
+                p.strokeWeight(2);
+                p.ellipse(atom.position.x, atom.position.y, size * 2);
+
+                if (atom.element !== "C" || molecule.atoms.length < 2) {
+                    p.fill(atom.element === "H" ? "#000" : "#fff");
+                    p.noStroke();
+                    p.textAlign(p.CENTER, p.CENTER);
+                    p.textSize(size * 0.9);
+                    p.textStyle(p.BOLD);
+                    p.text(atom.element, atom.position.x, atom.position.y + 1);
+                }
+
+                if (atom.charge) {
+                    p.fill(atom.charge > 0 ? "#ef4444" : "#3b82f6");
+                    p.noStroke();
+                    p.textSize(size * 0.85);
+                    const cs = (atom.charge > 0 ? "+" : "−") + (Math.abs(atom.charge) > 1 ? Math.abs(atom.charge) : "");
+                    p.text(cs, atom.position.x + size * 0.9, atom.position.y - size * 0.9);
+                }
+                if (atom.radical) {
+                    p.fill("#ef4444");
+                    p.noStroke();
+                    p.circle(atom.position.x + size * 0.9, atom.position.y - size * 0.9, size * 0.35);
+                }
+            }
+        }
+
+        function drawAnimationHints(p, step, allMolecules, progress) {
+            if (!step.animationHints) return;
+
+            const findPoint = (id) => {
+                if (!id) return null;
+                const [molKey, atomId] = id.split(':');
+                const mol = allMolecules[molKey];
+                if (!mol) return null;
+                const atom = mol.atoms.find(a => a.id === atomId);
+                if (!atom) return null;
+                return {
+                    x: atom.position.x + (mol.position?.x || 0),
+                    y: atom.position.y + (mol.position?.y || 0)
+                };
+            };
+
+            const findBondMidpoint = (id) => {
+                if (!id) return null;
+                const [molKey, bondId] = id.split(':');
+                const mol = allMolecules[molKey];
+                if (!mol) return null;
+                const bond = mol.bonds.find(b => b.id === bondId);
+                if (!bond) return null;
+                const a1 = findPoint(`${molKey}:${bond.from}`);
+                const a2 = findPoint(`${molKey}:${bond.to}`);
+                if (!a1 || !a2) return null;
+                return {
+                    x: (a1.x + a2.x) / 2,
+                    y: (a1.y + a2.y) / 2
+                };
+            };
+
+            for (const hint of step.animationHints) {
+                const toPoint = findPoint(hint.to);
+                const fromPoint = hint.from ? findPoint(hint.from) : findBondMidpoint(hint.fromBond);
+                if (!fromPoint || !toPoint) continue;
+
+                const d = p.dist(fromPoint.x, fromPoint.y, toPoint.x, toPoint.y);
+                const angle = p.atan2(toPoint.y - fromPoint.y, toPoint.x - fromPoint.x);
+                const ctrlOffset = d * 0.4;
+
+                const c1x = fromPoint.x + ctrlOffset * p.cos(angle + p.HALF_PI);
+                const c1y = fromPoint.y + ctrlOffset * p.sin(angle + p.HALF_PI);
+                const c2x = toPoint.x + ctrlOffset * p.cos(angle + p.HALF_PI);
+                const c2y = toPoint.y + ctrlOffset * p.sin(angle + p.HALF_PI);
+
+                p.noFill();
+                p.strokeWeight(2.5);
+
+                // Use defined accent color constant
+                p.stroke(p.color(ACCENT_COLOR_HEX), 180);
+                p.bezier(fromPoint.x, fromPoint.y, c1x, c1y, c2x, c2y, toPoint.x, toPoint.y);
+
+                const t = progress;
+                const x = p.bezierPoint(fromPoint.x, c1x, c2x, toPoint.x, t);
+                const y = p.bezierPoint(fromPoint.y, c1y, c2y, toPoint.y, t);
+
+                p.push();
+                p.translate(x, y);
+
+                const tx = p.bezierTangent(fromPoint.x, c1x, c2x, toPoint.x, t);
+                const ty = p.bezierTangent(fromPoint.y, c1y, c2y, toPoint.y, t);
+                p.rotate(p.atan2(ty, tx));
+
+                p.fill(p.color(ACCENT_COLOR_HEX)); // Use defined accent color constant
+                p.stroke(p.color(ACCENT_COLOR_HEX)); // Use defined accent color constant
+                p.strokeWeight(2);
+
+                if (hint.type === 'curlyArrow') {
+                    p.line(0, 0, -10, -7);
+                    p.line(0, 0, -10, 7);
+                } else if (hint.type === 'fishhookArrow') {
+                    p.line(0, 0, -10, hint.flip ? 7 : -7);
+                } else {
+                    p.line(0, 0, -10, -7);
+                    p.line(0, 0, -10, 7);
+                }
+                p.pop();
+            }
+        }
+
+        // ----------------------------------------------------------------
+        // REQUIRED TTS INTEGRATION CLASS (NO SPEED CONTROL LOGIC)
+        // ----------------------------------------------------------------
+        class EnhancedTTSManager {
+            constructor() {
+                this.currentUtterance = null;
+                this.synth = window.speechSynthesis;
+                this.voices = [];
+                this.voicesLoaded = false;
+                this.selectedVoice = null;
+                this.rate = 1.0; // Fixed rate, slider removed
+                this.onEndCallback = null;
+
+                this.loadVoices();
+                if (speechSynthesis.onvoiceschanged !== undefined) {
+                    speechSynthesis.onvoiceschanged = () => this.loadVoices();
+                }
+
+                this.setupControls();
+            }
+
+            loadVoices() {
+                this.voices = this.synth.getVoices();
+                this.voicesLoaded = true;
+                console.log(`✅ Loaded ${this.voices.length} TTS voices`);
+                this.updateVoiceList();
+            }
+
+            setupControls() {
+                // Removed speed controls logic
+                const voiceSelector = document.getElementById('visualsuite-voiceSelector');
+                const voiceModal = document.getElementById('visualsuite-voiceModal');
+                const modalClose = document.getElementById('visualsuite-modalClose');
+
+                // 🗣 Voice selection modal logic
+                if (voiceSelector && voiceModal && modalClose) {
+                    voiceSelector.addEventListener('click', () => {
+                        voiceModal.classList.add('visualsuite-show');
+                    });
+
+                    modalClose.addEventListener('click', () => {
+                        voiceModal.classList.remove('visualsuite-show');
+                    });
+
+                    voiceModal.addEventListener('click', (e) => {
+                        if (e.target === voiceModal) {
+                            voiceModal.classList.remove('visualsuite-show');
+                        }
+                    });
+                }
+            }
+
+            updateVoiceList() {
+                const voiceList = document.getElementById('visualsuite-voiceList');
+                if (!voiceList) return;
+
+                voiceList.innerHTML = '';
+
+                this.voices.forEach((voice) => {
+                    const item = document.createElement('div');
+                    item.className = 'visualsuite-voice-item';
+                    item.innerHTML = `
+                        <div class="visualsuite-voice-name">${voice.name}</div>
+                        <div class="visualsuite-voice-lang">${voice.lang}</div>
+                    `;
+
+                    item.addEventListener('click', () => {
+                        document.querySelectorAll('.visualsuite-voice-item').forEach(el => {
+                            el.classList.remove('visualsuite-selected');
+                        });
+                        item.classList.add('visualsuite-selected');
+                        this.selectedVoice = voice;
+                        document.getElementById('visualsuite-voiceSelector').textContent =
+                            `🔊 ${voice.name.substring(0, 20)}...`;
+                        document.getElementById('visualsuite-voiceModal').classList.remove('visualsuite-show');
+                    });
+
+                    voiceList.appendChild(item);
+                });
+            }
+
+            normalizeLocale(locale) {
+                if (!locale) return 'en-US';
+                return locale.replace('_', '-').toLowerCase();
+            }
+
+            findBestVoice(locale) {
+                if (this.selectedVoice) return this.selectedVoice;
+
+                const normalized = this.normalizeLocale(locale);
+                const [lang] = normalized.split('-');
+
+                let voice = this.voices.find(v => v.lang.toLowerCase() === normalized);
+                if (!voice) voice = this.voices.find(v => v.lang.toLowerCase().startsWith(lang + '-'));
+                if (!voice) voice = this.voices.find(v => v.lang.toLowerCase().startsWith(lang));
+                if (!voice) voice = this.voices[0];
+
+                return voice;
+            }
+
+            speak(config) {
+                this.stop();
+
+                const {
+                    text,
+                    locale = 'en-US',
+                    onStart,
+                    onEnd
+                } = config;
+                if (!text) return;
+
+                this.onEndCallback = onEnd;
+
+                if (!this.voicesLoaded) {
+                    setTimeout(() => this.speak(config), 100);
+                    return;
+                }
+
+                const utterance = new SpeechSynthesisUtterance(text);
+                const voice = this.findBestVoice(locale);
+
+                utterance.voice = voice;
+                utterance.lang = this.normalizeLocale(locale);
+                utterance.rate = this.rate;
+                utterance.volume = 1.0;
+
+                utterance.onstart = () => {
+                    document.getElementById('visualsuite-audioVisualizer').classList.add('visualsuite-speaking');
+                    onStart?.();
+                };
+
+                utterance.onend = () => {
+                    document.getElementById('visualsuite-audioVisualizer').classList.remove('visualsuite-speaking');
+                    this.currentUtterance = null;
+                    if (this.onEndCallback) {
+                        this.onEndCallback();
+                        this.onEndCallback = null;
+                    }
+                };
+
+                utterance.onerror = (event) => {
+                    console.error('❌ TTS Error:', event);
+                    document.getElementById('visualsuite-audioVisualizer').classList.remove('visualsuite-speaking');
+                    this.currentUtterance = null;
+                };
+
+                this.currentUtterance = utterance;
+                this.synth.speak(utterance);
+            }
+
+            stop() {
+                if (this.currentUtterance) {
+                    this.synth.cancel();
+                    this.currentUtterance = null;
+                    document.getElementById('visualsuite-audioVisualizer').classList.remove('visualsuite-speaking');
+                }
+            }
+
+            isSpeaking() {
+                return this.synth.speaking;
+            }
+        }
+
+        const ttsManager = new EnhancedTTSManager();
+    </script>
+</div>

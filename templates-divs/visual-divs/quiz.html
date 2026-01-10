@@ -1,0 +1,462 @@
+<div id="VisualContainer-quiz" class="visual-template">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@500;800&display=swap" rel="stylesheet">
+    <style>
+        /* Dark Theme Variables (Prefixed) */
+        :root {
+            --quiz-primary-color: #90CAF9;
+            /* Light Blue */
+            --quiz-primary-light: #A9D5FF;
+            --quiz-secondary-color: #81C784;
+            /* Light Green */
+            --quiz-background-light: #1E1E2E;
+            /* Main BG */
+            --quiz-background-dark: #2D2D44;
+            /* Card/Input Border */
+            --quiz-surface-color: #272733;
+            /* Main Card Surface */
+            --quiz-success-color: #4CAF50;
+            /* Green */
+            --quiz-error-color: #FF6666;
+            /* Red */
+            --quiz-text-dark: #F0F0F0;
+            /* Light Text */
+            --quiz-text-light: #B0B0B0;
+            --quiz-border-radius: 12px;
+        }
+
+        /* Adjusted 'body' styles to apply to the container for isolation */
+        .visual-template {
+            font-family: 'Roboto', sans-serif;
+            background: var(--quiz-background-light);
+            min-height: 100%;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 20px;
+            color: var(--quiz-text-dark);
+        }
+
+        .quiz-quiz-box {
+            background: var(--quiz-surface-color);
+            width: 95%;
+            max-width: 750px;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            transition: all 0.4s ease;
+            border: 1px solid #3a3a50;
+        }
+
+        .quiz-quiz-box h1 {
+            font-family: 'Montserrat', sans-serif;
+            margin-bottom: 25px;
+            color: var(--quiz-primary-color);
+            font-weight: 800;
+            font-size: 2em;
+            border-bottom: 3px solid var(--quiz-secondary-color);
+            padding: 10px 0;
+        }
+
+        /* Input Area (REMOVED, keeping style rules for consistency if needed, but the ID is unused) */
+
+        /* Info Bar */
+        #quiz-infoBar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background: #33334f;
+            border-radius: var(--quiz-border-radius);
+            font-weight: 700;
+            color: var(--quiz-primary-color);
+            border-left: 5px solid var(--quiz-primary-color);
+        }
+
+        .quiz-info-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .quiz-info-item span {
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        /* Progress Bar */
+        #quiz-progressBarContainer {
+            width: 100%;
+            background-color: var(--quiz-background-dark);
+            border-radius: 5px;
+            margin-top: 15px;
+            height: 10px;
+            overflow: hidden;
+        }
+
+        #quiz-progressBar {
+            height: 100%;
+            width: 0%;
+            background-color: var(--quiz-secondary-color);
+            transition: width 0.4s ease;
+        }
+
+        /* Question Area */
+        .quiz-question {
+            font-size: 1.3em;
+            font-weight: 700;
+            margin: 30px 0;
+            color: var(--quiz-text-dark);
+            line-height: 1.5;
+            text-align: left;
+            min-height: 50px;
+        }
+
+        /* Code Block Styling */
+        .quiz-question pre,
+        .quiz-question code {
+            background: #272822;
+            color: #f8f8f2;
+            padding: 10px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            display: block;
+            margin-top: 10px;
+        }
+
+        /* SVG/Image Container */
+        .quiz-visual-content {
+            margin: 15px auto;
+            border: 1px solid var(--quiz-background-dark);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 90%;
+            background: #33334f;
+        }
+
+        .quiz-visual-content svg {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+
+        /* Options Styling */
+        .quiz-options {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 30px;
+        }
+
+        .quiz-options li {
+            background: var(--quiz-background-dark);
+            border: 2px solid #3a3a50;
+            border-radius: var(--quiz-border-radius);
+            margin: 12px 0;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            text-align: left;
+            font-weight: 500;
+            color: var(--quiz-text-dark);
+        }
+
+        .quiz-options li:hover:not([data-checked]) {
+            background: #3a3a50;
+            color: var(--quiz-primary-color);
+            border-color: var(--quiz-primary-color);
+            transform: translateY(-2px);
+        }
+
+        /* Feedback Classes */
+        .quiz-correct {
+            background: var(--quiz-success-color) !important;
+            color: white !important;
+            border-color: var(--quiz-success-color) !important;
+            box-shadow: 0 4px 8px rgba(76, 175, 80, 0.4);
+        }
+
+        .quiz-wrong {
+            background: var(--quiz-error-color) !important;
+            color: white !important;
+            border-color: var(--quiz-error-color) !important;
+            box-shadow: 0 4px 8px rgba(255, 102, 102, 0.4);
+        }
+
+        /* Buttons */
+        .quiz-quiz-box button {
+            background-color: var(--quiz-primary-color);
+            color: var(--quiz-text-dark);
+            border: none;
+            padding: 14px 30px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            box-shadow: 0 4px 10px rgba(144, 202, 249, 0.3);
+        }
+
+        .quiz-quiz-box button:hover {
+            background-color: var(--quiz-primary-light);
+            transform: translateY(-1px);
+        }
+    </style>
+
+    <div class="quiz-quiz-box">
+        <h1>Interactive Learning Assessment</h1>
+
+        <button id="startBtn" onclick="startQuiz()">Start Quiz</button>
+
+        <div id="quiz-quizArea" style="display:none;">
+
+            <!-- New Info Bar -->
+            <div id="quiz-infoBar">
+                <div class="quiz-info-item">Score: <span id="quiz-currentScore">0</span>/<span id="quiz-maxScore">0</span></div>
+                <div class="quiz-info-item">Time: <span id="quiz-quizTimer">00:00</span></div>
+                <div class="quiz-info-item">Progress: <span id="quiz-currentProgress">0</span>/<span id="quiz-totalQuestions">0</span></div>
+            </div>
+
+            <div id="quiz-progressBarContainer">
+                <div id="quiz-progressBar"></div>
+            </div>
+
+            <div class="quiz-question" id="quiz-question"></div>
+            <div id="quiz-visualContent" class="quiz-visual-content" style="display:none;"></div>
+
+            <ul class="quiz-options" id="quiz-options"></ul>
+            <div id="quiz-feedback"></div>
+            <div style="margin-left:60%;">
+                <button id="quiz-nextBtn" onclick="nextQuestion()" style="display:none;">Next &gt;</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ExampleJson = { };
+
+        (function() {
+            const hash = window.location.hash;
+            if (!hash || !hash.includes('#data=')) return;
+            try {
+                const encodedData = hash.substring(hash.indexOf('#data=') + 6);
+                const jsonString = decodeURIComponent(encodedData);
+                const loadedData = JSON.parse(jsonString);
+                if (loadedData && loadedData.questions) {
+                    ExampleJson = loadedData;
+                    console.log('✓ Data loaded from URL');
+                }
+            } catch (error) {
+                console.error('Failed to load data from URL hash:', error);
+            }
+        })();
+
+
+        let quizData = null;
+        let currentQuestion = 0;
+        let score = 0;
+        let maxScore = 0;
+        let startTime = 0;
+        let timerInterval = null;
+
+        // Removed window.onload logic since there is no input area
+
+        // Helper function: Fisher-Yates (Knuth) Shuffle
+        function shuffleArray(array) {
+            let currentIndex = array.length,
+                randomIndex;
+            while (currentIndex != 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [
+                    array[randomIndex], array[currentIndex]
+                ];
+            }
+            return array;
+        }
+
+        function processQuizData(data) {
+            const processedQuestions = [];
+
+            data.questions.forEach((q, originalIndex) => {
+                // 1. Validation Check: Deny question if answer index is out of bounds
+                if (q.answerIndex === undefined ||
+                    q.answerIndex < 0 ||
+                    q.answerIndex >= q.options.length) {
+                    console.warn(`Question ${originalIndex + 1} denied: Invalid answer index (${q.answerIndex} for ${q.options.length} options).`);
+                    return; // Skip this question
+                }
+
+                // 2. Shuffling Logic
+                const originalOptions = [...q.options];
+                const correctText = originalOptions[q.answerIndex];
+
+                const optionsToShuffle = [...originalOptions];
+                shuffleArray(optionsToShuffle);
+
+                // Find the new index of the correct answer
+                const newAnswerIndex = optionsToShuffle.findIndex(opt => opt === correctText);
+
+                // Clone and update the question object
+                processedQuestions.push({
+                    ...q,
+                    options: optionsToShuffle,
+                    answerIndex: newAnswerIndex
+                });
+            });
+
+            return {
+                questions: processedQuestions
+            };
+        }
+
+        function startTimer() {
+            startTime = Date.now();
+            timerInterval = setInterval(updateInfoBar, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+        }
+
+        function formatTime(totalSeconds) {
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function updateInfoBar() {
+            const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+
+            document.getElementById("quiz-quizTimer").textContent = formatTime(elapsedSeconds);
+            document.getElementById("quiz-currentScore").textContent = score;
+            document.getElementById("quiz-maxScore").textContent = maxScore;
+            document.getElementById("quiz-totalQuestions").textContent = quizData.questions.length;
+            document.getElementById("quiz-currentProgress").textContent = currentQuestion;
+
+            const progressPercentage = (currentQuestion / quizData.questions.length) * 100;
+            document.getElementById("quiz-progressBar").style.width = `${progressPercentage}%`;
+        }
+
+
+        function startQuiz() {
+            try {
+                // Directly use ExampleJson since input area is removed
+                quizData = processQuizData(ExampleJson);
+
+                if (quizData.questions.length === 0) {
+                    alert("The quiz is empty after validation. Check your JSON data and answer indices.");
+                    return;
+                }
+
+                // Initialize state
+                score = 0;
+                currentQuestion = 0;
+                maxScore = quizData.questions.length * 2;
+
+                // Start display and timer
+                document.getElementById("startBtn").style.display = "none";
+                document.getElementById("quiz-quizArea").style.display = "block";
+
+                startTimer();
+                updateInfoBar();
+                showQuestion();
+
+            } catch (e) {
+                alert("An error occurred processing the quiz data.");
+                console.error("Quiz Start Error:", e);
+            }
+        }
+
+        function showQuestion() {
+            const q = quizData.questions[currentQuestion];
+            const questionEl = document.getElementById("quiz-question");
+            const optionsEl = document.getElementById("quiz-options");
+            const visualEl = document.getElementById("quiz-visualContent");
+
+            // 1. Update Info Bar for current question
+            updateInfoBar();
+
+            // 2. Clear previous state
+            optionsEl.innerHTML = "";
+            visualEl.innerHTML = "";
+            visualEl.style.display = "none";
+            document.getElementById("quiz-feedback").textContent = "";
+            document.getElementById("quiz-nextBtn").style.display = "none";
+
+            // 3. Set Question Text (Handle SVG/Rich content)
+            let questionText = q.question;
+            const svgMatch = questionText.match(/<svg[^>]*>[\s\S]*?<\/svg>/i);
+
+            if (svgMatch) {
+                visualEl.innerHTML = svgMatch[0];
+                visualEl.style.display = "block";
+                questionText = questionText.replace(svgMatch[0], '').trim();
+            }
+
+            questionEl.innerHTML = `Q${currentQuestion + 1}: ${questionText}`;
+
+            // 4. Set Options
+            q.options.forEach((opt, i) => {
+                const li = document.createElement("li");
+                li.innerHTML = opt;
+                li.onclick = () => checkAnswer(i, li);
+                optionsEl.appendChild(li);
+
+                if (opt.includes('<svg')) {
+                    li.style.minHeight = '60px';
+                }
+            });
+        }
+
+        function checkAnswer(selected, el) {
+            const q = quizData.questions[currentQuestion];
+            const options = document.querySelectorAll("#quiz-options li");
+            const feedbackEl = document.getElementById("quiz-feedback");
+
+            // Disable further clicks
+            options.forEach(o => o.style.pointerEvents = "none");
+            el.setAttribute('data-checked', 'true');
+
+            if (selected === q.answerIndex) {
+                el.classList.add("quiz-correct");
+                feedbackEl.innerHTML = "<span style='color: var(--quiz-success-color);'>&#10003; Correct! (+2 Points)</span>";
+                score += 2;
+            } else {
+                el.classList.add("quiz-wrong");
+                const correctEl = options[q.answerIndex];
+                correctEl.classList.add("quiz-correct");
+
+                feedbackEl.innerHTML = `<span style='color: var(--quiz-error-color);'>&#10007; Wrong! (-1 Point)</span><br>The correct option was: <span style='color: var(--quiz-success-color);'>${correctEl.textContent.trim()}</span>`;
+                score -= 1;
+            }
+
+            updateInfoBar(); // Update score live
+            document.getElementById("quiz-nextBtn").style.display = "block";
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion < quizData.questions.length) {
+                showQuestion();
+            } else {
+                stopTimer();
+                const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+                const finalTime = formatTime(elapsedSeconds);
+
+                document.getElementById("quiz-quizArea").innerHTML =
+                    `<h2>Assessment Complete!</h2>
+      <p>You completed ${quizData.questions.length} questions in <strong>${finalTime}</strong>.</p>
+      <p>Your Final Score: <strong style="font-size: 1.5em; color: ${score >= maxScore * 0.6 ? 'var(--quiz-success-color)' : 'var(--quiz-error-color)'};">${score}</strong> / ${maxScore}</p>
+      <button onclick="window.location.reload()">Restart Quiz</button>`;
+            }
+        }
+    </script>
+</div>

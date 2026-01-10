@@ -1,0 +1,1695 @@
+<div id="VisualContainer-presentation" class="visual-template">
+    <!-- LIBRARIES (External) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/chartjs-chart-venn@4.1.0/build/index.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        #VisualContainer-presentation {
+            /* Scoped CSS Variables */
+            --presentation-primary: #e60073;
+            --presentation-accent: #ff00ff;
+            --presentation-stage-bg: #1a1a2e;
+            --presentation-text: #c0c0ff;
+            --presentation-success: #00ffab;
+            --presentation-error: #ff5555;
+            --presentation-border-color: #4a4a6a;
+            --presentation-font-sans: 'Inter', sans-serif;
+            --presentation-font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+            --presentation-transition-duration: 600ms;
+
+            /* Body/HTML wrapper styles */
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: var(--presentation-font-sans);
+            color: var(--presentation-text);
+            background: var(--presentation-stage-bg);
+            position: relative;
+        }
+
+        #VisualContainer-presentation * {
+            box-sizing: border-box;
+        }
+
+        /* --- LOADER --- */
+        .presentation-loader-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #101020;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+        }
+
+        .presentation-loader-spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(255, 255, 255, 0.2);
+            border-top-color: var(--presentation-primary);
+            border-radius: 50%;
+            animation: presentation-spin 1s linear infinite;
+        }
+
+        .presentation-loader-text {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: var(--presentation-text);
+        }
+
+        @keyframes presentation-spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* --- MAIN LAYOUT --- */
+        #presentation-app-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            background: radial-gradient(circle, #16222A 0%, #1a1a2e 100%);
+        }
+
+        #presentation-player-host {
+            width: 100%;
+            height: 100%;
+            max-width: 1600px;
+            aspect-ratio: 16 / 9;
+            background: var(--presentation-stage-bg);
+            border: 1px solid var(--presentation-border-color);
+            box-shadow: 0 0 100px -20px rgba(255, 0, 255, 0.3);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            transition: background 0.5s ease;
+        }
+
+        #presentation-scene-wrapper {
+            flex-grow: 1;
+            position: relative;
+            overflow: hidden;
+            perspective: 1200px;
+        }
+
+        #presentation-scene-content {
+            width: 100%;
+            height: 100%;
+            padding: 4%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        /* --- SCENE TRANSITIONS --- */
+        .presentation-animate__animated {
+            animation-duration: var(--presentation-transition-duration);
+            animation-fill-mode: both;
+        }
+
+        @keyframes presentation-animate__fadeIn {
+            0% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .presentation-animate__fadeIn {
+            animation-name: presentation-animate__fadeIn;
+        }
+
+        @keyframes presentation-animate__fadeOut {
+            0% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        .presentation-animate__fadeOut {
+            animation-name: presentation-animate__fadeOut;
+        }
+
+        @keyframes presentation-animate__slideInRight {
+            0% {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            100% {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .presentation-animate__slideInRight {
+            animation-name: presentation-animate__slideInRight;
+        }
+
+        @keyframes presentation-animate__slideOutLeft {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+        }
+
+        .presentation-animate__slideOutLeft {
+            animation-name: presentation-animate__slideOutLeft;
+        }
+
+        @keyframes presentation-animate__zoomIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .presentation-animate__zoomIn {
+            animation-name: presentation-animate__zoomIn;
+        }
+
+        @keyframes presentation-animate__zoomOut {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+        }
+
+        .presentation-animate__zoomOut {
+            animation-name: presentation-animate__zoomOut;
+        }
+
+
+        /* --- CONTROLS --- */
+        #presentation-controls {
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            border-top: 1px solid var(--presentation-border-color);
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            gap: 1.5rem;
+        }
+
+        #presentation-music-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            position: relative;
+        }
+
+        #presentation-music-options {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        #presentation-music-options select {
+            background: none;
+            border: 1px solid var(--presentation-border-color);
+            color: var(--presentation-text);
+            padding: 0.5rem;
+            border-radius: 4px;
+        }
+
+        #presentation-music-options input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+            width: 100px;
+        }
+
+        #presentation-music-options input[type="range"]::-webkit-slider-runnable-track {
+            background: var(--presentation-border-color);
+            height: 4px;
+            border-radius: 2px;
+        }
+
+        #presentation-music-options input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            margin-top: -6px;
+            background-color: var(--presentation-primary);
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+        }
+
+        .presentation-upload-btn {
+            display: inline-block;
+            background: var(--presentation-border-color);
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .presentation-upload-btn:hover {
+            background: var(--presentation-primary);
+        }
+
+        .presentation-upload-btn input[type="file"] {
+            display: none;
+        }
+
+        #presentation-music-options-toggle {
+            display: none;
+        }
+
+        .presentation-control-btn {
+            background: none;
+            border: 1px solid var(--presentation-border-color);
+            color: var(--presentation-text);
+            width: 44px;
+            height: 44px;
+            font-size: 1.5rem;
+            border-radius: 50%;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .presentation-control-btn:hover {
+            background-color: var(--presentation-primary);
+            border-color: var(--presentation-primary);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .presentation-control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* --- SCENE STYLES --- */
+        .presentation-scene-title-splash {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .presentation-scene-title-splash h1 {
+            font-size: clamp(3rem, 7vw, 6rem);
+            font-weight: 800;
+            margin: 0;
+            color: white;
+            text-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+        }
+
+        .presentation-scene-title-splash h2 {
+            font-size: clamp(1.2rem, 3vw, 2rem);
+            font-weight: 500;
+            color: white;
+            text-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+            background: var(--presentation-primary);
+            padding: 0.2rem 1.5rem;
+        }
+
+        .presentation-scene-image-showcase {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            width: auto;
+            height: auto;
+            max-width: 70vw;
+            flex-direction: column;
+        }
+
+        .presentation-scene-image-showcase img,
+        .presentation-scene-image-showcase .presentation-img-fallback {
+            flex-shrink: 0;
+            width: 80%;
+            height: 60%;
+            object-fit: cover;
+            border: 2px solid var(--presentation-border-color);
+        }
+
+        .presentation-img-fallback {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.3);
+            font-size: 1.5rem;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .presentation-scene-image-showcase figcaption {
+            font-size: 1.2rem;
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .presentation-scene-timeline {
+            width: 100%;
+        }
+
+        .presentation-scene-timeline h2 {
+            margin-bottom: 3rem;
+            font-size: 2.5rem;
+        }
+
+        .presentation-timeline-container {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .presentation-timeline-container::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 5%;
+            width: 90%;
+            height: 4px;
+            background: var(--presentation-border-color);
+        }
+
+        .presentation-timeline-event {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            text-align: center;
+        }
+
+        .presentation-timeline-event::before {
+            content: '';
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--presentation-stage-bg);
+            border: 4px solid var(--presentation-primary);
+            position: absolute;
+            top: 0;
+        }
+
+        .presentation-timeline-event .year {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-top: 3rem;
+        }
+
+        .presentation-timeline-event .title {
+            font-size: 1rem;
+            color: #aaa;
+        }
+
+        .presentation-scene-comparison {
+            width: 100%;
+        }
+
+        .presentation-scene-comparison h2 {
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+        }
+
+        .presentation-comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        .presentation-comparison-side {
+            border: 1px solid var(--presentation-border-color);
+            padding: 1.5rem;
+            text-align: left;
+        }
+
+        .presentation-comparison-side h3 {
+            margin-top: 0;
+            color: var(--presentation-primary);
+            font-size: 1.5rem;
+        }
+
+        .presentation-comparison-side ul {
+            list-style: '✓  ';
+            padding-left: 1.5rem;
+        }
+
+        .presentation-scene-code pre {
+            font-size: 1rem;
+            text-align: left;
+            background: #2d2d2d !important;
+            border: 1px solid var(--presentation-border-color);
+            max-height: 400px;
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+            overflow: auto;
+        }
+
+        .presentation-scene-network svg {
+            width: 100%;
+            height: 100%;
+            max-height: 400px;
+        }
+
+        .presentation-scene-progress,
+        .presentation-scene-gauge {
+            width: 60%;
+        }
+
+        .presentation-progress-bar,
+        .presentation-gauge-bar {
+            background: var(--presentation-border-color);
+            border-radius: 10px;
+            overflow: hidden;
+            height: 30px;
+        }
+
+        .presentation-progress-fill {
+            background: var(--presentation-primary);
+            height: 100%;
+            transition: width 1s ease-out;
+        }
+
+        .presentation-scene-quote blockquote {
+            font-size: 2rem;
+            font-style: italic;
+            border-left: 5px solid var(--presentation-primary);
+            padding-left: 2rem;
+        }
+
+        .presentation-scene-quote cite {
+            display: block;
+            margin-top: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .presentation-scene-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .presentation-scene-table th,
+        .presentation-scene-table td {
+            border: 1px solid var(--presentation-border-color);
+            padding: 0.8rem;
+        }
+
+        .presentation-scene-table thead {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .presentation-scene-quiz .presentation-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .presentation-scene-quiz .presentation-option-btn {
+            background: var(--presentation-border-color);
+            border: none;
+            padding: 1.5rem;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .presentation-scene-quiz .presentation-option-btn:hover {
+            background: var(--presentation-primary);
+        }
+
+        .presentation-scene-quiz .presentation-option-btn.correct {
+            background: var(--presentation-success);
+            color: black;
+        }
+
+        .presentation-scene-quiz .presentation-option-btn.incorrect {
+            background: var(--presentation-error);
+        }
+
+        /* TTS UI Styles - Shared/Base */
+        .visualsuite-tts-controls {
+            background: none;
+            border: none;
+            box-shadow: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .visualsuite-control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .visualsuite-label {
+            font-size: 12px;
+            min-width: 40px;
+        }
+
+        .visualsuite-audio-bar {
+            width: 100%;
+        }
+
+        #visualsuite-voiceSelector,
+        #visualsuite-voiceSelector-clone {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--presentation-border-color);
+            padding: 6px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            flex-grow: 1;
+            text-align: left;
+            color: #f0f0f0;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        #visualsuite-audioVisualizer,
+        #visualsuite-audioVisualizer-clone {
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        #visualsuite-audioVisualizer.visualsuite-speaking::after,
+        #visualsuite-audioVisualizer-clone.visualsuite-speaking::after {
+            content: '';
+            display: block;
+            height: 100%;
+            background: linear-gradient(90deg, #FFD54F 0%, #FF8C00 100%);
+            width: 100%;
+            animation: visualsuite-wave 1.5s infinite linear;
+        }
+
+        @keyframes visualsuite-wave {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        /* Voice Modal (MUST be fixed) */
+        .visualsuite-modal {
+            display: none;
+            position: fixed;
+            z-index: 1200;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .visualsuite-modal.visualsuite-show {
+            display: flex;
+        }
+
+        .visualsuite-modal-content {
+            background: #1a1a2e;
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 350px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .visualsuite-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .visualsuite-modal-header h4 {
+            margin: 0;
+            color: var(--presentation-accent);
+        }
+
+        .visualsuite-close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .visualsuite-voice-item {
+            padding: 8px;
+            margin-bottom: 4px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .visualsuite-voice-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .visualsuite-voice-item.visualsuite-selected {
+            background: #3a3a5a;
+            border-color: var(--presentation-accent);
+        }
+
+        .visualsuite-voice-name {
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .visualsuite-voice-lang {
+            font-size: 11px;
+            color: #bbb;
+        }
+
+        /* MEDIA QUERIES FOR PLACEMENT */
+        @media (max-width: 800px) {
+            #presentation-controls {
+                padding: 0.8rem 1rem;
+                gap: 1rem;
+            }
+
+            #presentation-music-options-toggle {
+                display: inline-flex;
+            }
+
+            #presentation-music-options {
+                display: none;
+                position: absolute;
+                bottom: calc(100% + 10px);
+                left: 0;
+                background: rgba(26, 26, 46, 0.9);
+                backdrop-filter: blur(5px);
+                border: 1px solid var(--presentation-border-color);
+                padding: 1rem;
+                border-radius: 8px;
+                flex-direction: column;
+                gap: 1rem;
+                z-index: 10;
+            }
+
+            #presentation-music-options.visible {
+                display: flex;
+            }
+
+            /* TTS: Hide bar version, show menu version */
+            #visualsuite-tts-controls-bar {
+                display: none !important;
+            }
+
+            #visualsuite-tts-controls-menu {
+                display: flex !important;
+                flex-direction: column;
+                gap: 8px;
+                width: 100%;
+                border-top: 19px solid var(--presentation-border-color);
+                padding-top: 1rem;
+            }
+        }
+
+        @media (min-width: 801px) {
+
+            /* TTS: Show bar version, hide menu version */
+            #visualsuite-tts-controls-menu {
+                display: none !important;
+            }
+
+            #visualsuite-tts-controls-bar {
+                display: flex !important;
+                flex-direction: row;
+                gap: 10px;
+                align-items: center;
+                /* Adjust width for audio bar */
+                width: 250px;
+            }
+
+            #visualsuite-tts-controls-bar .visualsuite-audio-bar {
+                flex-grow: 1;
+                width: auto;
+            }
+        }
+    </style>
+
+    <div id="presentation-loader-overlay" class="presentation-loader-overlay">
+        <div class="presentation-loader-spinner"></div>
+        <div id="presentation-loader-text" class="presentation-loader-text">Initializing Presentation Suite...</div>
+    </div>
+
+    <audio id="presentation-background-music" loop></audio>
+
+    <div id="presentation-app-container">
+        <div id="presentation-player-host">
+            <div id="presentation-scene-wrapper">
+                <div id="presentation-scene-content"></div>
+            </div>
+            <div id="presentation-controls">
+                <div id="presentation-music-controls">
+                    <button id="presentation-music-options-toggle" class="presentation-control-btn" title="Music Options"><i class="bi bi-sliders"></i></button>
+                    <div id="presentation-music-options">
+                        <input id="presentation-music-volume-slider" type="range" min="0" max="1" step="0.05" value="0.3" title="Music Volume">
+                        <select id="presentation-music-track-select">
+                        </select>
+                        <label for="presentation-music-upload-input" class="presentation-upload-btn" title="Upload custom music">
+                            <i class="bi bi-upload"></i>
+                            <input type="file" id="presentation-music-upload-input" accept="audio/*">
+                        </label>
+
+                        <!-- TTS Controls for small screen (PRIMARY IDS) -->
+                        <div id="visualsuite-tts-controls-menu" class="visualsuite-tts-controls">
+                            <div class="visualsuite-audio-bar">
+                                <div id="visualsuite-audioVisualizer"></div>
+                            </div>
+                            <div class="visualsuite-control-group">
+                                <label class="visualsuite-label">Voice:</label>
+                                <button id="visualsuite-voiceSelector">🔊 Default Voice</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TTS Controls for large screen (CLONED IDS) -->
+                <div id="visualsuite-tts-controls-bar" class="visualsuite-tts-controls">
+                    <div class="visualsuite-audio-bar">
+                        <div id="visualsuite-audioVisualizer-clone"></div>
+                    </div>
+                    <div class="visualsuite-control-group">
+                        <label class="visualsuite-label">Voice:</label>
+                        <button id="visualsuite-voiceSelector-clone">🔊 Default Voice</button>
+                    </div>
+                </div>
+
+                <div class="nav-buttons" style="display: flex; gap: 1rem;">
+                    <button id="presentation-prev-btn" class="presentation-control-btn" title="Previous"><i class="bi bi-arrow-left"></i></button>
+                    <button id="presentation-play-btn" class="presentation-control-btn" title="Play"><i class="bi bi-play-fill"></i></button>
+                    <button id="presentation-next-btn" class="presentation-control-btn" title="Next"><i class="bi bi-arrow-right"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- REQUIRED TTS Modal (MUST be fixed) -->
+    <div id="visualsuite-voiceModal" class="visualsuite-modal">
+        <div class="visualsuite-modal-content">
+            <div class="visualsuite-modal-header">
+                <h4>Select TTS Voice</h4>
+                <span class="visualsuite-close" id="visualsuite-modalClose">&times;</span>
+            </div>
+            <div id="visualsuite-voiceList">
+                Loading voices...
+            </div>
+        </div>
+    </div>
+    <!-- END REQUIRED TTS Controls -->
+
+
+    <script>
+        'use strict';
+        // --- GLOBAL STATE & DOM ELEMENTS ---
+        let presentationData = null;
+        let currentSceneIndex = 0;
+        let isPlaying = false;
+        let currentSpeech = null;
+        let p5Instance = null;
+        let sceneTimeout = null;
+        let originalMusicVolume = 0.3;
+
+        const E = {
+            loader: document.getElementById('presentation-loader-overlay'),
+            loaderText: document.getElementById('presentation-loader-text'),
+            playerHost: document.getElementById('presentation-player-host'),
+            sceneContent: document.getElementById('presentation-scene-content'),
+            prevBtn: document.getElementById('presentation-prev-btn'),
+            playBtn: document.getElementById('presentation-play-btn'),
+            nextBtn: document.getElementById('presentation-next-btn'),
+            musicAudio: document.getElementById('presentation-background-music'),
+            musicOptionsToggle: document.getElementById('presentation-music-options-toggle'),
+            musicOptions: document.getElementById('presentation-music-options'),
+            musicVolumeSlider: document.getElementById('presentation-music-volume-slider'),
+            musicTrackSelect: document.getElementById('presentation-music-track-select'),
+            musicUploadInput: document.getElementById('presentation-music-upload-input'),
+            // Cloned TTS elements for synchronization
+            ttsSelectorClone: document.getElementById('visualsuite-voiceSelector-clone'),
+            ttsAudioClone: document.getElementById('visualsuite-audioVisualizer-clone'),
+        };
+
+        const icons = {
+            play: `<i class="bi bi-play-fill"></i>`,
+            pause: `<i class="bi bi-pause-fill"></i>`,
+        };
+
+        const DEFAULT_AUDIO_TRACKS = {
+            "Ambient Study": "https://res.cloudinary.com/dmttn34te/video/upload/v1759780545/study-110111_at7lye.mp3",
+            "Epic Cinematic": "https://res.cloudinary.com/dmttn34te/video/upload/v1759780548/study-music-181044_jbuwpq.mp3",
+        };
+
+        const AudioCacher = {
+            db: null,
+            DB_NAME: 'PresentationAudioCacheDB',
+            STORE_NAME: 'audioTracks',
+            async init() {
+                return new Promise((resolve, reject) => {
+                    const request = indexedDB.open(this.DB_NAME, 1);
+                    request.onupgradeneeded = (event) => {
+                        const db = event.target.result;
+                        db.createObjectStore(this.STORE_NAME);
+                    };
+                    request.onsuccess = (event) => {
+                        this.db = event.target.result;
+                        resolve();
+                    };
+                    request.onerror = (event) => reject(event.target.error);
+                });
+            },
+            async get(key) {
+                return new Promise((resolve, reject) => {
+                    const transaction = this.db.transaction([this.STORE_NAME], 'readonly');
+                    const store = transaction.objectStore(this.STORE_NAME);
+                    const request = store.get(key);
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+            },
+            async set(key, value) {
+                return new Promise((resolve, reject) => {
+                    const transaction = this.db.transaction([this.STORE_NAME], 'readwrite');
+                    const store = transaction.objectStore(this.STORE_NAME);
+                    const request = store.put(value, key);
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => reject(request.error);
+                });
+            }
+        };
+
+        // RENAME APPLIED: DEFAULT_SCRIPT -> ExampleJson
+        let ExampleJson = { };
+        if (window.location.hash.includes('#data=')) try {
+            ExampleJson = JSON.parse(decodeURIComponent(window.location.hash.substring(window.location.hash.indexOf('#data=') + 6)));
+        } catch (e) {}
+
+        // --- RENDERER MAP ---
+        const sceneRenderers = {
+            title_splash: renderTitleSplash,
+            title: renderTitleSplash,
+            image_showcase: renderImageShowcase,
+            timeline: renderTimeline,
+            comparison: renderComparison,
+            bullet_points: renderBulletPoints,
+            chart: renderChart,
+            code: renderCode,
+            network: renderNetwork,
+            progress: renderProgress,
+            gauge: renderGauge,
+            quote: renderQuote,
+            p5_js_3d: renderP5,
+            table: renderTable,
+            quiz: renderQuiz,
+            memory_tree: renderMemoryTree,
+            end: renderTitleSplash,
+        };
+
+        const animationMap = {
+            fade: {
+                exit: 'presentation-animate__fadeOut',
+                enter: 'presentation-animate__fadeIn'
+            },
+            slide: {
+                exit: 'presentation-animate__slideOutLeft',
+                enter: 'presentation-animate__slideInRight'
+            },
+            zoom: {
+                exit: 'presentation-animate__zoomOut',
+                enter: 'presentation-animate__zoomIn'
+            },
+        };
+
+        // --- CORE APPLICATION LOGIC ---
+        async function initialize() {
+            E.loaderText.textContent = "Initializing Audio Cacher...";
+            await AudioCacher.init();
+
+            E.loaderText.textContent = "Caching default audio...";
+            await cacheDefaultAudio();
+
+            E.loaderText.textContent = "Registering Chart Plugins...";
+            Chart.register(ChartVenn.VennDiagramController, ChartVenn.ArcSlice);
+
+            E.loaderText.textContent = "Loading default script...";
+            loadScript(ExampleJson);
+
+            E.loaderText.textContent = "Warming up speech synthesis...";
+            await new Promise(resolve => {
+                const utterance = new SpeechSynthesisUtterance('');
+                utterance.volume = 0;
+                speechSynthesis.speak(utterance);
+                if (speechSynthesis.getVoices().length) return resolve();
+                speechSynthesis.onvoiceschanged = resolve;
+            });
+
+            // Setup TTS Synchronization between menu and bar clones
+            setupTTSCloneSync();
+
+            E.musicAudio.volume = originalMusicVolume;
+            setupEventListeners();
+
+            E.loader.style.opacity = '0';
+            E.loader.addEventListener('transitionend', () => E.loader.style.display = 'none');
+        }
+
+        async function cacheDefaultAudio() {
+            for (const [name, url] of Object.entries(DEFAULT_AUDIO_TRACKS)) {
+                let audioBlob = await AudioCacher.get(name);
+                if (!audioBlob) {
+                    try {
+                        const response = await fetch(url);
+                        if (!response.ok) throw new Error(`Failed to fetch ${url}`);
+                        audioBlob = await response.blob();
+                        await AudioCacher.set(name, audioBlob);
+                    } catch (error) {
+                        console.error(`Could not cache audio track "${name}":`, error.message);
+                        continue;
+                    }
+                }
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
+                E.musicTrackSelect.appendChild(option);
+            }
+        }
+
+        function loadScript(data) {
+            presentationData = data;
+            currentSceneIndex = 0;
+            stopPlayback();
+            applyTheme(presentationData);
+            renderScene(0, true);
+        }
+
+        function renderScene(newIndex = currentSceneIndex, isInitialLoad = false) {
+
+            // 1. Instant stop of old narration if playing, to prepare for new scene
+            if (isPlaying && !isInitialLoad) {
+                ttsManager.stop();
+                if (sceneTimeout) clearTimeout(sceneTimeout);
+            }
+
+            if (newIndex === currentSceneIndex && !isInitialLoad) return;
+
+            const oldSceneIndex = currentSceneIndex;
+            currentSceneIndex = newIndex;
+            const newScene = presentationData.scenes[currentSceneIndex];
+            if (!newScene) return;
+
+            const transitionConfig = newScene.transition || {
+                type: 'fade',
+                duration: 600
+            };
+            const anim = animationMap[transitionConfig.type] || animationMap.fade;
+
+            if (p5Instance) {
+                p5Instance.remove();
+                p5Instance = null;
+            }
+            if (sceneTimeout) clearTimeout(sceneTimeout);
+
+            const performRender = () => {
+                E.sceneContent.innerHTML = '';
+                E.sceneContent.style.opacity = 0;
+                applyTheme(presentationData, newScene.colors);
+
+                const renderer = sceneRenderers[newScene.type] || renderFallback;
+                renderer(newScene);
+                updateControls();
+
+                // 2. Start narration immediately if auto-play is enabled
+                if (isPlaying) {
+                    playNarration(newScene);
+                }
+
+                E.sceneContent.style.animationDuration = `${transitionConfig.duration}ms`;
+                E.sceneContent.classList.remove(...Object.values(animationMap).flatMap(a => [a.exit, a.enter]));
+                E.sceneContent.classList.add('presentation-animate__animated', anim.enter);
+                E.sceneContent.style.opacity = 1;
+
+                E.sceneContent.addEventListener('animationend', () => {
+                    E.sceneContent.classList.remove('presentation-animate__animated', anim.enter);
+                }, {
+                    once: true
+                });
+            };
+
+            if (isInitialLoad) {
+                performRender();
+            } else {
+                E.sceneContent.style.animationDuration = `${transitionConfig.duration}ms`;
+                E.sceneContent.classList.remove(...Object.values(animationMap).flatMap(a => [a.exit, a.enter]));
+                E.sceneContent.classList.add('presentation-animate__animated', anim.exit);
+                E.sceneContent.addEventListener('animationend', performRender, {
+                    once: true
+                });
+            }
+        }
+
+        function applyTheme(data, sceneColors) {
+            const theme = sceneColors || data.theme;
+            if (!theme) return;
+            for (const [key, value] of Object.entries(theme)) {
+                document.documentElement.style.setProperty(`--presentation-${key}`, value);
+            }
+            if (data.backgroundCss) {
+                E.playerHost.style.background = data.backgroundCss;
+            }
+        }
+
+        function updateControls() {
+            E.prevBtn.disabled = currentSceneIndex === 0;
+            E.nextBtn.disabled = currentSceneIndex === presentationData.scenes.length - 1;
+            E.playBtn.innerHTML = isPlaying ? icons.pause : icons.play;
+        }
+
+        function playNarration(scene) {
+            if (!scene.narration) {
+                if (isPlaying) sceneTimeout = setTimeout(nextScene, 5000);
+                return;
+            }
+
+            // Calculate estimated duration for failsafe
+            const narrationLength = scene.narration.split(' ').length;
+            const estimatedRateFactor = ttsManager ? ttsManager.rate : 1.0;
+            const estimatedDurationMs = (narrationLength / (2.5 * estimatedRateFactor)) * 1000;
+            const failsafeDuration = estimatedDurationMs + 2000;
+
+            if (sceneTimeout) clearTimeout(sceneTimeout);
+
+            const endHandler = () => {
+                if (sceneTimeout) clearTimeout(sceneTimeout);
+                if (E.musicAudio) E.musicAudio.volume = originalMusicVolume;
+                if (isPlaying) {
+                    setTimeout(nextScene, 500);
+                }
+            };
+
+            ttsManager.speak({
+                text: scene.narration,
+                locale: 'en-US',
+                onStart: () => {
+                    E.musicAudio.volume = originalMusicVolume * 0.2;
+                    sceneTimeout = setTimeout(() => {
+                        console.warn("TTS Failsafe triggered.");
+                        ttsManager.stop();
+                        endHandler();
+                    }, failsafeDuration);
+                },
+                onEnd: endHandler
+            });
+        }
+
+        function togglePlayPause() {
+            isPlaying = !isPlaying;
+            if (isPlaying) {
+                if (E.musicAudio.src && E.musicAudio.src !== window.location.href) {
+                    E.musicAudio.play().catch(e => console.error("Music playback failed:", e));
+                }
+                E.playBtn.innerHTML = icons.pause;
+                playNarration(presentationData.scenes[currentSceneIndex]);
+            } else {
+                stopPlayback();
+            }
+        }
+
+        function stopPlayback() {
+            // FIX: Ensure immediate halt of both speech and music
+            isPlaying = false;
+            if (sceneTimeout) clearTimeout(sceneTimeout);
+
+            ttsManager.stop(); // Stops speech instantly
+
+            E.musicAudio.pause(); // Stops music instantly
+            if (E.musicAudio) E.musicAudio.volume = originalMusicVolume;
+            E.playBtn.innerHTML = icons.play;
+        }
+
+        function nextScene() {
+            if (currentSceneIndex < presentationData.scenes.length - 1) {
+                renderScene(currentSceneIndex + 1);
+            } else {
+                stopPlayback();
+            }
+        }
+
+        function prevScene() {
+            if (currentSceneIndex > 0) {
+                renderScene(currentSceneIndex - 1);
+            } else {
+                stopPlayback();
+            }
+        }
+
+        // --- SCENE RENDERER IMPLEMENTATIONS ---
+        function renderFallback(scene) {
+            E.sceneContent.innerHTML = `<h2>Unsupported Scene Type: ${scene.type}</h2><p>Please check your JSON script.</p>`;
+        }
+
+        function renderTitleSplash(scene) {
+            E.sceneContent.innerHTML = `<div class="presentation-scene-title-splash" style="background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${scene.imageUrl || ''})"><h1>${scene.text || ''}</h1>${scene.subtitle ? `<h2>${scene.subtitle}</h2>` : ''}</div>`;
+        }
+
+        function renderImageShowcase(scene) {
+            E.sceneContent.innerHTML = `<div class="presentation-scene-image-showcase"><img src="${scene.imageUrl}" alt="${scene.caption}" onerror="this.onerror=null;this.outerHTML='<div class=presentation-img-fallback>Image Not Found</div>';"><figcaption>${scene.caption || ''}</figcaption></div>`;
+        }
+
+        function renderTimeline(scene) {
+            const eventsHtml = scene.events.map(event => `<div class="presentation-timeline-event"><div class="year">${event.year}</div><div class="title">${event.title}</div></div>`).join('');
+            E.sceneContent.innerHTML = `<div class="presentation-scene-timeline"><h2>${scene.text}</h2><div class="presentation-timeline-container">${eventsHtml}</div></div>`;
+        }
+
+        function renderComparison(scene) {
+            const leftPoints = scene.leftPoints.map(p => `<li>${p}</li>`).join('');
+            const rightPoints = scene.rightPoints.map(p => `<li>${p}</li>`).join('');
+            E.sceneContent.innerHTML = `<div class="presentation-scene-comparison"><h2>${scene.text}</h2><div class="presentation-comparison-grid"><div class="presentation-comparison-side"><h3>${scene.leftTitle}</h3><ul>${leftPoints}</ul></div><div class="presentation-comparison-side"><h3>${scene.rightTitle}</h3><ul>${rightPoints}</ul></div></div></div>`;
+        }
+
+        function renderBulletPoints(scene) {
+            const pointsHtml = scene.points.map(p => `<li>${p}</li>`).join('');
+            E.sceneContent.innerHTML = `<div class="presentation-scene-comparison"><h2>${scene.text}</h2><ul style="text-align:left; max-width: 60%; margin: 0 auto; font-size: 1.5rem;">${pointsHtml}</ul></div>`;
+        }
+
+        function renderCode(scene) {
+            const escapedCode = scene.code.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            E.sceneContent.innerHTML = `<div class="presentation-scene-code" style="width:100%"><h2>${scene.text}</h2><pre><code class="language-${scene.language}">${escapedCode}</code></pre></div>`;
+            Prism.highlightAll();
+        }
+
+        function renderNetwork(scene) {
+            const {
+                nodes,
+                links
+            } = scene;
+            const width = E.sceneContent.clientWidth;
+            const height = E.sceneContent.clientHeight * 0.8;
+            const positions = nodes.reduce((acc, node, i) => {
+                const angle = (i / nodes.length) * 2 * Math.PI;
+                acc[node.id] = {
+                    x: width / 2 + (width / 3) * Math.cos(angle),
+                    y: height / 2 + (height / 3) * Math.sin(angle)
+                };
+                return acc;
+            }, {});
+            const linksHtml = links.map(link => `<line x1="${positions[link.from].x}" y1="${positions[link.from].y}" x2="${positions[link.to].x}" y2="${positions[link.to].y}" stroke="var(--presentation-border-color)" stroke-width="2"/>`).join('');
+
+            // FIX: Access position via positions[node.id]
+            const nodesHtml = nodes.map(node => {
+                const pos = positions[node.id];
+                return `<g transform="translate(${pos.x}, ${pos.y})"><circle r="40" fill="var(--presentation-stage-bg)" stroke="var(--presentation-primary)" stroke-width="3"/><text fill="var(--presentation-text)" text-anchor="middle" dy=".3em">${node.label}</text></g>`;
+            }).join('');
+
+            E.sceneContent.innerHTML = `<div class="presentation-scene-network" style="width:100%"><h2>${scene.text}</h2><svg viewBox="0 0 ${width} ${height}">${linksHtml}${nodesHtml}</svg></div>`;
+        }
+
+        function renderProgress(scene) {
+            E.sceneContent.innerHTML = `<div class="presentation-scene-progress"><h2>${scene.text}</h2><div class="presentation-progress-bar"><div id="p-fill" class="presentation-progress-fill"></div></div><h3>${scene.label}: ${scene.progress}%</h3></div>`;
+            setTimeout(() => {
+                E.sceneContent.querySelector('#p-fill').style.width = `${scene.progress}%`;
+            }, 100);
+        }
+
+        function renderGauge(scene) {
+            const circumference = 2 * Math.PI * 45;
+            const pct = (scene.value - scene.min) / (scene.max - scene.min);
+            const offset = circumference * (1 - pct);
+            E.sceneContent.innerHTML = `<div class="presentation-scene-gauge"><h2>${scene.text}</h2><svg viewBox="0 0 100 60"><path d="M 5 50 A 45 45 0 0 1 95 50" fill="none" stroke="var(--presentation-border-color)" stroke-width="10" /><path d="M 5 50 A 45 45 0 0 1 95 50" fill="none" stroke="var(--presentation-primary)" stroke-width="10" stroke-linecap="round" stroke-dasharray="${circumference}" stroke-dashoffset="${circumference}" style="transition: stroke-dashoffset 1s ease-out;" id="gauge-fill"/><text x="50" y="45" text-anchor="middle" fill="var(--presentation-text)" font-size="20">${scene.value}${scene.unit || ''}</text></svg></div>`;
+            setTimeout(() => {
+                E.sceneContent.querySelector('#gauge-fill').style.strokeDashoffset = offset;
+            }, 100);
+        }
+
+        function renderQuote(scene) {
+            E.sceneContent.innerHTML = `<div class="presentation-scene-quote"><blockquote>${scene.quote}</blockquote><cite>— ${scene.author}</cite></div>`;
+        }
+
+        function renderTable(scene) {
+            const headers = `<tr>${scene.tableHeaders.map(h => `<th>${h}</th>`).join('')}</tr>`;
+            const rows = scene.tableData.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`).join('');
+            E.sceneContent.innerHTML = `<div class="presentation-scene-table" style="width:100%"><h2>${scene.text}</h2><table><thead>${headers}</thead><tbody>${rows}</tbody></table></div>`;
+        }
+
+        function renderQuiz(scene) {
+            const optionsHtml = scene.options.map((opt, i) => `<button class="presentation-option-btn" data-index="${i}">${opt}</button>`).join('');
+            E.sceneContent.innerHTML = `<div class="presentation-scene-quiz"><h2>${scene.question}</h2><div class="presentation-options">${optionsHtml}</div></div>`;
+            E.sceneContent.querySelectorAll('.presentation-option-btn').forEach(btn => {
+                btn.onclick = () => {
+                    const selected = parseInt(btn.dataset.index);
+                    const isCorrect = selected === scene.correctAnswer;
+                    btn.classList.add(isCorrect ? 'correct' : 'incorrect');
+                    if (!isCorrect) {
+                        E.sceneContent.querySelector(`[data-index='${scene.correctAnswer}']`).classList.add('correct');
+                    }
+                    E.sceneContent.querySelectorAll('.presentation-option-btn').forEach(b => b.disabled = true);
+                    if (isCorrect && scene.answerText) {
+                        ttsManager.speak({
+                            text: scene.answerText
+                        });
+                    }
+                };
+            });
+        }
+
+        function renderP5(scene) {
+            E.sceneContent.innerHTML = `<div class="presentation-scene-p5"><h2>${scene.text}</h2><div id="p5-canvas-host" style="width:100%; height:400px;"></div></div>`;
+            const sketch = new Function('p', `p.width = p.select('#p5-canvas-host').width; p.height = p.select('#p5-canvas-host').height; ${scene.p5jsCode}`);
+            p5Instance = new p5(sketch, 'p5-canvas-host');
+        }
+
+        function renderMemoryTree(scene) {
+            const width = E.sceneContent.clientWidth * 0.9;
+            const height = E.sceneContent.clientHeight * 0.9;
+            const positions = {};
+            const links = [];
+
+            function calculatePositions(node, x, y, level, widthSpread) {
+                positions[node.name] = {
+                    x,
+                    y
+                };
+                if (node.children && node.children.length) {
+                    const childCount = node.children.length;
+                    const childWidthSpread = widthSpread / childCount;
+                    let currentX = x - (widthSpread / 2) + (childWidthSpread / 2);
+
+                    node.children.forEach(child => {
+                        links.push({
+                            from: {
+                                x,
+                                y
+                            },
+                            to: {
+                                x: currentX,
+                                y: y + 90
+                            }
+                        });
+                        calculatePositions(child, currentX, y + 90, level + 1, childWidthSpread);
+                        currentX += childWidthSpread;
+                    });
+                }
+            }
+            calculatePositions(scene.root, width / 2, 60, 0, width);
+
+            const linksHtml = links.map(link => `<path d="M ${link.from.x} ${link.from.y + 15} C ${link.from.x} ${link.from.y + 50}, ${link.to.x} ${link.to.y - 50}, ${link.to.x} ${link.to.y - 15}" stroke="var(--presentation-border-color)" stroke-width="2" fill="none"/>`).join('');
+            const nodesHtml = Object.entries(positions).map(([name, pos]) => `<g transform="translate(${pos.x}, ${pos.y})"><rect x="-70" y="-15" width="140" height="30" rx="5" fill="var(--presentation-stage-bg)" stroke="var(--presentation-primary)" stroke-width="2"/><text fill="var(--presentation-text)" text-anchor="middle" dy=".3em" font-size="12px" style="pointer-events:none;">${name}</text></g>`).join('');
+
+            E.sceneContent.innerHTML = `<div class="presentation-scene-network" style="width:100%; height:100%;"><h2>${scene.text}</h2><svg viewBox="0 0 ${width} ${height}">${linksHtml}${nodesHtml}</svg></div>`;
+        }
+
+        function renderChart(scene) {
+            E.sceneContent.innerHTML = `<div class="presentation-scene-chart" style="width: 100%; height: 100%; position: relative;"><canvas id="chart-canvas"></canvas></div>`;
+            const ctx = document.getElementById('chart-canvas').getContext('2d');
+            const chartConfig = scene.chartConfig || {};
+            const defaultOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'var(--presentation-text)'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: scene.text,
+                        color: 'var(--presentation-text)',
+                        font: {
+                            size: 18
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            color: 'var(--presentation-text)'
+                        },
+                        grid: {
+                            color: 'rgba(192, 192, 255, 0.2)'
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            color: 'var(--presentation-text)'
+                        },
+                        grid: {
+                            color: 'rgba(192, 192, 255, 0.2)'
+                        }
+                    }
+                }
+            };
+            const finalOptions = {
+                ...defaultOptions,
+                ...(chartConfig.options || {})
+            };
+            finalOptions.plugins = {
+                ...defaultOptions.plugins,
+                ...(chartConfig.options?.plugins || {})
+            };
+            finalOptions.scales = {
+                ...defaultOptions.scales,
+                ...(chartConfig.options?.scales || {})
+            };
+            if (chartConfig.type === 'venn' || chartConfig.type === 'doughnut' || chartConfig.type === 'pie') {
+                delete finalOptions.scales;
+            }
+            new Chart(ctx, {
+                type: chartConfig.type || 'bar',
+                data: chartConfig.data || {},
+                options: finalOptions
+            });
+        }
+
+        // --- TTS CLONE SYNCHRONIZATION ---
+        function setupTTSCloneSync() {
+            const selectorOriginal = document.getElementById('visualsuite-voiceSelector');
+            const selectorClone = E.ttsSelectorClone;
+            const audioOriginal = document.getElementById('visualsuite-audioVisualizer');
+            const audioClone = E.ttsAudioClone;
+
+            if (!selectorOriginal || !selectorClone) return;
+
+            // 1. Initial State Sync (wait for TTS Manager to load voices)
+            setTimeout(() => {
+                selectorClone.textContent = selectorOriginal.textContent;
+            }, 500);
+
+            // 2. Continuous Sync (Voice Selector Text/Content)
+            const textObserver = new MutationObserver(mutations => {
+                mutations.forEach(mutation => {
+                    if (mutation.target === selectorOriginal || mutation.target.parentNode === selectorOriginal) {
+                        selectorClone.textContent = selectorOriginal.textContent;
+                    }
+                });
+            });
+            textObserver.observe(selectorOriginal, {
+                characterData: true,
+                childList: true,
+                subtree: true
+            });
+
+            // 3. Continuous Sync (Audio Visualizer State/Class)
+            const audioObserver = new MutationObserver(mutations => {
+                mutations.forEach(mutation => {
+                    if (mutation.attributeName === 'class' && mutation.target === audioOriginal) {
+                        audioClone.className = audioOriginal.className;
+                    }
+                });
+            });
+            audioObserver.observe(audioOriginal, {
+                attributes: true
+            });
+
+            // 4. Manual click handler for the clone (to open the modal which is controlled by the original ID)
+            selectorClone.addEventListener('click', () => {
+                selectorOriginal.click(); // Trigger the original button's event handler
+            });
+        }
+        // --- END TTS CLONE SYNCHRONIZATION ---
+
+
+        // --- EVENT LISTENERS & UI INTERACTIONS ---
+        function setupEventListeners() {
+            E.prevBtn.onclick = prevScene;
+            E.nextBtn.onclick = nextScene;
+            E.playBtn.onclick = togglePlayPause;
+
+            E.musicOptionsToggle.onclick = () => {
+                E.musicOptions.classList.toggle('visible');
+            };
+            E.musicVolumeSlider.oninput = (e) => {
+                originalMusicVolume = parseFloat(e.target.value);
+                E.musicAudio.volume = isPlaying ? originalMusicVolume * 0.2 : originalMusicVolume;
+            };
+            E.musicTrackSelect.onchange = async (e) => {
+                const trackName = e.target.value;
+                if (E.musicAudio.src) URL.revokeObjectURL(E.musicAudio.src);
+                if (trackName) {
+                    const audioBlob = await AudioCacher.get(trackName);
+                    if (audioBlob) {
+                        E.musicAudio.src = URL.createObjectURL(audioBlob);
+                        if (isPlaying) E.musicAudio.play();
+                    }
+                } else {
+                    E.musicAudio.src = "";
+                    E.musicAudio.pause();
+                }
+            };
+            E.musicUploadInput.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    if (E.musicAudio.src) URL.revokeObjectURL(E.musicAudio.src);
+                    E.musicAudio.src = URL.createObjectURL(file);
+                    if (isPlaying) E.musicAudio.play();
+                    E.musicTrackSelect.value = "";
+                }
+            };
+        }
+
+        // --- STARTUP ---
+        document.addEventListener('DOMContentLoaded', initialize);
+
+        // ----------------------------------------------------------------
+        // REQUIRED TTS INTEGRATION CLASS
+        // ----------------------------------------------------------------
+        class EnhancedTTSManager {
+            constructor() {
+                this.currentUtterance = null;
+                this.synth = window.speechSynthesis;
+                this.voices = [];
+                this.voicesLoaded = false;
+                this.selectedVoice = null;
+                this.rate = 1.0;
+                this.onEndCallback = null;
+
+                this.loadVoices();
+                if (speechSynthesis.onvoiceschanged !== undefined) {
+                    speechSynthesis.onvoiceschanged = () => this.loadVoices();
+                }
+
+                this.setupControls();
+            }
+
+            loadVoices() {
+                this.voices = this.synth.getVoices();
+                this.voicesLoaded = true;
+                console.log(`✅ Loaded ${this.voices.length} TTS voices`);
+                this.updateVoiceList();
+            }
+
+            setupControls() {
+                const speedSlider = document.getElementById('visualsuite-speedSlider');
+                const speedValue = document.getElementById('visualsuite-speedValue');
+                const voiceSelector = document.getElementById('visualsuite-voiceSelector');
+                const voiceModal = document.getElementById('visualsuite-voiceModal');
+                const modalClose = document.getElementById('visualsuite-modalClose');
+
+                // 🌀 Speed control only (LOGIC REMAINS, but elements are removed from HTML)
+                if (speedSlider && speedValue) {
+                    speedSlider.addEventListener('input', (e) => {
+                        this.rate = parseFloat(e.target.value);
+                        speedValue.textContent = this.rate.toFixed(1) + 'x';
+                    });
+                }
+
+                // 🗣 Voice selection modal logic
+                if (voiceSelector && voiceModal && modalClose) {
+                    voiceSelector.addEventListener('click', () => {
+                        voiceModal.classList.add('visualsuite-show');
+                    });
+
+                    modalClose.addEventListener('click', () => {
+                        voiceModal.classList.remove('visualsuite-show');
+                    });
+
+                    voiceModal.addEventListener('click', (e) => {
+                        if (e.target === voiceModal) {
+                            voiceModal.classList.remove('visualsuite-show');
+                        }
+                    });
+                }
+            }
+
+            updateVoiceList() {
+                const voiceList = document.getElementById('visualsuite-voiceList');
+                if (!voiceList) return;
+
+                voiceList.innerHTML = '';
+
+                this.voices.forEach((voice) => {
+                    const item = document.createElement('div');
+                    item.className = 'visualsuite-voice-item';
+                    item.innerHTML = `
+                        <div class="visualsuite-voice-name">${voice.name}</div>
+                        <div class="visualsuite-voice-lang">${voice.lang}</div>
+                    `;
+
+                    item.addEventListener('click', () => {
+                        document.querySelectorAll('.visualsuite-voice-item').forEach(el => {
+                            el.classList.remove('visualsuite-selected');
+                        });
+                        item.classList.add('visualsuite-selected');
+                        this.selectedVoice = voice;
+
+                        // FIX: Update BOTH original and clone selectors
+                        const newText = `🔊 ${voice.name.substring(0, 20)}...`;
+                        document.getElementById('visualsuite-voiceSelector').textContent = newText;
+                        if (E.ttsSelectorClone) E.ttsSelectorClone.textContent = newText;
+
+                        document.getElementById('visualsuite-voiceModal').classList.remove('visualsuite-show');
+                    });
+
+                    voiceList.appendChild(item);
+                });
+            }
+
+            normalizeLocale(locale) {
+                if (!locale) return 'en-US';
+                return locale.replace('_', '-').toLowerCase();
+            }
+
+            findBestVoice(locale) {
+                if (this.selectedVoice) return this.selectedVoice;
+
+                const normalized = this.normalizeLocale(locale);
+                const [lang] = normalized.split('-');
+
+                let voice = this.voices.find(v => v.lang.toLowerCase() === normalized);
+                if (!voice) voice = this.voices.find(v => v.lang.toLowerCase().startsWith(lang + '-'));
+                if (!voice) voice = this.voices.find(v => v.lang.toLowerCase().startsWith(lang));
+                if (!voice) voice = this.voices[0];
+
+                return voice;
+            }
+
+            speak(config) {
+                this.stop();
+
+                const {
+                    text,
+                    locale = 'en-US',
+                    onStart,
+                    onEnd
+                } = config;
+                if (!text) return;
+
+                this.onEndCallback = onEnd;
+
+                if (!this.voicesLoaded) {
+                    setTimeout(() => this.speak(config), 100);
+                    return;
+                }
+
+                const utterance = new SpeechSynthesisUtterance(text);
+                const voice = this.findBestVoice(locale);
+
+                utterance.voice = voice;
+                utterance.lang = this.normalizeLocale(locale);
+                utterance.rate = this.rate;
+                utterance.volume = 1.0;
+
+                const audioVisualizer = document.getElementById('visualsuite-audioVisualizer');
+                const audioVisualizerClone = document.getElementById('visualsuite-audioVisualizer-clone');
+
+                utterance.onstart = () => {
+                    audioVisualizer?.classList.add('visualsuite-speaking');
+                    audioVisualizerClone?.classList.add('visualsuite-speaking');
+                    onStart?.();
+                };
+
+                utterance.onend = () => {
+                    audioVisualizer?.classList.remove('visualsuite-speaking');
+                    audioVisualizerClone?.classList.remove('visualsuite-speaking');
+                    this.currentUtterance = null;
+                    if (this.onEndCallback) {
+                        this.onEndCallback();
+                        this.onEndCallback = null;
+                    }
+                };
+
+                utterance.onerror = (event) => {
+                    console.error('❌ TTS Error:', event);
+                    audioVisualizer?.classList.remove('visualsuite-speaking');
+                    audioVisualizerClone?.classList.remove('visualsuite-speaking');
+                    this.currentUtterance = null;
+                };
+
+                this.currentUtterance = utterance;
+                this.synth.speak(utterance);
+            }
+
+            stop() {
+                if (this.currentUtterance) {
+                    this.synth.cancel();
+                    this.currentUtterance = null;
+                    document.getElementById('visualsuite-audioVisualizer')?.classList.remove('visualsuite-speaking');
+                    document.getElementById('visualsuite-audioVisualizer-clone')?.classList.remove('visualsuite-speaking');
+                }
+            }
+
+            isSpeaking() {
+                return this.synth.speaking;
+            }
+        }
+
+        const ttsManager = new EnhancedTTSManager();
+        window.ttsManager = ttsManager;
+    </script>
+</div>

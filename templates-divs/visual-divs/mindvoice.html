@@ -1,0 +1,779 @@
+<div id="VisualContainer-mindmap" class="visual-template">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <style>
+        /* Scoping styles to the container */
+        #VisualContainer-mindmap {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+            color: #f0f0f0;
+            z-index: 1;
+
+            /* Define CSS Variables locally */
+            --mindmap-glass-bg: rgba(25, 25, 40, 0.65);
+            --mindmap-glass-border: rgba(255, 255, 255, 0.15);
+            --mindmap-highlight-color: #FFD54F;
+        }
+
+        #VisualContainer-mindmap * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .mindmap-glass {
+            background: var(--mindmap-glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--mindmap-glass-border);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+        }
+
+        /* Podcast Button */
+        #mindmap-podcastBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #FFD54F, #FF8C00);
+            border: 1px solid var(--mindmap-glass-border);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+            color: #111;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        #mindmap-podcastBtn:hover {
+            transform: scale(1.1);
+        }
+
+        #mindmap-podcastBtn.playing {
+            background: linear-gradient(45deg, #FF6B6B, #EE5A52);
+            color: #fff;
+        }
+
+        /* Info Box */
+        #mindmap-infoBox {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 600px;
+            min-height: 80px;
+            z-index: 999;
+            padding: 15px 25px;
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        #mindmap-infoBox.mindmap-show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        #mindmap-infoBox h3 {
+            color: var(--mindmap-highlight-color);
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+
+        #mindmap-infoBox p {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        #mindmap-canvasContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+.visualsuite-tts-controls {
+    position: fixed;
+    top: 25px;
+    left: 25px;
+    width: 55px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10%;
+    background: linear-gradient(45deg, #FFD54F, #FF8C00);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    cursor: pointer;
+    z-index: 1001;
+    transition: 0.3s;
+}
+
+.visualsuite-tts-controls:hover {
+    transform: scale(1.08);
+}
+
+#visualsuite-voiceSelector {
+    font-size: 12px;
+    background: none;
+    border: none;
+    color: #111;
+    cursor: pointer;
+}
+
+        .visualsuite-control-group {
+            display: flex;
+            align-items: center;
+        }
+
+
+        #visualsuite-audioVisualizer {
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        #visualsuite-audioVisualizer.visualsuite-speaking::after {
+            content: '';
+            display: block;
+            height: 100%;
+            background: linear-gradient(90deg, #FFD54F 0%, #FF8C00 100%);
+            width: 100%;
+            animation: visualsuite-wave 1.5s infinite linear;
+        }
+
+        @keyframes visualsuite-wave {
+            0% {
+                transform: translateX(-100%);
+            }
+
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        /* Voice Modal */
+        .visualsuite-modal {
+            display: none;
+            position: fixed;
+            z-index: 1200;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .visualsuite-modal.visualsuite-show {
+            display: flex;
+        }
+
+        .visualsuite-modal-content {
+            background: #1a1a2e;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 350px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .visualsuite-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            padding: 10px;
+        }
+
+        .visualsuite-modal-header h4 {
+            margin: 0;
+            color: var(--mindmap-highlight-color);
+        }
+
+        .visualsuite-close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .visualsuite-voice-item {
+            padding: 8px;
+            margin-bottom: 4px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .visualsuite-voice-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .visualsuite-voice-item.visualsuite-selected {
+            background: #3a3a5a;
+            border-color: var(--mindmap-highlight-color);
+        }
+
+        .visualsuite-voice-name {
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .visualsuite-voice-lang {
+            font-size: 11px;
+            color: #bbb;
+        }
+    </style>
+
+    <div id="mindmap-canvasContainer"></div>
+    <button id="mindmap-podcastBtn" title="Start/Stop Narration" onclick="handlePodcast()">🔊</button>
+    <div id="mindmap-infoBox" class="mindmap-glass">
+        <h3 id="mindmap-infoBoxTitle">Click a node or start the narration!</h3>
+        <p id="mindmap-infoBoxContent">The notes for the selected node will appear here.</p>
+    </div>
+
+    <!-- REQUIRED TTS Controls (Simplified) -->
+    <div class="visualsuite-tts-controls mindmap-glass">
+        <div class="visualsuite-audio-bar">
+            <div id="visualsuite-audioVisualizer"></div>
+        </div>
+        <div class="visualsuite-control-group">
+            <button id="visualsuite-voiceSelector">Voice</button>
+        </div>
+    </div>
+
+    <div id="visualsuite-voiceModal" class="visualsuite-modal">
+        <div class="visualsuite-modal-content">
+            <div class="visualsuite-modal-header">
+                <h4>Select TTS Voice</h4>
+                <span class="visualsuite-close" id="visualsuite-modalClose">&times;</span>
+            </div>
+            <div id="visualsuite-voiceList">
+                Loading voices...
+            </div>
+        </div>
+    </div>
+    <!-- END REQUIRED TTS Controls -->
+
+    <script>
+        // --- Global Variables ---
+        let mindmap = null;
+        let camera = {
+            x: 0,
+            y: 0,
+            zoom: 1,
+            targetX: 0,
+            targetY: 0,
+            targetZoom: 1
+        };
+        let isDragging = false,
+            lastMouseX = 0,
+            lastMouseY = 0;
+        let isNarrating = false,
+            currentNarrationIndex = 0,
+            narrationScript = [];
+
+        /**
+         * Generates a visually distinct color for a branch using HSL color space.
+         */
+        function generateColorForBranch(index) {
+            const hue = (index * 137.5) % 360;
+            return `hsl(${hue}, 70%, 60%)`;
+        }
+
+        // --- MindNode Class ---
+        class MindNode {
+            constructor(data, parent = null, level = 0, siblingIndex = 0) {
+                this.id = data.id;
+                this.title = data.title || '';
+                this.notes = data.notes || '';
+                this.script = data.script || '';
+                this.children = [];
+                this.parent = parent;
+                this.level = level;
+                this.expanded = level < 2;
+                this.x = 0;
+                this.y = 0;
+                this.targetX = 0;
+                this.targetY = 0;
+                this.width = 0;
+                this.height = 0;
+                this.highlighted = false;
+
+                if (level === 0) this.color = '#FFD54F';
+                else if (level === 1) this.color = generateColorForBranch(siblingIndex);
+                else this.color = parent.color;
+
+                if (data.children && Array.isArray(data.children)) {
+                    data.children.forEach((childData, index) => {
+                        this.children.push(new MindNode(childData, this, level + 1, index));
+                    });
+                }
+            }
+            toggle() {
+                this.expanded = !this.expanded;
+            }
+            getVisibleNodes() {
+                let nodes = [this];
+                if (this.expanded) this.children.forEach(c => nodes = nodes.concat(c.getVisibleNodes()));
+                return nodes;
+            }
+            getAllNodes() {
+                let nodes = [this];
+                this.children.forEach(c => nodes = nodes.concat(c.getAllNodes()));
+                return nodes;
+            }
+            update() {
+                this.x = lerp(this.x, this.targetX, 0.1);
+                this.y = lerp(this.y, this.targetY, 0.1);
+            }
+            draw() {
+                push();
+                if (this.highlighted) {
+                    fill(this.color);
+                    stroke(255);
+                    strokeWeight(3);
+                } else {
+                    fill(25, 25, 40, 200);
+                    stroke(this.color);
+                    strokeWeight(2);
+                }
+                rect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height, 8);
+                fill(this.highlighted ? 0 : 240);
+                noStroke();
+                textAlign(CENTER, CENTER);
+                textSize(12 + max(0, 3 - this.level) * 2);
+                textStyle(this.level === 0 ? BOLD : NORMAL);
+                text(this.title, this.x, this.y);
+                if (this.children.length > 0) {
+                    fill(this.color);
+                    text(this.expanded ? '−' : '+', this.x + this.width / 2 - 12, this.y - this.height / 2 + 12);
+                }
+                pop();
+            }
+            drawConnection() {
+                if (this.parent && this.parent.expanded) {
+                    stroke(this.color);
+                    strokeWeight(2);
+                    line(this.parent.x, this.parent.y, this.x, this.y);
+                }
+            }
+            contains(x, y) {
+                return x >= this.x - this.width / 2 && x <= this.x + this.width / 2 && y >= this.y - this.height / 2 && y <= this.y + this.height / 2;
+            }
+        }
+
+        // --- Narration & Voice Logic (Simplified to use ttsManager) ---
+        function handlePodcast() {
+            ttsManager.isSpeaking() ? stopNarration() : startNarration();
+        }
+
+        function startNarration() {
+            if (!mindmap) return alert('Mindmap not loaded.');
+            isNarrating = true;
+            currentNarrationIndex = 0;
+            narrationScript = [];
+
+            // Generate simple script list
+            generateScript(mindmap, {
+                value: 0
+            });
+
+            document.getElementById('mindmap-podcastBtn').innerHTML = '⏸️';
+            document.getElementById('mindmap-podcastBtn').classList.add('playing');
+            narrateNext();
+        }
+
+        function generateScript(node, speakerCounter) {
+            let text = node.script || `${node.title}. ${node.notes}`;
+            if (text.trim().length > 1) {
+                narrationScript.push({
+                    text,
+                    node
+                });
+            }
+            if (node.expanded && node.children.length > 0) {
+                node.children.forEach(child => generateScript(child, speakerCounter));
+            }
+        }
+
+        function narrateNext() {
+            if (!isNarrating || currentNarrationIndex >= narrationScript.length) return stopNarration();
+
+            const step = narrationScript[currentNarrationIndex];
+
+            mindmap.getAllNodes().forEach(n => n.highlighted = false);
+            step.node.highlighted = true;
+            camera.targetX = step.node.x;
+            camera.targetY = step.node.y;
+            camera.targetZoom = 1.2;
+            updateInfoBox(step.node);
+
+            if (step.node.children.length > 0 && !step.node.expanded) {
+                step.node.expanded = true;
+                updateLayout();
+            }
+
+            ttsManager.speak({
+                text: step.text,
+                locale: 'en-US',
+                onEnd: () => {
+                    currentNarrationIndex++;
+                    setTimeout(narrateNext, 800);
+                }
+            });
+        }
+
+        function stopNarration() {
+            isNarrating = false;
+            ttsManager.stop();
+            if (mindmap) mindmap.getAllNodes().forEach(node => node.highlighted = false);
+            updateInfoBox(mindmap);
+            document.getElementById('mindmap-podcastBtn').innerHTML = '🔊';
+            document.getElementById('mindmap-podcastBtn').classList.remove('playing');
+        }
+
+        function updateVoiceProfiles() {
+            // Function kept empty as dual voice logic removed, but kept for legacy calls
+        }
+
+        // --- p5.js Setup & Drawing ---
+        function setup() {
+            let canvas = createCanvas(windowWidth, windowHeight);
+            canvas.parent('mindmap-canvasContainer');
+            loadDefaultExample();
+            speechSynthesis.onvoiceschanged = () => {
+                // Initial voice loading is now handled by the TTS Manager
+            };
+        }
+
+        function loadDefaultExample() {
+            let ExampleJson = {};
+
+            // Directly initialize with ExampleJson
+            mindmap = new MindNode(ExampleJson);
+            updateLayout();
+            centerOnRoot();
+            updateInfoBox(mindmap);
+        }
+
+        function updateLayout() {
+            if (!mindmap) return;
+            const ySpacing = 60,
+                xSpacing = 220;
+
+            function layout(node, x, y) {
+                node.targetX = x;
+                node.targetY = y;
+                textSize(12 + max(0, 3 - node.level) * 2);
+                node.width = max(textWidth(node.title) + 40, 100);
+                node.height = 50;
+                if (!node.expanded || node.children.length === 0) return ySpacing;
+                let childrenHeight = node.children.reduce((acc, child) => acc + getSubtreeHeight(child), 0);
+                let currentY = y - childrenHeight / 2;
+                node.children.forEach(child => {
+                    let childHeight = getSubtreeHeight(child);
+                    layout(child, x + xSpacing, currentY + childHeight / 2);
+                    currentY += childHeight;
+                });
+                return childrenHeight;
+            }
+
+            function getSubtreeHeight(node) {
+                if (!node.expanded || node.children.length === 0) return ySpacing;
+                return node.children.reduce((acc, child) => acc + getSubtreeHeight(child), 0);
+            }
+            layout(mindmap, 100, height / 2);
+        }
+
+        function draw() {
+            background(10, 10, 16);
+            if (!mindmap) return;
+            camera.x = lerp(camera.x, camera.targetX, 0.1);
+            camera.y = lerp(camera.y, camera.targetY, 0.1);
+            camera.zoom = lerp(camera.zoom, camera.targetZoom, 0.1);
+            push();
+            translate(width / 2, height / 2);
+            scale(camera.zoom);
+            translate(-camera.x, -camera.y);
+            let visibleNodes = mindmap.getVisibleNodes();
+            visibleNodes.forEach(node => node.update());
+            visibleNodes.forEach(node => node.drawConnection());
+            visibleNodes.forEach(node => node.draw());
+            pop();
+        }
+
+        // --- User Interaction ---
+
+        function updateInfoBox(node) {
+            const titleEl = document.getElementById('mindmap-infoBoxTitle');
+            const contentEl = document.getElementById('mindmap-infoBoxContent');
+            const infoBox = document.getElementById('mindmap-infoBox');
+            if (node) {
+                titleEl.textContent = node.title;
+                contentEl.textContent = node.notes || "No notes available for this node.";
+                infoBox.classList.add('mindmap-show');
+            } else {
+                infoBox.classList.remove('mindmap-show');
+            }
+        }
+
+        function mousePressed() {
+            let worldPos = screenToWorld(mouseX, mouseY);
+            let clickedNode = getNodeAt(worldPos.x, worldPos.y);
+
+            if (clickedNode) {
+                clickedNode.toggle();
+                updateLayout();
+                updateInfoBox(clickedNode);
+            } else {
+                isDragging = true;
+                lastMouseX = mouseX;
+                lastMouseY = mouseY;
+            }
+        }
+
+        function mouseDragged() {
+            if (isDragging) {
+                let dx = (mouseX - lastMouseX) / camera.zoom;
+                let dy = (mouseY - lastMouseY) / camera.zoom;
+                camera.targetX -= dx;
+                camera.targetY -= dy;
+                lastMouseX = mouseX;
+                lastMouseY = mouseY;
+            }
+        }
+
+        function mouseReleased() {
+            isDragging = false;
+        }
+
+        function mouseWheel(event) {
+            let zoomFactor = event.delta > 0 ? 0.9 : 1.1;
+            let newZoom = constrain(camera.targetZoom * zoomFactor, 0.2, 3);
+            let worldPos = screenToWorld(mouseX, mouseY);
+            camera.targetX = worldPos.x - (mouseX - width / 2) / newZoom;
+            camera.targetY = worldPos.y - (mouseY - height / 2) / newZoom;
+            camera.targetZoom = newZoom;
+            return false;
+        }
+
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+            updateLayout();
+        }
+
+        function centerOnRoot() {
+            if (mindmap) {
+                camera.targetX = mindmap.x;
+                camera.targetY = mindmap.y;
+                camera.targetZoom = 1;
+            }
+        }
+
+        function screenToWorld(sx, sy) {
+            return {
+                x: camera.x + (sx - width / 2) / camera.zoom,
+                y: camera.y + (sy - height / 2) / camera.zoom
+            };
+        }
+
+        function getNodeAt(x, y) {
+            if (!mindmap) return null;
+            let visibleNodes = mindmap.getVisibleNodes();
+            for (let i = visibleNodes.length - 1; i >= 0; i--)
+                if (visibleNodes[i].contains(x, y)) return visibleNodes[i];
+            return null;
+        }
+
+
+        // ----------------------------------------------------------------
+        // REQUIRED TTS INTEGRATION CLASS
+        // ----------------------------------------------------------------
+        class EnhancedTTSManager {
+            constructor() {
+                this.currentUtterance = null;
+                this.synth = window.speechSynthesis;
+                this.voices = [];
+                this.voicesLoaded = false;
+                this.selectedVoice = null;
+                this.rate = 1.0; // Fixed rate
+                this.onEndCallback = null;
+
+                this.loadVoices();
+                if (speechSynthesis.onvoiceschanged !== undefined) {
+                    speechSynthesis.onvoiceschanged = () => this.loadVoices();
+                }
+
+                this.setupControls();
+            }
+
+            loadVoices() {
+                this.voices = this.synth.getVoices();
+                this.voicesLoaded = true;
+                console.log(`✅ Loaded ${this.voices.length} TTS voices`);
+                this.updateVoiceList();
+            }
+
+            setupControls() {
+                // Removed speed controls logic
+                const voiceSelector = document.getElementById('visualsuite-voiceSelector');
+                const voiceModal = document.getElementById('visualsuite-voiceModal');
+                const modalClose = document.getElementById('visualsuite-modalClose');
+
+                // 🗣 Voice selection modal logic
+                if (voiceSelector && voiceModal && modalClose) {
+                    voiceSelector.addEventListener('click', () => {
+                        voiceModal.classList.add('visualsuite-show');
+                    });
+
+                    modalClose.addEventListener('click', () => {
+                        voiceModal.classList.remove('visualsuite-show');
+                    });
+
+                    voiceModal.addEventListener('click', (e) => {
+                        if (e.target === voiceModal) {
+                            voiceModal.classList.remove('visualsuite-show');
+                        }
+                    });
+                }
+            }
+
+            updateVoiceList() {
+                const voiceList = document.getElementById('visualsuite-voiceList');
+                if (!voiceList) return;
+
+                voiceList.innerHTML = '';
+
+                this.voices.forEach((voice) => {
+                    const item = document.createElement('div');
+                    item.className = 'visualsuite-voice-item';
+                    item.innerHTML = `
+                        <div class="visualsuite-voice-name">${voice.name}</div>
+                        <div class="visualsuite-voice-lang">${voice.lang}</div>
+                    `;
+
+                    item.addEventListener('click', () => {
+                        document.querySelectorAll('.visualsuite-voice-item').forEach(el => {
+                            el.classList.remove('visualsuite-selected');
+                        });
+                        item.classList.add('visualsuite-selected');
+                        this.selectedVoice = voice;
+                        document.getElementById('visualsuite-voiceSelector').textContent =
+                            `🔊 ${voice.name.substring(0, 20)}...`;
+                        document.getElementById('visualsuite-voiceModal').classList.remove('visualsuite-show');
+                    });
+
+                    voiceList.appendChild(item);
+                });
+            }
+
+            normalizeLocale(locale) {
+                if (!locale) return 'en-US';
+                return locale.replace('_', '-').toLowerCase();
+            }
+
+            findBestVoice(locale) {
+                if (this.selectedVoice) return this.selectedVoice;
+
+                const normalized = this.normalizeLocale(locale);
+                const [lang] = normalized.split('-');
+
+                let voice = this.voices.find(v => v.lang.toLowerCase() === normalized);
+                if (!voice) voice = this.voices.find(v => v.lang.toLowerCase().startsWith(lang + '-'));
+                if (!voice) voice = this.voices.find(v => v.lang.toLowerCase().startsWith(lang));
+                if (!voice) voice = this.voices[0];
+
+                return voice;
+            }
+
+            speak(config) {
+                this.stop();
+
+                const {
+                    text,
+                    locale = 'en-US',
+                    onStart,
+                    onEnd
+                } = config;
+                if (!text) return;
+
+                this.onEndCallback = onEnd;
+
+                if (!this.voicesLoaded) {
+                    setTimeout(() => this.speak(config), 100);
+                    return;
+                }
+
+                const utterance = new SpeechSynthesisUtterance(text);
+                const voice = this.findBestVoice(locale);
+
+                utterance.voice = voice;
+                utterance.lang = this.normalizeLocale(locale);
+                utterance.rate = this.rate;
+                utterance.volume = 1.0;
+
+                utterance.onstart = () => {
+                    document.getElementById('visualsuite-audioVisualizer').classList.add('visualsuite-speaking');
+                    onStart?.();
+                };
+
+                utterance.onend = () => {
+                    document.getElementById('visualsuite-audioVisualizer').classList.remove('visualsuite-speaking');
+                    this.currentUtterance = null;
+                    if (this.onEndCallback) {
+                        this.onEndCallback();
+                        this.onEndCallback = null;
+                    }
+                };
+
+                utterance.onerror = (event) => {
+                    console.error('❌ TTS Error:', event);
+                    document.getElementById('visualsuite-audioVisualizer').classList.remove('visualsuite-speaking');
+                    this.currentUtterance = null;
+                };
+
+                this.currentUtterance = utterance;
+                this.synth.speak(utterance);
+            }
+
+            stop() {
+                if (this.currentUtterance) {
+                    this.synth.cancel();
+                    this.currentUtterance = null;
+                    document.getElementById('visualsuite-audioVisualizer').classList.remove('visualsuite-speaking');
+                }
+            }
+
+            isSpeaking() {
+                return this.synth.speaking;
+            }
+        }
+
+        const ttsManager = new EnhancedTTSManager();
+    </script>
+</div>

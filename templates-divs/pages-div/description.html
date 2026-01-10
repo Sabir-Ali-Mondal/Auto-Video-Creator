@@ -1,0 +1,437 @@
+<div id="VisualContainer-description" class="visual-template">
+    <style>
+        #VisualContainer-description * {
+            box-sizing: border-box;
+        }
+
+        #VisualContainer-description {
+            --primary: #22C55E;
+            --primary-light: #4ADE80;
+            --primary-dark: #16A34A;
+            --secondary: #F97316;
+            --accent: #6D28D9;
+            --accent-light: #8B5CF6;
+            --text-primary: #F5F5F5;
+            --text-secondary: #B0B0B0;
+            --text-muted: #808080;
+            --glass-bg: rgba(28, 28, 40, 0.85);
+            --glass-border: rgba(34, 197, 94, 0.25);
+            --bg-dark: #0A0A0F;
+            --bg-darker: #050508;
+            --highlight-bg: #FFE66D;
+            --highlight-text: #0A0A0F;
+            --card-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            font-family: 'Inter', 'Noto Sans Bengali', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, var(--bg-darker) 0%, var(--bg-dark) 100%);
+            color: var(--text-primary);
+            padding: 1rem;
+            overflow-x: hidden;
+        }
+
+        #VisualContainer-description [lang^="bn"],
+        #VisualContainer-description [lang^="hi"],
+        #VisualContainer-description [lang^="ta"] {
+            font-family: 'Noto Sans Bengali', 'Noto Sans Devanagari', 'Noto Sans Tamil', sans-serif;
+        }
+
+        .description-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+            padding-bottom: 100px;
+        }
+
+        .description-content-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: clamp(1.5rem, 4vw, 3rem);
+            min-height: 500px;
+            box-shadow: var(--card-shadow);
+            backdrop-filter: blur(15px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .description-content-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+        }
+
+        .description-page {
+            display: none;
+            animation: description-fadeSlideIn 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .description-page.description-active {
+            display: block;
+        }
+
+        @keyframes description-fadeSlideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .description-page h3 {
+            font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+            margin: 1.5rem 0 1rem;
+            font-weight: 600;
+        }
+
+        .description-page p,
+        .description-page li,
+        .description-page td,
+        .description-page th {
+            font-size: clamp(1rem, 2vw, 1.125rem);
+            line-height: 1.8;
+            color: var(--text-secondary);
+            margin: 1.25rem 0;
+            transition: all 0.3s ease;
+        }
+
+        .description-page p { margin: 1.25rem 0; }
+        .description-page li { margin: 0.75rem 0; }
+        .description-page strong { color: var(--text-primary); font-weight: 600; }
+        .description-page em { color: var(--primary-light); font-style: italic; }
+        .description-page a { color: var(--primary-light); text-decoration: none; border-bottom: 1px dashed var(--primary-light); transition: all 0.3s ease; }
+        .description-page a:hover { color: var(--primary); border-bottom-style: solid; }
+
+        .description-tts-highlight {
+            background: var(--highlight-bg) !important;
+            color: var(--highlight-text) !important;
+            border-radius: 6px;
+            padding: 4px 8px;
+            margin: -4px -8px;
+            box-shadow: 0 2px 8px rgba(255, 230, 109, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .description-page ul,
+        .description-page ol { margin: 1.5rem 0; padding-left: 2rem; }
+        .description-page ul li::marker { color: var(--primary); }
+        .description-page ol li::marker { color: var(--accent-light); font-weight: 600; }
+
+        .description-page table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+        }
+
+        .description-page th,
+        .description-page td { padding: clamp(0.75rem, 2vw, 1.25rem); text-align: left; border-bottom: 1px solid var(--glass-border); }
+        .description-page th { background: rgba(34, 197, 94, 0.15); font-weight: 600; text-transform: uppercase; }
+        .description-page tr:last-child td { border-bottom: none; }
+        .description-page tr:hover { background: rgba(255, 255, 255, 0.02); }
+
+        .description-page svg,
+        .description-page math,
+        .description-page code {
+            display: block;
+            margin: 2rem auto;
+            max-width: 100%;
+            height: auto;
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1.5rem;
+        }
+
+        .description-page code { font-family: 'Courier New', Courier, monospace; white-space: pre-wrap; color: var(--primary-light); font-size: 0.9rem; }
+        .description-page math { font-size: 1.3rem; text-align: center; }
+
+        .description-progress-dots { display: flex; justify-content: center; align-items: center; gap: 0.6rem; margin: 2rem 0 1.5rem; flex-wrap: wrap; }
+        .description-progress-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--glass-border); cursor: pointer; transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
+        .description-progress-dot:hover { background: var(--primary-light); transform: scale(1.2); }
+        .description-progress-dot.description-active { background: var(--primary); width: 32px; border-radius: 6px; }
+
+        .description-pagination { display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--glass-border); }
+        .description-pagination button { padding: 0.875rem 1.75rem; background: var(--accent); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: clamp(0.875rem, 2vw, 1rem); transition: all 0.3s ease; }
+        .description-pagination button:hover:not(:disabled) { transform: translateY(-2px); background: var(--accent-light); }
+        .description-pagination button:disabled { opacity: 0.3; cursor: not-allowed; }
+        .description-page-info { font-weight: 500; color: var(--text-muted); }
+        .description-page-info .description-current { color: var(--primary); font-weight: 700; }
+        
+        .description-tts-controls { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 1rem; padding: 1rem 1.5rem; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 16px; backdrop-filter: blur(15px); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); z-index: 1000; }
+        .description-tts-button { background: none; border: none; color: var(--text-primary); cursor: pointer; padding: 0.6rem; border-radius: 50%; transition: all 0.3s ease; display: flex; }
+        .description-tts-button:hover { background: rgba(255, 255, 255, 0.1); transform: scale(1.1); }
+        .description-tts-button svg { width: 28px; height: 28px; }
+        .description-tts-button.description-playing { color: var(--primary); }
+        .description-audio-visualizer { display: flex; align-items: center; gap: 4px; height: 32px; }
+        .description-audio-bar { width: 4px; height: 6px; background: var(--primary-light); border-radius: 2px; }
+        .description-audio-visualizer.description-speaking .description-audio-bar { animation: description-audioWave 0.8s ease-in-out infinite; }
+        .description-audio-visualizer.description-speaking .description-audio-bar:nth-child(2) { animation-delay: 0.1s; }
+        .description-audio-visualizer.description-speaking .description-audio-bar:nth-child(3) { animation-delay: 0.2s; }
+        .description-audio-visualizer.description-speaking .description-audio-bar:nth-child(4) { animation-delay: 0.3s; }
+        .description-audio-visualizer.description-speaking .description-audio-bar:nth-child(5) { animation-delay: 0.4s; }
+        @keyframes description-audioWave { 0%, 100% { height: 6px; } 50% { height: 28px; } }
+        
+        .description-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 2000; align-items: center; justify-content: center; }
+        .description-modal.description-show { display: flex; }
+        .description-modal-content { background: #1C1C28; border: 1px solid var(--glass-border); border-radius: 16px; width: 100%; max-width: 500px; }
+        .description-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; border-bottom: 1px solid var(--glass-border); }
+        .description-modal-header h3 { font-size: 1.25rem; color: var(--primary-light); margin: 0; }
+        .description-modal-close { background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 1.75rem; }
+        .description-voice-list { overflow-y: auto; padding: 1rem; max-height: 400px; }
+        .description-voice-item { padding: 1rem; margin: 0.5rem 0; background: rgba(255, 255, 255, 0.03); border-radius: 10px; cursor: pointer; transition: all 0.3s ease; }
+        .description-voice-item:hover { background: rgba(255, 255, 255, 0.08); }
+        .description-voice-item.description-selected { background: rgba(34, 197, 94, 0.15); border-color: var(--primary); }
+        .description-voice-name { font-weight: 600; color: var(--text-primary); }
+        .description-voice-lang { font-size: 0.875rem; color: var(--text-muted); }
+        .description-speed-control { padding: 1.5rem; border-top: 1px solid var(--glass-border); }
+        .description-speed-control label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .description-speed-value { color: var(--primary); font-weight: 700; }
+        .description-speed-slider { width: 100%; -webkit-appearance: none; height: 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.1); outline: none; }
+        .description-speed-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--primary); cursor: pointer; }
+        .description-speed-slider::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: var(--primary); cursor: pointer; border: none; }
+    </style>
+
+    <div class="description-container">
+        <div class="description-content-card" id="description-contentCard"></div>
+        <div class="description-progress-dots" id="description-progressDots"></div>
+        <div class="description-pagination">
+            <button id="description-prevBtn">◀</button>
+            <div class="description-page-info">Page <span class="description-current" id="description-currentPage">1</span> of <span id="description-totalPages">1</span></div>
+            <button id="description-nextBtn">▶</button>
+        </div>
+    </div>
+
+    <div class="description-tts-controls">
+        <button class="description-tts-button" id="description-playBtn" title="Play/Pause">
+            <svg id="description-playIcon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg>
+            <svg id="description-pauseIcon" viewBox="0 0 24 24" fill="currentColor" style="display: none;"><path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"></path></svg>
+        </button>
+        <div class="description-audio-visualizer" id="description-audioVisualizer">
+            <div class="description-audio-bar"></div><div class="description-audio-bar"></div><div class="description-audio-bar"></div><div class="description-audio-bar"></div><div class="description-audio-bar"></div>
+        </div>
+        <button class="description-tts-button" id="description-settingsBtn" title="Voice Settings">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.61.25-1.17.59-1.69.98l-2.39-.96c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.98l-2.03 1.58c-.18-.14-.23-.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"></path></svg>
+        </button>
+    </div>
+
+    <div class="description-modal" id="description-voiceModal">
+        <div class="description-modal-content">
+            <div class="description-modal-header">
+                <h3>🎙️ Voice & Speed</h3>
+                <button class="description-modal-close" id="description-modalClose">&times;</button>
+            </div>
+            <div class="description-voice-list" id="description-voiceList"></div>
+            <div class="description-speed-control">
+                <label><span>Speech Speed</span><span class="description-speed-value" id="description-speedValue">1.0x</span></label>
+                <input type="range" class="description-speed-slider" id="description-speedSlider" min="0.5" max="2" step="0.1" value="1">
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        (function() {
+            const container = document.getElementById('VisualContainer-description');
+            if (!container) {
+                console.error("Description Viewer container not found.");
+                return;
+            }
+
+            let ExampleJson = {};
+
+            class TTSManager {
+                constructor(viewerContainer) {
+                    this.container = viewerContainer;
+                    this.synth = window.speechSynthesis;
+                    this.voices = [];
+                    this.selectedVoice = null;
+                    this.rate = 1.0;
+                    this.loadVoices();
+                    if (this.synth && this.synth.onvoiceschanged !== undefined) {
+                        this.synth.onvoiceschanged = () => this.loadVoices();
+                    }
+                }
+                loadVoices() {
+                    if (!this.synth) return;
+                    this.voices = this.synth.getVoices();
+                    const voiceListEl = this.container.querySelector('#description-voiceList');
+                    if (this.voices.length > 0 && voiceListEl && voiceListEl.innerHTML === '') {
+                        this.updateVoiceListUI();
+                    }
+                }
+                updateVoiceListUI() {
+                    const voiceList = this.container.querySelector('#description-voiceList');
+                    voiceList.innerHTML = '';
+                    this.voices.forEach(voice => {
+                        const item = document.createElement('div');
+                        item.className = 'description-voice-item';
+                        item.innerHTML = `<div class="description-voice-name">${voice.name}</div><div class="description-voice-lang">${voice.lang}</div>`;
+                        item.addEventListener('click', () => {
+                            this.selectedVoice = voice;
+                            this.container.querySelectorAll('.description-voice-item').forEach(el => el.classList.remove('description-selected'));
+                            item.classList.add('description-selected');
+                        });
+                        voiceList.appendChild(item);
+                    });
+                }
+                findBestVoice(locale = 'en-US') {
+                    if (this.selectedVoice) return this.selectedVoice;
+                    if (!this.voices || this.voices.length === 0) return null;
+                    const localeHyphen = locale.replace('_', '-').toLowerCase();
+                    const [lang] = localeHyphen.split('-');
+                    const checks = [ v => v.lang.toLowerCase() === localeHyphen, v => v.lang.toLowerCase().startsWith(lang + '-'), v => v.lang.toLowerCase() === lang ];
+                    for (const check of checks) {
+                        const voice = this.voices.find(check);
+                        if (voice) return voice;
+                    }
+                    return this.voices.find(v => v.lang.toLowerCase().startsWith('en')) || this.voices[0];
+                }
+                speak({ text, lang, onEnd }) {
+                    this.stop();
+                    if (!text || !this.synth) { if (onEnd) onEnd(); return; }
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.voice = this.findBestVoice(lang);
+                    utterance.rate = this.rate;
+                    utterance.lang = lang;
+                    utterance.onend = onEnd;
+                    utterance.onerror = (e) => { console.error('TTS Error:', e); if (onEnd) onEnd(); };
+                    this.synth.speak(utterance);
+                }
+                stop() { if (this.synth) this.synth.cancel(); }
+            }
+
+            class DescriptionViewer {
+                constructor(jsonData, viewerContainer) {
+                    this.container = viewerContainer;
+                    this.pages = this.parseAsHTML(jsonData);
+                    this.currentPageIndex = 0;
+                    this.ttsManager = new TTSManager(this.container);
+                    this.isAutoPlaying = false;
+                    this.speechQueue = [];
+                    this.currentHighlightedElement = null;
+                    if (this.pages.length === 0) {
+                        this.container.querySelector('#description-contentCard').innerHTML = '<p style="color:red; text-align:center;">Error: No pages found.</p>';
+                        return;
+                    }
+                    this.init();
+                }
+                parseAsHTML(htmlString) {
+                    const tempParser = document.createElement('div');
+                    tempParser.innerHTML = htmlString.trim();
+                    const pageNodes = tempParser.querySelectorAll('page');
+                    if (pageNodes.length === 0) { console.error("Parsing Error: No <page> tags found."); return []; }
+                    return Array.from(pageNodes).map(pageNode => {
+                        const pageHTML = pageNode.innerHTML;
+                        const firstStrong = pageNode.querySelector('strong[lang]');
+                        const lang = firstStrong ? firstStrong.getAttribute('lang') : 'en-US';
+                        return { html: pageHTML, lang: lang };
+                    });
+                }
+                init() {
+                    this.renderPage(0);
+                    this.renderProgressDots();
+                    this.setupEventListeners();
+                    this.updateUI();
+                }
+                setupEventListeners() {
+                    this.container.querySelector('#description-prevBtn').addEventListener('click', () => this.navigatePage(-1));
+                    this.container.querySelector('#description-nextBtn').addEventListener('click', () => this.navigatePage(1));
+                    this.container.querySelector('#description-playBtn').addEventListener('click', () => this.togglePlayPause());
+                    this.container.querySelector('#description-settingsBtn').addEventListener('click', () => this.container.querySelector('#description-voiceModal').classList.add('description-show'));
+                    this.container.querySelector('#description-modalClose').addEventListener('click', () => this.container.querySelector('#description-voiceModal').classList.remove('description-show'));
+                    this.container.querySelector('#description-speedSlider').addEventListener('input', e => {
+                        this.ttsManager.rate = parseFloat(e.target.value);
+                        this.container.querySelector('#description-speedValue').textContent = `${this.ttsManager.rate.toFixed(1)}x`;
+                    });
+                    document.addEventListener('keydown', e => {
+                        if (e.key === 'ArrowLeft') this.navigatePage(-1);
+                        if (e.key === 'ArrowRight') this.navigatePage(1);
+                        if (e.key === ' ' && document.activeElement.tagName !== 'INPUT') { e.preventDefault(); this.togglePlayPause(); }
+                    });
+                }
+                renderPage(index, isUserInitiated = true) {
+                    if (isUserInitiated) this.stopReading();
+                    if (index < 0 || index >= this.pages.length) return;
+                    this.currentPageIndex = index;
+                    this.container.querySelector('#description-contentCard').innerHTML = `<div class="description-page description-active">${this.pages[index].html}</div>`;
+                    this.updateUI();
+                }
+                renderProgressDots() {
+                    const dotsContainer = this.container.querySelector('#description-progressDots');
+                    dotsContainer.innerHTML = this.pages.map((_, index) => `<div class="description-progress-dot" data-index="${index}"></div>`).join('');
+                    dotsContainer.addEventListener('click', e => {
+                        if (e.target.dataset.index) this.renderPage(parseInt(e.target.dataset.index));
+                    });
+                }
+                updateUI() {
+                    this.container.querySelector('#description-currentPage').textContent = this.currentPageIndex + 1;
+                    this.container.querySelector('#description-totalPages').textContent = this.pages.length;
+                    this.container.querySelector('#description-prevBtn').disabled = this.currentPageIndex === 0;
+                    this.container.querySelector('#description-nextBtn').disabled = this.currentPageIndex === this.pages.length - 1;
+                    this.container.querySelectorAll('.description-progress-dot').forEach((dot, index) => {
+                        dot.classList.toggle('description-active', index === this.currentPageIndex);
+                    });
+                }
+                navigatePage(direction) { this.renderPage(this.currentPageIndex + direction); }
+                togglePlayPause() {
+                    if (this.isAutoPlaying) { this.stopReading(); } 
+                    else { this.isAutoPlaying = true; this.updatePlayButton(true); this.prepareAndStartSpeechQueue(); }
+                }
+                stopReading() {
+                    this.isAutoPlaying = false;
+                    this.ttsManager.stop();
+                    this.speechQueue = [];
+                    this.clearHighlights();
+                    this.updatePlayButton(false);
+                }
+                prepareAndStartSpeechQueue() {
+                    const currentPage = this.container.querySelector('.description-page.description-active');
+                    if (!currentPage) return;
+                    const readableElements = currentPage.querySelectorAll('p, li, th, td, h3');
+                    this.speechQueue = Array.from(readableElements)
+                        .filter(el => {
+                            const hasSearchLink = el.querySelector('a[href*="google.com/search"]');
+                            const hasText = el.textContent.trim().length > 0;
+                            return hasText && !hasSearchLink;
+                        })
+                        .map(element => ({ element, text: element.textContent.trim() }));
+                    this.processSpeechQueue();
+                }
+                processSpeechQueue() {
+                    if (!this.isAutoPlaying) return;
+                    this.clearHighlights();
+                    const item = this.speechQueue.shift();
+                    if (!item) { this.onPageReadEnd(); return; }
+                    this.currentHighlightedElement = item.element;
+                    this.currentHighlightedElement.classList.add('description-tts-highlight');
+                    this.currentHighlightedElement.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+                    const lang = this.pages[this.currentPageIndex].lang;
+                    this.ttsManager.speak({ text: item.text, lang: lang, onEnd: () => { setTimeout(() => this.processSpeechQueue(), 200); } });
+                }
+                onPageReadEnd() {
+                    this.clearHighlights();
+                    if (this.currentPageIndex < this.pages.length - 1) {
+                        setTimeout(() => {
+                            this.renderPage(this.currentPageIndex + 1, false);
+                            setTimeout(() => this.prepareAndStartSpeechQueue(), 500);
+                        }, 1000);
+                    } else { this.stopReading(); }
+                }
+                clearHighlights() {
+                    const highlighted = this.container.querySelector('.description-tts-highlight');
+                    if (highlighted) { highlighted.classList.remove('description-tts-highlight'); }
+                    this.currentHighlightedElement = null;
+                }
+                updatePlayButton(isPlaying) {
+                    this.container.querySelector('#description-playBtn').classList.toggle('description-playing', isPlaying);
+                    this.container.querySelector('#description-audioVisualizer').classList.toggle('description-speaking', isPlaying);
+                    this.container.querySelector('#description-playIcon').style.display = isPlaying ? 'none' : 'block';
+                    this.container.querySelector('#description-pauseIcon').style.display = isPlaying ? 'block' : 'none';
+                }
+            }
+            
+            new DescriptionViewer(ExampleJson, container);
+        })();
+    </script>
+</div>
