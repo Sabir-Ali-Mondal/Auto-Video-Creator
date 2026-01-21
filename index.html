@@ -1,0 +1,2051 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Auto-Video</title>
+
+    <!-- LIBRARIES -->
+    <script src="https://js.puter.com/v2/"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-venn@4.3.1/build/index.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist@2.27.0/plotly.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@300;400;600;800&family=Lato:wght@300;400;700&family=Playfair+Display:wght@700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* =========================================
+   1. GLOBAL VARIABLES & RESET
+   ========================================= */
+        :root {
+            /* Dynamic Variables (Overridden by JSON) */
+            --bg-color: #050505;
+            --text-color: #ffffff;
+            --primary: #6366f1;
+            --accent: #facc15;
+
+            /* Fonts */
+            --font-head: 'Inter', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            --font-code: 'Roboto Mono', monospace;
+            --font-quote: 'Playfair Display', serif;
+
+            /* UI Constants */
+            --glass: rgba(15, 23, 42, 0.85);
+            --border: rgba(255, 255, 255, 0.1);
+            --radius: 12px;
+            --easing: cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            color: var(--text-color);
+            font-family: var(--font-body);
+            overflow: hidden;
+            user-select: none;
+            /* Prevent text selection during presentation */
+        }
+
+        /* =========================================
+   2. THE STAGE (VIDEO CANVAS)
+   ========================================= */
+        .stage-wrapper {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+            z-index: 1;
+        }
+
+        .video-stage {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            background: var(--bg-color);
+            transition: background 0.5s;
+        }
+
+        /* Moving Background Layer */
+        .stage-bg {
+            position: absolute;
+            inset: -50px;
+            z-index: 0;
+            background-size: cover;
+            background-position: center;
+            filter: blur(15px) brightness(0.4);
+            opacity: 0.6;
+            animation: slowPan 60s infinite alternate linear;
+            transition: background-image 1s ease-in-out;
+        }
+
+        /* Content Layer (Where scenes live) */
+        .scene-layer {
+            position: absolute;
+            inset: 0;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transform: scale(1.05);
+            filter: blur(10px);
+            transition: opacity 0.8s var(--easing), transform 0.8s var(--easing), filter 0.8s var(--easing);
+            padding: 5vw;
+        }
+
+        .scene-layer.active {
+            opacity: 1;
+            transform: scale(1);
+            filter: blur(0);
+        }
+
+        /* =========================================
+   3. UI LAYER (CONTROLS & MENUS)
+   ========================================= */
+        .ui-layer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 80px;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            z-index: 1000;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* Buttons */
+        .btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: #ccc;
+            padding: 0 16px;
+            height: 44px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.95rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-circle {
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            padding: 0;
+            justify-content: center;
+            font-size: 1.4rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+        }
+
+        /* Dropup Menu */
+        .dropup-container {
+            position: relative;
+        }
+
+        .dropup-menu {
+            position: absolute;
+            bottom: 65px;
+            left: 0;
+            width: 240px;
+            background: #0f172a;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 6px;
+            display: none;
+            flex-direction: column;
+            gap: 2px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+        }
+
+        .dropup-menu.show {
+            display: flex;
+            animation: slideUp 0.2s var(--easing);
+        }
+
+        .menu-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            color: #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        /* =========================================
+   4. MODALS & TOASTS
+   ========================================= */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(5px);
+            z-index: 5000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .modal.open {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-box {
+            width: 600px;
+            max-width: 90%;
+            background: #0f172a;
+            border: 1px solid var(--border);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(20px);
+            transition: transform 0.3s var(--easing);
+        }
+
+        .modal.open .modal-box {
+            transform: translateY(0);
+        }
+
+        /* Inputs */
+        input,
+        select,
+        textarea {
+            width: 100%;
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: #fff;
+            padding: 14px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: border 0.2s;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--primary);
+        }
+
+        /* Toasts */
+        #toast-box {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 6000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: rgba(15, 23, 42, 0.95);
+            color: #fff;
+            padding: 12px 25px;
+            border-radius: 50px;
+            animation: slideDown 0.4s var(--easing);
+            border: 1px solid var(--primary);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            font-weight: 600;
+        }
+
+        /* =========================================
+   5. SCENE TYPES (The Visual Logic)
+   ========================================= */
+
+        /* Typography Utils */
+        h1,
+        h2,
+        h3 {
+            font-family: var(--font-head);
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        /* TYPE: TITLE */
+        .comp-title h1 {
+            font-size: 6vw;
+            font-weight: 900;
+            margin-bottom: 2vh;
+            background: linear-gradient(135deg, #ffffff 0%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+            text-transform: uppercase;
+            letter-spacing: -2px;
+        }
+
+        .comp-title h2 {
+            font-size: 2.5vw;
+            font-weight: 300;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            color: #fff;
+            padding: 15px 40px;
+            border-radius: 100px;
+            display: inline-block;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* TYPE: BULLETS (Stepped) */
+        .comp-bullets {
+            width: 100%;
+            max-width: 1100px;
+            display: flex;
+            flex-direction: column;
+            gap: 2vh;
+        }
+
+        .bullet-item {
+            font-size: 2.2vw;
+            padding: 2.5vh 3vw;
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 6px solid transparent;
+            border-radius: 0 15px 15px 0;
+            transition: all 0.6s var(--easing);
+            opacity: 0.3;
+            transform: translateX(0);
+        }
+
+        .bullet-item.active {
+            opacity: 1;
+            transform: translateX(30px);
+            border-left-color: var(--accent);
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.1), transparent);
+            font-weight: 700;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* TYPE: IMAGE & VIDEO LAYOUT */
+        .comp-img-layout {
+            display: flex;
+            width: 90%;
+            height: 75%;
+            gap: 5vw;
+            align-items: center;
+        }
+
+        .img-frame {
+            flex: 1.2;
+            height: 100%;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            position: relative;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
+            background: #000;
+        }
+
+        .img-frame img,
+        .img-frame video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        .img-frame img.loaded,
+        .img-frame video {
+            opacity: 1;
+        }
+
+        .img-text {
+            flex: 0.8;
+            opacity: 0;
+            animation: fadeUp 1s forwards 0.3s;
+        }
+
+        .img-text h2 {
+            font-size: 4vw;
+            color: var(--primary);
+            margin-bottom: 3vh;
+            font-weight: 800;
+        }
+
+        .img-text p {
+            font-size: 1.6vw;
+            line-height: 1.6;
+            opacity: 0.9;
+            color: #cbd5e1;
+        }
+
+        /* TYPE: TIMELINE (Horizontal Snake/Scroll) */
+        .comp-timeline {
+            width: 100%;
+            overflow-x: auto;
+            padding: 50px 0;
+            scroll-behavior: smooth;
+        }
+
+        /* Custom Scrollbar for Timeline */
+        .comp-timeline::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .comp-timeline::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .comp-timeline::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 3px;
+        }
+
+        .tl-track {
+            display: flex;
+            gap: 80px;
+            padding: 0 5vw;
+            min-width: max-content;
+            position: relative;
+        }
+
+        /* Connecting Line */
+        .tl-track::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 5vw;
+            right: 5vw;
+            height: 4px;
+            background: var(--border);
+            top: 50px;
+            z-index: -1;
+        }
+
+        .tl-item {
+            min-width: 350px;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            border-top: 6px solid var(--border);
+            transition: 0.6s var(--easing);
+            opacity: 0.4;
+            transform: scale(0.9);
+            margin-top: 50px;
+            position: relative;
+        }
+
+        /* Dot on line */
+        .tl-item::before {
+            content: '';
+            position: absolute;
+            top: -56px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--bg-color);
+            border: 4px solid var(--border);
+        }
+
+        .tl-item.active {
+            opacity: 1;
+            border-top-color: var(--accent);
+            transform: scale(1.1) translateY(-10px);
+            background: rgba(30, 41, 59, 0.9);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .tl-item.active::before {
+            background: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 0 20px var(--accent);
+        }
+
+        .tl-year {
+            font-size: 3.5vw;
+            font-weight: 900;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .tl-text {
+            font-size: 1.2vw;
+            line-height: 1.5;
+        }
+
+        /* TYPE: TABLE */
+        .comp-table {
+            width: 100%;
+            max-width: 1200px;
+            border-collapse: collapse;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        .comp-table th {
+            background: var(--primary);
+            color: white;
+            padding: 25px;
+            text-align: left;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .comp-table tr {
+            transition: 0.3s;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .comp-table td {
+            padding: 25px;
+            font-size: 1.3rem;
+        }
+
+        .comp-table tr.active {
+            background: rgba(255, 255, 255, 0.1);
+            border-left: 8px solid var(--accent);
+            transform: scale(1.01);
+        }
+
+        /* TYPE: COMPARISON */
+        .comp-split {
+            display: flex;
+            width: 100%;
+            height: 70%;
+            gap: 5vw;
+        }
+
+        .split-col {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 3vw;
+            display: flex;
+            flex-direction: column;
+            transition: 0.6s var(--easing);
+            opacity: 0.4;
+            transform: scale(0.95);
+        }
+
+        .split-col.active {
+            opacity: 1;
+            border-color: var(--accent);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.4);
+            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .split-head {
+            font-size: 2.5vw;
+            font-weight: 800;
+            margin-bottom: 4vh;
+            color: var(--primary);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 2vh;
+            text-transform: uppercase;
+        }
+
+        .split-item {
+            font-size: 1.5vw;
+            margin-bottom: 2vh;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* TYPE: CODE */
+        .comp-code {
+            width: 90%;
+            max-width: 1000px;
+            max-height: 80vh;
+            background: #1e1e1e;
+            padding: 30px;
+            border-radius: 16px;
+            border: 1px solid var(--primary);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            font-family: var(--font-code);
+        }
+
+        /* TYPE: QUOTE */
+        .comp-quote {
+            text-align: center;
+            max-width: 80%;
+        }
+
+        .comp-quote h1 {
+            font-family: var(--font-quote);
+            font-size: 5vw;
+            font-style: italic;
+            line-height: 1.3;
+            background: linear-gradient(180deg, #fff, #aaa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .comp-quote h3 {
+            margin-top: 4vh;
+            color: var(--accent);
+            font-size: 2vw;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+
+        /* TYPE: CHARTS */
+        .comp-chart-wrap {
+            width: 90%;
+            max-width: 1400px;
+            height: 75vh;
+            position: relative;
+            z-index: 2;
+            padding: 30px;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(15px);
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-title {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 10px;
+            align-self: flex-start;
+            background: var(--primary);
+            padding: 5px 20px;
+            border-radius: 8px;
+        }
+
+        /* TYPE: QUIZ */
+        .quiz-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            width: 100%;
+            max-width: 1000px;
+            margin-top: 50px;
+        }
+
+        .quiz-btn {
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--border);
+            color: #fff;
+            font-size: 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 16px;
+            transition: 0.3s;
+        }
+
+        .quiz-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-5px);
+            border-color: var(--primary);
+        }
+
+        .quiz-btn.correct {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: #10b981;
+            color: #10b981;
+        }
+
+        .quiz-btn.wrong {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: #ef4444;
+            opacity: 0.5;
+        }
+
+        /* TYPE: TREE/3D/P5 Containers */
+        #p5-box,
+        #3d-box {
+            width: 100%;
+            height: 100%;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        /* ANIMATIONS */
+        @keyframes slowPan {
+            0% {
+                transform: scale(1);
+            }
+
+            100% {
+                transform: scale(1.15);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- STAGE -->
+    <div class="stage-wrapper">
+        <audio id="bg-music" loop></audio>
+        <div class="video-stage">
+            <div id="stage-bg" class="stage-bg"></div>
+            <div id="scene-layer" class="scene-layer"></div>
+        </div>
+    </div>
+
+    <!-- UI -->
+    <div class="ui-layer">
+        <div class="control-group">
+            <div class="dropup-container">
+                <button class="btn" onclick="app.toggleMenu()"><i class="bi bi-list"></i></button>
+                <div class="dropup-menu" id="main-menu">
+                    <div class="menu-item" onclick="app.openModal('ai')"><i class="bi bi-robot"></i> AI Architect</div>
+                    <div class="menu-item" onclick="app.save()"><i class="bi bi-download"></i> Save JSON</div>
+                    <label class="menu-item"><i class="bi bi-upload"></i> Load JSON <input type="file" hidden accept=".json" onchange="app.load(this)"></label>
+                    <label class="menu-item"><i class="bi bi-music-note-beamed"></i> Upload Music <input type="file" hidden accept="audio/*" onchange="app.uploadMusic(this)"></label>
+                </div>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <button class="btn btn-circle" onclick="app.prev()"><i class="bi bi-chevron-left"></i></button>
+            <button class="btn btn-circle btn-primary" id="play-btn" onclick="app.togglePlay()"><i class="bi bi-play-fill"></i></button>
+            <button class="btn btn-circle" onclick="app.next()"><i class="bi bi-chevron-right"></i></button>
+        </div>
+
+        <div class="control-group">
+            <div id="progress" style="font-family:monospace; opacity:0.7;">SCENE --</div>
+            <button class="btn" onclick="app.toggleMute()"><i class="bi bi-volume-up" id="mute-icon"></i></button>
+            <button class="btn" onclick="document.body.requestFullscreen()"><i class="bi bi-fullscreen"></i></button>
+        </div>
+    </div>
+
+    <!-- AI MODAL -->
+    <div id="modal-ai" class="modal">
+        <div class="modal-box">
+            <div style="font-weight:900; font-size:1.9rem; letter-spacing:-0.5px;">AUTO<span style="color:var(--primary)">VIDEO</span></div>
+
+            <h2 style="color:var(--primary); margin-bottom:15px;"><i class="bi bi-stars"></i> AI Architect</h2>
+            <label style="font-size:0.9rem; color:#aaa;">Topic</label>
+            <textarea id="ai-prompt" placeholder="E.g., The Evolution of Renewable Energy..." style="height:100px;"></textarea>
+
+            <label style="font-size:0.9rem; color:#aaa;">Select Narrator Language</label>
+            <select id="ai-lang-select"></select> <!-- Populated dynamically -->
+
+            <div id="ai-loader" style="display:none; margin:15px 0; color:var(--accent); text-align:center;">
+                <div style="display:inline-block; width:20px; height:20px; border:2px solid currentColor; border-top-color:transparent; border-radius:50%; animation:spin 1s infinite linear;"></div>
+                Generating JSON Structure...
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button class="btn btn-primary" style="flex:1; justify-content:center;" onclick="app.generateAI()">Generate Project</button>
+                <button class="btn" style="flex:1; justify-content:center;" onclick="document.getElementById('modal-ai').classList.remove('open')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-box"></div>
+
+    <script>
+        // ---------------------------------------------------------
+        // 1. DATA SCHEMA (24 SCENES)
+        // ---------------------------------------------------------
+        const DemoData = {
+            meta: {
+                title: "The Digital Evolution",
+                audio: {
+                    src: "https://res.cloudinary.com/dmttn34te/video/upload/v1759780548/study-music-181044_jbuwpq.mp3",
+                    volume: 0.2
+                },
+                design: {
+                    colors: {
+                        primary: "#6366f1",
+                        accent: "#facc15"
+                    },
+                    font: "'Inter', sans-serif"
+                },
+                lang: "en-US"
+            },
+            scenes: [
+                // 1. TITLE
+                {
+                    type: "title",
+                    narration: "Welcome to the Auto-Video Masterclass. Today, we visualize the complete history of Digital Evolution using every tool in our engine.",
+                    content: {
+                        title: "DIGITAL EVOLUTION",
+                        subtitle: "A Comprehensive Visual Journey",
+                        bg: "https://image.pollinations.ai/prompt/digital%20network%20blue%20particles%20cinematic"
+                    }
+                },
+                // 2. BULLETS (Granular Steps)
+                {
+                    type: "bullets",
+                    narration: "Our journey is divided into four distinct technological eras.",
+                    steps: [{
+                            index: 0,
+                            narration: "First, the Hardware Era, where physical vacuum tubes ruled."
+                        },
+                        {
+                            index: 1,
+                            narration: "Second, the Software Era, introducing logic and code."
+                        },
+                        {
+                            index: 2,
+                            narration: "Third, the Network Era, connecting the entire globe."
+                        },
+                        {
+                            index: 3,
+                            narration: "And finally, the Intelligence Era, where machines begin to think."
+                        }
+                    ],
+                    content: {
+                        title: "The 4 Eras",
+                        items: ["Hardware Foundations", "Software Logic", "Global Connectivity", "Artificial Intelligence"]
+                    }
+                },
+
+                // 3. IMAGE
+                {
+                    type: "image",
+                    narration: "It all began with massive machines like the ENIAC in the 1940s.",
+                    content: {
+                        title: "The First Giant",
+                        text: "ENIAC: Electronic Numerical Integrator and Computer (1945)",
+                        src: "https://image.pollinations.ai/prompt/eniac%20computer%20black%20and%20white%20vintage%20photo"
+                    }
+                },
+
+                // 4. TIMELINE (Granular Scroll & Highlight)
+                {
+                    type: "timeline",
+                    narration: "Let's trace the critical milestones of this journey.",
+                    steps: [{
+                            index: 0,
+                            narration: "1947: The invention of the Transistor changed physics forever."
+                        },
+                        {
+                            index: 2,
+                            narration: "1969: ARPANET, the grandfather of the Internet, went live."
+                        },
+                        {
+                            index: 4,
+                            narration: "2007: The iPhone launch redefined personal computing."
+                        },
+                        {
+                            index: 5,
+                            narration: "2023: Generative AI marked the start of the singularity."
+                        }
+                    ],
+                    content: {
+                        title: "Timeline of Innovation",
+                        items: [{
+                                year: "1947",
+                                text: "Transistor Invented"
+                            },
+                            {
+                                year: "1958",
+                                text: "Integrated Circuit"
+                            },
+                            {
+                                year: "1969",
+                                text: "ARPANET Live"
+                            },
+                            {
+                                year: "1991",
+                                text: "World Wide Web"
+                            },
+                            {
+                                year: "2007",
+                                text: "iPhone Launch"
+                            },
+                            {
+                                year: "2023",
+                                text: "Generative AI"
+                            }
+                        ]
+                    }
+                },
+
+                // 5. COMPARISON (Granular Sides)
+                {
+                    type: "comparison",
+                    narration: "We moved from rigid Legacy systems to fluid Modern architectures.",
+                    steps: [{
+                            index: 0,
+                            narration: "Legacy systems were monolithic, slow, and expensive to maintain."
+                        },
+                        {
+                            index: 1,
+                            narration: "Modern systems are distributed, agile, and scale infinitely in the cloud."
+                        }
+                    ],
+                    content: {
+                        leftHead: "Legacy Era",
+                        leftBody: ["Monolithic Code", "Physical Servers", "Waterfall Process"],
+                        rightHead: "Modern Era",
+                        rightBody: ["Microservices", "Cloud Native", "Agile CI/CD"]
+                    }
+                },
+
+                // 6. TABLE (Row Highlighting)
+                {
+                    type: "table",
+                    narration: "The speed of processing has increased by orders of magnitude.",
+                    steps: [{
+                            index: 0,
+                            narration: "In the 70s, processors ran at a mere 740 Kilohertz."
+                        },
+                        {
+                            index: 1,
+                            narration: "By the 90s, the Pentium chip hit 60 Megahertz."
+                        },
+                        {
+                            index: 2,
+                            narration: "Today, commercial CPUs exceed 5 Gigahertz easily."
+                        }
+                    ],
+                    content: {
+                        title: "Processing Velocity",
+                        headers: ["Era", "Clock Speed", "Transistor Count"],
+                        rows: [
+                            ["1970s (4004)", "740 kHz", "2,300"],
+                            ["1990s (Pentium)", "60 MHz", "3.1 Million"],
+                            ["2020s (Core i9)", "5.8 GHz", "50 Billion"]
+                        ]
+                    }
+                },
+
+                // 7. CHART: BAR (Bar Highlighting)
+                {
+                    type: "chart",
+                    narration: "Let's analyze the growth of data centers over the last four years.",
+                    steps: [{
+                            index: 0,
+                            narration: "In 2020, we started with 120 global centers."
+                        },
+                        {
+                            index: 3,
+                            narration: "By 2023, demand for AI training pushed this to 450 centers."
+                        }
+                    ],
+                    content: {
+                        title: "Data Center Growth",
+                        type: "bar",
+                        data: {
+                            labels: ["2020", "2021", "2022", "2023"],
+                            datasets: [{
+                                label: "Centers",
+                                data: [120, 180, 300, 450]
+                            }]
+                        }
+                    }
+                },
+
+                // 8. CHART: LINE (Point Highlighting)
+                {
+                    type: "chart",
+                    narration: "Internet user adoption followed an exponential curve.",
+                    steps: [{
+                            index: 0,
+                            narration: "In 1995, only 16 million people were online."
+                        },
+                        {
+                            index: 2,
+                            narration: "By 2010, social media pushed this to nearly 2 billion."
+                        },
+                        {
+                            index: 3,
+                            narration: "Today, over 5 billion people are connected."
+                        }
+                    ],
+                    content: {
+                        title: "Global Internet Users (Billions)",
+                        type: "line",
+                        data: {
+                            labels: ["1995", "2000", "2010", "2023"],
+                            datasets: [{
+                                label: "Users",
+                                data: [0.016, 0.36, 1.9, 5.1],
+                                borderColor: "#06b6d4"
+                            }]
+                        }
+                    }
+                },
+
+                // 9. CHART: PIE (Slice Highlighting)
+                {
+                    type: "chart",
+                    narration: "How is cloud market share distributed today?",
+                    steps: [{
+                            index: 0,
+                            narration: "AWS dominates the market with 45% share."
+                        },
+                        {
+                            index: 1,
+                            narration: "Azure follows closely at 35%."
+                        }
+                    ],
+                    content: {
+                        title: "Cloud Market Share",
+                        type: "pie",
+                        data: {
+                            labels: ["AWS", "Azure", "GCP", "Others"],
+                            datasets: [{
+                                data: [45, 35, 10, 10],
+                                backgroundColor: ["#f97316", "#06b6d4", "#34d399", "#64748b"]
+                            }]
+                        }
+                    }
+                },
+
+                // 10. CHART: DOUGHNUT (Segment Highlighting)
+                {
+                    type: "chart",
+                    narration: "Mobile devices now account for the majority of traffic.",
+                    steps: [{
+                        index: 0,
+                        narration: "Mobile traffic is now 60% of all web requests."
+                    }],
+                    content: {
+                        title: "Device Traffic",
+                        type: "doughnut",
+                        data: {
+                            labels: ["Mobile", "Desktop", "Tablet"],
+                            datasets: [{
+                                data: [60, 35, 5],
+                                backgroundColor: ["#6366f1", "#1e293b", "#facc15"]
+                            }]
+                        }
+                    }
+                },
+
+                // 11. CHART: RADAR (Axis Highlighting)
+                {
+                    type: "chart",
+                    narration: "Comparing the capabilities of AI models.",
+                    steps: [{
+                            index: 0,
+                            narration: "GPT-4 scores highest in Logic reasoning."
+                        },
+                        {
+                            index: 2,
+                            narration: "While traditional models struggle with Creativity."
+                        }
+                    ],
+                    content: {
+                        title: "AI Model Capabilities",
+                        type: "radar",
+                        data: {
+                            labels: ["Logic", "Speed", "Creativity", "Memory", "Coding"],
+                            datasets: [{
+                                    label: "GPT-4",
+                                    data: [95, 80, 90, 85, 95],
+                                    borderColor: "#6366f1"
+                                },
+                                {
+                                    label: "Old Bot",
+                                    data: [40, 90, 20, 30, 40],
+                                    borderColor: "#64748b"
+                                }
+                            ]
+                        }
+                    }
+                },
+
+                // 12. CHART: POLAR AREA (Segment Highlighting)
+                {
+                    type: "chart",
+                    narration: "Tech adoption by region.",
+                    steps: [{
+                            index: 0,
+                            narration: "North America leads in early adoption."
+                        },
+                        {
+                            index: 2,
+                            narration: "Asia is growing the fastest in volume."
+                        }
+                    ],
+                    content: {
+                        title: "Regional Tech Adoption",
+                        type: "polarArea",
+                        data: {
+                            labels: ["N. America", "Europe", "Asia", "LatAm"],
+                            datasets: [{
+                                data: [85, 75, 90, 60],
+                                backgroundColor: ["#3b82f6", "#8b5cf6", "#ef4444", "#facc15"]
+                            }]
+                        }
+                    }
+                },
+
+                // 13. CHART: WATERFALL (Bar Highlighting)
+                {
+                    type: "chart",
+                    narration: "Understanding the Net Profit calculation.",
+                    steps: [{
+                            index: 0,
+                            narration: "We start with Gross Revenue."
+                        },
+                        {
+                            index: 1,
+                            narration: "Subtract operational costs."
+                        },
+                        {
+                            index: 3,
+                            narration: "Leaving us with Net Profit."
+                        }
+                    ],
+                    content: {
+                        title: "Profit Flow",
+                        type: "waterfall",
+                        data: {
+                            labels: ["Gross Rev", "Ops Cost", "Tax", "Net Profit"],
+                            datasets: [{
+                                data: [100, -30, -20, 50],
+                                backgroundColor: "#10b981"
+                            }]
+                        }
+                    }
+                },
+
+                // 14. CHART: FUNNEL (Stage Highlighting)
+                {
+                    type: "chart",
+                    narration: "The startup conversion funnel is steep.",
+                    steps: [{
+                            index: 0,
+                            narration: "1000 leads enter the top of the funnel."
+                        },
+                        {
+                            index: 3,
+                            narration: "Only 50 become paying customers."
+                        }
+                    ],
+                    content: {
+                        title: "Sales Funnel",
+                        type: "funnel",
+                        data: {
+                            labels: ["Leads", "Prospects", "Qualified", "Customers"],
+                            datasets: [{
+                                data: [1000, 600, 200, 50],
+                                backgroundColor: "#f97316"
+                            }]
+                        }
+                    }
+                },
+
+                // 15. CHART: SCATTER (Point Highlighting)
+                {
+                    type: "chart",
+                    narration: "Analyzing the correlation between R&D spend and Innovation.",
+                    steps: [{
+                        index: 2,
+                        narration: "High spending usually correlates with higher innovation scores."
+                    }],
+                    content: {
+                        title: "R&D vs Innovation",
+                        type: "scatter",
+                        data: {
+                            datasets: [{
+                                label: "Companies",
+                                data: [{
+                                    x: 10,
+                                    y: 20
+                                }, {
+                                    x: 15,
+                                    y: 35
+                                }, {
+                                    x: 30,
+                                    y: 80
+                                }, {
+                                    x: 35,
+                                    y: 75
+                                }],
+                                backgroundColor: "#f43f5e"
+                            }]
+                        }
+                    }
+                },
+
+                // 16. CHART: BUBBLE (Bubble Highlighting)
+                {
+                    type: "chart",
+                    narration: "Market capitalization vs Company Age.",
+                    steps: [{
+                        index: 1,
+                        narration: "This bubble represents a young unicorn with high value."
+                    }],
+                    content: {
+                        title: "Market Cap (Size)",
+                        type: "bubble",
+                        data: {
+                            datasets: [{
+                                label: "Tech Giants",
+                                data: [{
+                                        x: 50,
+                                        y: 10,
+                                        r: 10
+                                    },
+                                    {
+                                        x: 5,
+                                        y: 80,
+                                        r: 25
+                                    },
+                                    {
+                                        x: 20,
+                                        y: 40,
+                                        r: 15
+                                    }
+                                ],
+                                backgroundColor: "#8b5cf6"
+                            }]
+                        }
+                    }
+                },
+
+                // 17. CHART: VENN
+                {
+                    type: "chart",
+                    narration: "The sweet spot is where Data Science meets Engineering.",
+                    content: {
+                        title: "Skill Overlap",
+                        type: "venn",
+                        data: {
+                            labels: ["Data Science", "Engineering"],
+                            datasets: [{
+                                data: [{
+                                        sets: ["Data Science"],
+                                        value: 10
+                                    },
+                                    {
+                                        sets: ["Engineering"],
+                                        value: 10
+                                    },
+                                    {
+                                        sets: ["Data Science", "Engineering"],
+                                        value: 4
+                                    }
+                                ]
+                            }]
+                        }
+                    }
+                },
+
+                // 18. CHART: BLUEPRINT (Graph Paper Style)
+                {
+                    type: "chart",
+                    narration: "Engineering schematics show precise sensor readings.",
+                    content: {
+                        title: "Sensor Blueprint",
+                        type: "line",
+                        isGraphPaper: true,
+                        data: {
+                            labels: [0, 1, 2, 3, 4],
+                            datasets: [{
+                                data: [0, 5, 8, 5, 0],
+                                borderColor: "#ffffff",
+                                borderDash: [5, 5],
+                                tension: 0
+                            }]
+                        }
+                    }
+                },
+
+                // 19. TREE HIERARCHY
+                {
+                    type: "tree",
+                    narration: "The Document Object Model organizes web elements in a tree.",
+                    content: {
+                        title: "DOM Structure",
+                        root: {
+                            name: "HTML",
+                            children: [{
+                                    name: "HEAD",
+                                    children: [{
+                                        name: "Meta"
+                                    }, {
+                                        name: "Title"
+                                    }]
+                                },
+                                {
+                                    name: "BODY",
+                                    children: [{
+                                        name: "Div"
+                                    }, {
+                                        name: "Span"
+                                    }]
+                                }
+                            ]
+                        }
+                    }
+                },
+
+                // 20. CODE BLOCK
+                {
+                    type: "code",
+                    narration: "Modern logic is defined by code. Here is a simple Python neural net function.",
+                    content: {
+                        title: "Neural Logic",
+                        lang: "python",
+                        code: "import torch\n\ndef think(input):\n    # A simple neuron pass\n    weight = 0.5\n    bias = 0.1\n    return input * weight + bias"
+                    }
+                },
+
+                // 21. QUOTE
+                {
+                    type: "quote",
+                    narration: "As Arthur C. Clarke famously said.",
+                    content: {
+                        text: "Any sufficiently advanced technology is indistinguishable from magic.",
+                        author: "Arthur C. Clarke"
+                    }
+                },
+
+                // 22. INTERACTIVE QUIZ
+                {
+                    type: "quiz",
+                    narration: "Let's check your knowledge. Which company created ChatGPT?",
+                    content: {
+                        question: "Who created ChatGPT?",
+                        options: ["Google", "OpenAI", "Meta"],
+                        correct: 1
+                    }
+                },
+
+                // 23. P5.js GENERATIVE ART
+                {
+                    type: "p5",
+                    narration: "We can even generate art using algorithms in real-time.",
+                    content: {
+                        title: "Generative Waves",
+                        code: "p.setup=function(){p.createCanvas(p.windowWidth,p.windowHeight);p.noFill();p.stroke(100,200,255,100);};p.draw=function(){p.background(0,10);p.beginShape();for(let x=0;x<p.width;x+=10){p.vertex(x, p.height/2 + p.sin(x*0.01 + p.frameCount*0.05)*100);}p.endShape();}"
+                    }
+                },
+
+                // 24. 3D WEBGL
+                {
+                    type: "3d",
+                    narration: "And finally, we visualize complex data clusters in 3D space.",
+                    content: {
+                        title: "3D Data Cluster",
+                        data: {
+                            type: "scatter3d",
+                            x: [1, 2, 3, 4, 5, 2, 3, 4],
+                            y: [2, 4, 6, 8, 2, 5, 3, 1],
+                            z: [5, 2, 8, 1, 4, 9, 2, 6],
+                            mode: "markers",
+                            marker: {
+                                size: 8,
+                                color: '#facc15'
+                            }
+                        }
+                    }
+                },
+                // 25. Video
+                {
+                    type: "video",
+                    narration: "We can embed full-motion video content directly into the presentation.",
+                    content: {
+                        title: "Motion Graphics",
+                        // Using an open-source trailer as placeholder
+                        src: "https://media.w3.org/2010/05/sintel/trailer.mp4"
+                    }
+                },
+                // 26. END
+                {
+                    type: "end",
+                    narration: "Thank you for watching this Masterclass demonstration.",
+                    content: {
+                        title: "FIN",
+                        subtitle: "Powered by Auto-Video Engine V8"
+                    }
+                }
+            ]
+        };
+        // ---------------------------------------------------------
+        // 2. THE ENGINE
+        // ---------------------------------------------------------
+        const app = {
+            data: null,
+            index: 0,
+            step: -1,
+            playing: false,
+            tts: window.speechSynthesis,
+            voice: null,
+            chart: null,
+
+            init() {
+                this.loadData(DemoData);
+                this.setupAudio();
+
+                // Initialize TTS and populate Language Dropdown
+                if (this.tts.onvoiceschanged !== undefined) this.tts.onvoiceschanged = () => this.populateVoices();
+                setTimeout(() => this.populateVoices(), 500);
+            },
+
+            populateVoices() {
+                const vs = this.tts.getVoices();
+                if (vs.length === 0) return;
+
+                // 1. Populate AI Modal Dropdown (Unique Langs)
+                const aiSel = document.getElementById('ai-lang-select');
+                const langs = [...new Set(vs.map(v => v.lang))];
+                aiSel.innerHTML = '';
+                langs.forEach(l => {
+                    const opt = document.createElement('option');
+                    opt.value = l;
+                    opt.innerText = l;
+                    if (l.includes('en-US')) opt.selected = true;
+                    aiSel.appendChild(opt);
+                });
+
+                // 2. Auto-Select Voice based on loaded JSON language
+                if (this.data.meta.lang) {
+                    this.voice = vs.find(v => v.lang === this.data.meta.lang) || vs.find(v => v.lang.includes(this.data.meta.lang.split('-')[0])) || vs[0];
+                }
+            },
+
+            loadData(json) {
+                this.data = json;
+                this.applyTheme();
+                this.populateVoices(); // Re-check voice match
+                this.render(0);
+            },
+
+            applyTheme() {
+                const c = this.data.meta.design.colors;
+                const r = document.documentElement.style;
+                if (c.primary) r.setProperty('--primary', c.primary);
+                if (c.accent) r.setProperty('--accent', c.accent);
+                if (this.data.meta.design.font) r.setProperty('--font-body', this.data.meta.design.font);
+            },
+
+            setupAudio() {
+                const a = document.getElementById('bg-music');
+                if (this.data.meta.audio) {
+                    a.src = this.data.meta.audio.src;
+                    a.volume = this.data.meta.audio.volume || 0.2;
+                }
+            },
+
+            // --- RENDER LOOP ---
+            render(idx, step = -1) {
+                if (idx < 0 || idx >= this.data.scenes.length) {
+                    this.playing = false;
+                    this.updateUI();
+                    return;
+                }
+
+                const isNewScene = (this.index !== idx);
+                this.index = idx;
+                this.step = step;
+                const scene = this.data.scenes[idx];
+                const layer = document.getElementById('scene-layer');
+                const bg = document.getElementById('stage-bg');
+
+                if (isNewScene) {
+                    this.stopSpeech();
+                    if (this.chart) {
+                        this.chart.destroy();
+                        this.chart = null;
+                    }
+
+                    layer.classList.remove('active');
+                    setTimeout(() => {
+                        layer.innerHTML = '';
+
+                        // Smart Background Fallback
+                        if (scene.content.bg) {
+                            bg.style.backgroundImage = `url('${scene.content.bg}')`;
+                        } else {
+                            // Generate abstract SVG pattern if no BG
+                            const svg = `data:image/svg+xml;base64,${btoa(`<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100'><rect width='100%' height='100%' fill='#050505'/><circle cx='50' cy='50' r='40' fill='${this.data.meta.design.colors.primary}' opacity='0.1'/></svg>`)}`;
+                            bg.style.backgroundImage = `url('${svg}')`;
+                        }
+
+                        const R = Renderers[scene.type] || Renderers.unknown;
+                        try {
+                            R(layer, scene.content, step);
+                        } catch (e) {
+                            console.error(e);
+                        }
+
+                        if (scene.type === 'code') Prism.highlightAll();
+
+                        layer.classList.add('active');
+                        this.narrate(scene);
+                    }, 600);
+                } else {
+                    this.stopSpeech();
+                    const R = Renderers[scene.type];
+                    if (R) R(layer, scene.content, step);
+                    this.narrate(scene);
+                }
+                this.updateUI();
+            },
+
+            narrate(scene) {
+                if (!this.playing) return;
+                let txt = "";
+                if (this.step === -1) txt = scene.narration;
+                else if (scene.steps) {
+                    const s = scene.steps.find(x => x.index === this.step);
+                    if (s) txt = s.narration;
+                }
+
+                if (txt) {
+                    const u = new SpeechSynthesisUtterance(txt);
+                    if (this.voice) u.voice = this.voice;
+                    u.onend = () => setTimeout(() => this.autoNext(), 800);
+                    this.tts.speak(u);
+                } else {
+                    setTimeout(() => this.autoNext(), 1000);
+                }
+            },
+
+            autoNext() {
+                if (!this.playing) return;
+                const scene = this.data.scenes[this.index];
+                const max = scene.steps ? Math.max(...scene.steps.map(s => s.index)) : -1;
+
+                // Find next step logic
+                if (scene.steps && this.step < max) {
+                    const nextSteps = scene.steps.filter(s => s.index > this.step).sort((a, b) => a.index - b.index);
+                    if (nextSteps.length > 0) this.render(this.index, nextSteps[0].index);
+                    else this.render(this.index + 1, -1);
+                } else {
+                    this.render(this.index + 1, -1);
+                }
+            },
+
+            // --- CONTROLS ---
+            togglePlay() {
+                this.playing = !this.playing;
+                this.updateUI();
+                const a = document.getElementById('bg-music');
+                if (this.playing) {
+                    a.play().catch(() => {});
+                    this.narrate(this.data.scenes[this.index]);
+                } else {
+                    a.pause();
+                    this.stopSpeech();
+                }
+            },
+            next() {
+                this.render(this.index + 1, -1);
+            },
+            prev() {
+                this.render(this.index - 1, -1);
+            },
+            stopSpeech() {
+                this.tts.cancel();
+            },
+            toggleMenu() {
+                const m = document.getElementById('main-menu');
+                m.classList.toggle('show');
+                if (m.classList.contains('show')) setTimeout(() => document.addEventListener('click', function c(e) {
+                    if (!e.target.closest('.dropup-container')) {
+                        m.classList.remove('show');
+                        document.removeEventListener('click', c)
+                    }
+                }, 0));
+            },
+            updateUI() {
+                document.getElementById('play-btn').innerHTML = this.playing ? '<i class="bi bi-pause-fill"></i>' : '<i class="bi bi-play-fill"></i>';
+                document.getElementById('progress').innerText = `SCENE ${this.index + 1} / ${this.data.scenes.length}`;
+            },
+
+            // --- AI ---
+            openModal(id) {
+                document.getElementById('modal-' + id).classList.add('open');
+            },
+
+            async generateAI() {
+                const prompt = document.getElementById('ai-prompt').value;
+                const lang = document.getElementById('ai-lang-select').value;
+                const loader = document.getElementById('ai-loader');
+
+                if (!prompt) return this.toast("Please enter a topic");
+                if (loader) loader.style.display = 'block';
+
+                // Pass the current data structure (first 3 scenes) as example for strict JSON
+                const schema = JSON.stringify(this.data.scenes.slice(0, 3));
+
+                const sys = `Role: Auto-Video Architect.
+Task: Create a JSON presentation for the topic: "${prompt}".
+Language: Use "${lang}" for all text and narration.
+Structure: { meta: { title: "...", design: { colors: { primary: "hex", accent: "hex" } }, lang: "${lang}" }, scenes: [...] }
+Requirements:
+1. Generate at least 8 scenes.
+2. Use diverse types: title, bullets, timeline, chart, image, code, end.
+3. For charts/bullets, use 'steps' array for granular highlighting.
+4. Output ONLY valid JSON. No markdown.
+Example Schema to follow: ${schema}`;
+
+                try {
+                    const res = await puter.ai.chat(sys);
+                    const clean = res.message.content.replace(/```json|```/g, '').trim();
+                    const json = JSON.parse(clean);
+
+                    // Merge
+                    const final = {
+                        ...this.data,
+                        scenes: json.scenes || json
+                    };
+                    if (json.meta) {
+                        final.meta = json.meta;
+                        // Ensure defaults exist
+                        if (!final.meta.audio) final.meta.audio = this.data.meta.audio;
+                        if (!final.meta.design) final.meta.design = this.data.meta.design;
+                    }
+
+                    this.loadData(final);
+                    document.getElementById('modal-ai').classList.remove('open');
+                    this.toast("Project Generated!");
+                } catch (e) {
+                    console.error(e);
+                    this.toast("AI Generation Failed");
+                } finally {
+                    if (loader) loader.style.display = 'none';
+                }
+            },
+
+            // IO
+            save() {
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(new Blob([JSON.stringify(this.data)], {
+                    type: 'application/json'
+                }));
+                a.download = 'project.json';
+                a.click();
+            },
+            load(i) {
+                const r = new FileReader();
+                r.onload = e => {
+                    this.loadData(JSON.parse(e.target.result))
+                };
+                r.readAsText(i.files[0]);
+            },
+            uploadMusic(i) {
+                const f = i.files[0];
+                if (!f) return;
+                document.getElementById('bg-music').src = URL.createObjectURL(f);
+                this.toast('Music Updated');
+            },
+            toggleMute() {
+                const m = document.getElementById('bg-music');
+                m.muted = !m.muted;
+                document.getElementById('mute-icon').className = m.muted ? 'bi bi-volume-mute' : 'bi bi-volume-up';
+            },
+            toast(m) {
+                const b = document.getElementById('toast-box');
+                const d = document.createElement('div');
+                d.className = 'toast';
+                d.innerText = m;
+                b.appendChild(d);
+                setTimeout(() => d.remove(), 3000);
+            }
+        };
+
+        // ---------------------------------------------------------
+        // 3. RENDERERS
+        // ---------------------------------------------------------
+        const Renderers = {
+            unknown: (el) => el.innerHTML = `<h2>Unknown Type</h2>`,
+
+            title: (el, c) => {
+                const bg = c.bg || `https://image.pollinations.ai/prompt/${encodeURIComponent(c.title + ' abstract wallpaper')}`;
+                // Fallback SVG logic for bg
+                const svg = `data:image/svg+xml;base64,${btoa('<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100%" height="100%" fill="#111"/></svg>')}`;
+                const stageBg = document.getElementById('stage-bg');
+
+                // Attempt load
+                const img = new Image();
+                img.onload = () => stageBg.style.backgroundImage = `url('${bg}')`;
+                img.onerror = () => stageBg.style.backgroundImage = `url('${svg}')`;
+                img.src = bg;
+
+                el.innerHTML = `<div class="comp-title"><h1>${c.title}</h1><h2>${c.subtitle}</h2></div>`;
+            },
+
+            bullets: (el, c, step) => {
+                let idx = -1;
+                if (step > -1 && app.data.scenes[app.index].steps) {
+                    const s = app.data.scenes[app.index].steps.find(x => x.index === step);
+                    if (s) idx = s.index;
+                }
+                if (el.querySelector('.comp-bullets')) {
+                    el.querySelectorAll('.bullet-item').forEach((li, i) => {
+                        li.className = (idx === i) ? 'bullet-item active' : (step > -1 ? 'bullet-item' : 'bullet-item active');
+                        if (step > -1 && idx !== i) li.style.opacity = 0.3;
+                    });
+                    return;
+                }
+                el.innerHTML = `<h2 style="font-size:3vw; color:var(--primary); margin-bottom:30px;">${c.title}</h2><div class="comp-bullets">${c.items.map(i => `<div class="bullet-item">${i}</div>`).join('')}</div>`;
+            },
+
+            chart: (el, c, step) => {
+                let idx = -1;
+                if (step > -1 && app.data.scenes[app.index].steps) {
+                    const s = app.data.scenes[app.index].steps.find(x => x.index === step);
+                    if (s) idx = s.index;
+                }
+
+                if (app.chart) {
+                    const ds = app.chart.data.datasets[0];
+                    const bg = ds.data.map((_, i) => (idx === -1 || idx === i) ? app.data.meta.design.colors.primary : 'rgba(255,255,255,0.1)');
+                    const bdr = ds.data.map((_, i) => (idx === i) ? app.data.meta.design.colors.accent : 'transparent');
+                    const width = ds.data.map((_, i) => (idx === i) ? 4 : 0);
+
+                    app.chart.data.datasets[0].backgroundColor = bg;
+                    app.chart.data.datasets[0].borderColor = bdr;
+                    app.chart.data.datasets[0].borderWidth = width;
+                    app.chart.update('none');
+                    return;
+                }
+
+                el.innerHTML = `<div class="comp-chart-wrap"><div class="chart-title">${c.title}</div><canvas id="chart-cvs"></canvas></div>`;
+                const ctx = document.getElementById('chart-cvs').getContext('2d');
+
+                let type = c.type;
+                let data = JSON.parse(JSON.stringify(c.data));
+                if (type === 'funnel') {
+                    type = 'bar';
+                    data.datasets[0].data.sort((a, b) => b - a);
+                    options = {
+                        indexAxis: 'y'
+                    };
+                } else if (type === 'waterfall') {
+                    type = 'bar';
+                    let acc = 0;
+                    data.datasets[0].data = data.datasets[0].data.map(v => {
+                        const r = [acc, acc + v];
+                        acc += v;
+                        return r;
+                    });
+                }
+
+                let cfg = {
+                    type: (type === 'venn') ? 'venn' : type,
+                    data: data,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: 'white',
+                                    font: {
+                                        size: 16
+                                    }
+                                }
+                            }
+                        },
+                        scales: (type.includes('bar') || type.includes('line')) ? {
+                            x: {
+                                grid: {
+                                    color: 'rgba(255,255,255,0.1)'
+                                },
+                                ticks: {
+                                    color: '#ccc'
+                                }
+                            },
+                            y: {
+                                grid: {
+                                    color: 'rgba(255,255,255,0.1)'
+                                },
+                                ticks: {
+                                    color: '#ccc'
+                                }
+                            }
+                        } : {}
+                    }
+                };
+                if (c.isGraphPaper) {
+                    cfg.data.datasets[0].borderColor = "#fff";
+                    cfg.data.datasets[0].borderDash = [5, 5];
+                    cfg.data.datasets[0].tension = 0;
+                }
+                app.chart = new Chart(ctx, cfg);
+            },
+
+            image: (el, c) => {
+                const svg = `data:image/svg+xml;base64,${btoa('<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'><rect width=\'100%\' height=\'100%\' fill=\'#111\'/></svg>')}`;
+                el.innerHTML = `<div class="comp-img-layout"><div class="img-frame"><img src="${c.src}" onload="this.classList.add('loaded')" onerror="this.src='${svg}'"></div><div class="img-text"><h2>${c.title}</h2><p>${c.text}</p></div></div>`;
+            },
+
+            timeline: (el, c, step) => {
+                let idx = -1;
+                if (step > -1 && app.data.scenes[app.index].steps) {
+                    const s = app.data.scenes[app.index].steps.find(x => x.index === step);
+                    if (s) idx = s.index;
+                }
+                if (el.querySelector('.tl-track')) {
+                    el.querySelectorAll('.tl-item').forEach((it, i) => {
+                        it.className = (idx === i) ? 'tl-item active' : 'tl-item';
+                        if (idx === i) it.scrollIntoView({
+                            behavior: "smooth",
+                            inline: "center"
+                        });
+                    });
+                    return;
+                }
+                el.innerHTML = `<div style="width:100%; padding:0 5vw;"><h2 style="font-size:3vw; color:var(--primary); margin-bottom:20px;">${c.title}</h2><div class="comp-timeline"><div class="tl-track">${c.items.map(i=>`<div class="tl-item"><div class="tl-year">${i.year}</div><p>${i.text}</p></div>`).join('')}</div></div></div>`;
+            },
+
+            table: (el, c, step) => {
+                let idx = -1;
+                if (step > -1 && app.data.scenes[app.index].steps) {
+                    const s = app.data.scenes[app.index].steps.find(x => x.index === step);
+                    if (s) idx = s.index;
+                }
+                if (el.querySelector('table')) {
+                    el.querySelectorAll('tbody tr').forEach((tr, i) => {
+                        tr.className = (idx === i) ? 'active' : '';
+                        if (step > -1 && idx !== i) tr.style.opacity = 0.4;
+                        else tr.style.opacity = 1;
+                    });
+                    return;
+                }
+                el.innerHTML = `<h2 style="margin-bottom:20px; color:var(--primary);">${c.title}</h2><table class="comp-table"><thead><tr>${c.headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${c.rows.map(r=>`<tr>${r.map(d=>`<td>${d}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+            },
+
+            comparison: (el, c, step) => {
+                let idx = -1;
+                if (step > -1 && app.data.scenes[app.index].steps) {
+                    const s = app.data.scenes[app.index].steps.find(x => x.index === step);
+                    if (s) idx = s.index;
+                }
+                if (el.querySelector('.comp-split')) {
+                    el.querySelectorAll('.split-col').forEach((col, i) => {
+                        col.className = (idx === i) ? 'split-col active' : 'split-col';
+                        if (step > -1 && idx !== i) col.style.opacity = 0.3;
+                    });
+                    return;
+                }
+                el.innerHTML = `<div class="comp-split"><div class="split-col"><div class="split-head">${c.leftHead}</div>${c.leftBody.map(i=>`<div>• ${i}</div>`).join('')}</div><div class="split-col"><div class="split-head" style="color:var(--accent)">${c.rightHead}</div>${c.rightBody.map(i=>`<div>• ${i}</div>`).join('')}</div></div>`;
+            },
+
+            quiz: (el, c) => {
+                el.innerHTML = `<div style="text-align:center;"><h2>${c.question}</h2><div class="quiz-grid">${c.options.map((o,i)=>`<button class="quiz-btn" onclick="chkQuiz(this,${i},${c.correct})">${o}</button>`).join('')}</div></div>`;
+                window.chkQuiz = (btn, i, corr) => {
+                    const p = btn.parentElement;
+                    Array.from(p.children).forEach(b => b.disabled = true);
+                    if (i === corr) {
+                        btn.classList.add('correct');
+                        app.toast('Correct!');
+                    } else {
+                        btn.classList.add('wrong');
+                        p.children[corr].classList.add('correct');
+                        app.toast('Incorrect!');
+                    }
+                };
+            },
+
+            code: (el, c) => el.innerHTML = `<div class="comp-code"><h2 style="color:var(--primary); margin-bottom:10px;">${c.title}</h2><pre><code class="language-${c.lang}">${c.code}</code></pre></div>`,
+            quote: (el, c) => el.innerHTML = `<div style="text-align:center; width:80%;"><h1 style="font-family:'Playfair Display'; font-size:4vw; font-style:italic;">"${c.text}"</h1><h3 style="margin-top:20px; color:var(--accent);">— ${c.author}</h3></div>`,
+            video: (el, c) => el.innerHTML = `<div style="width:80%; height:70%; border:2px solid var(--border); border-radius:20px; overflow:hidden;"><video src="${c.src}" autoplay loop muted style="width:100%; height:100%; object-fit:cover;"></video></div><h2>${c.title}</h2>`,
+            // TYPE: TREE HIERARCHY (Enhanced Visuals)
+            tree: (el, c) => {
+                // Recursive function to build the tree HTML structure
+                const buildTree = (node) => {
+                    if (!node) return '';
+                    let html = `<div class="tree-node">
+                        <div class="node-content">${node.name}</div>`;
+
+                    if (node.children && node.children.length > 0) {
+                        html += `<div class="node-children">`;
+                        node.children.forEach(child => {
+                            html += `<div class="child-wrapper">${buildTree(child)}</div>`;
+                        });
+                        html += `</div>`;
+                    }
+                    html += `</div>`;
+                    return html;
+                };
+
+                // Inject CSS for the tree dynamically if not present
+                if (!document.getElementById('tree-style')) {
+                    const style = document.createElement('style');
+                    style.id = 'tree-style';
+                    style.innerHTML = `
+                        .tree-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; overflow: auto; padding: 50px; }
+                        .tree-node { display: flex; flex-direction: column; align-items: center; position: relative; margin: 0 15px; }
+                        .node-content { 
+                            padding: 15px 30px; 
+                            background: rgba(255,255,255,0.1); 
+                            border: 2px solid var(--primary); 
+                            border-radius: 12px; 
+                            font-size: 1.5rem; 
+                            font-weight: bold; 
+                            color: #fff; 
+                            min-width: 120px; 
+                            text-align: center;
+                            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+                            transition: transform 0.3s;
+                        }
+                        .node-content:hover { transform: scale(1.1); background: var(--primary); }
+                        .node-children { display: flex; margin-top: 40px; position: relative; }
+                        .node-children::before {
+                            content: ''; position: absolute; top: -20px; left: 50%; 
+                            width: 2px; height: 20px; background: var(--border);
+                        }
+                        .child-wrapper { position: relative; display: flex; justify-content: center; }
+                        .child-wrapper::before {
+                            content: ''; position: absolute; top: -20px; left: 50%; 
+                            width: 2px; height: 20px; background: var(--border);
+                        }
+                        /* Connector Lines */
+                        .node-children > .child-wrapper:not(:first-child)::after {
+                            content: ''; position: absolute; top: -20px; left: -50%; width: 100%; height: 2px; background: var(--border); z-index: -1;
+                        }
+                        .node-children > .child-wrapper:first-child::after {
+                            content: ''; position: absolute; top: -20px; right: -50%; width: 50%; height: 2px; background: var(--border); z-index: -1;
+                        }
+                        .node-children > .child-wrapper:last-child::after {
+                            content: ''; position: absolute; top: -20px; left: 0; width: 50%; height: 2px; background: var(--border); z-index: -1;
+                        }
+                        .node-children > .child-wrapper:only-child::after { display: none; }
+                    `;
+                    document.head.appendChild(style);
+                }
+
+                el.innerHTML = `
+                    <h2 style="font-size:3vw; color:var(--primary); margin-bottom:30px; text-align:center;">${c.title}</h2>
+                    <div class="tree-container">
+                        ${buildTree(c.root)}
+                    </div>
+                `;
+            },
+            p5: (el, c) => {
+                el.innerHTML = `<div id="p5-box" style="width:100%; height:100%"></div>`;
+                new p5(new Function('p', c.code), 'p5-box');
+            },
+            "3d": (el, c) => {
+                el.innerHTML = `<div id="3d-box" style="width:90%; height:80%"></div>`;
+                Plotly.newPlot('3d-box', [c.data], {
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    scene: {
+                        xaxis: {
+                            color: '#fff'
+                        },
+                        yaxis: {
+                            color: '#fff'
+                        },
+                        zaxis: {
+                            color: '#fff'
+                        }
+                    }
+                }, {
+                    displayModeBar: false
+                });
+            },
+            end: (el, c) => Renderers.title(el, c)
+        };
+
+        window.onload = () => app.init();
+    </script>
+</body>
+
+</html>
