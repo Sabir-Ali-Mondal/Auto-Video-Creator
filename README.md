@@ -4,4 +4,6 @@
 
 This project bridges the gap between data and storytelling, enabling developers, marketers, and analysts to produce programmatic videos without complex editing software.
 
+its awesome.
+
 
