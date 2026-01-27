@@ -7,7 +7,7 @@ This project bridges the gap between data and storytelling, enabling developers,
 It will be awesome.
 
 
-Here is the consolidated list of all 41 scene types , along with a brief technical implementation strategy for each using HTML, CSS (Tailwind), and JavaScript.
+Here is the consolidated list of all 41 scene types discussed, along with a brief technical implementation strategy for each using HTML, CSS (Tailwind), and JavaScript.
 
 **Social Media & Communications**
 1. Social Media Post: Use a Flexbox container with a border, padding, and specific gap settings. Use `rounded-full` for avatars and font-weight variations for handles vs. content.
