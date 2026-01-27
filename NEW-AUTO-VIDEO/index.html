@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto-Video: Ultimate Edition</title>
+
+    <!-- 1. FRAMEWORKS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- 2. LIBRARIES -->
+    <script src="https://js.puter.com/v2/"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- 3. FONTS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Oswald:wght@500;700&family=Space+Grotesk:wght@700&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Architects+Daughter&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #000;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* STAGE */
+        #stage-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            perspective: 1000px;
+            background: #000;
+        }
+
+        .slide-layer {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(1.05);
+            filter: blur(10px);
+            transition: opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.8s, filter 0.8s;
+            background: #000;
+            overflow: hidden;
+        }
+
+        .slide-layer.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: scale(1);
+            filter: blur(0);
+            z-index: 10;
+        }
+
+        /* ACTIONS */
+        .reveal-hidden {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: 0.6s ease;
+        }
+
+        .reveal-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .highlight-text {
+            background: #ffc107;
+            color: #000;
+            padding: 0 4px;
+            box-shadow: 0 0 15px rgba(255, 193, 7, 0.5);
+        }
+
+        .focus-mode {
+            transform: scale(1.05);
+            z-index: 50;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+            filter: brightness(1.1);
+            transition: 0.5s;
+            position: relative;
+        }
+
+        .blur-siblings>*:not(.focus-mode) {
+            filter: blur(5px);
+            opacity: 0.3;
+            transition: 0.5s;
+        }
+
+        /* UI */
+        .ui-overlay {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .ui-bar {
+            pointer-events: auto;
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(15px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sam-badge {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.2);
+            letter-spacing: 2px;
+            z-index: 50;
+            pointer-events: none;
+            text-transform: uppercase;
+        }
+
+        /* SCENE SPECIFIC UTILS */
+        .scrolling-ticker {
+            animation: ticker 15s linear infinite;
+            white-space: nowrap;
+        }
+
+        @keyframes ticker {
+            0% {
+                transform: translateX(100%);
+            }
+
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+
+        .chat-bubble {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter'],
+                        head: ['Oswald'],
+                        serif: ['Merriweather'],
+                        mono: ['monospace'],
+                        hand: ['Architects Daughter']
+                    },
+                    colors: {
+                        primary: '#0d6efd',
+                        accent: '#ffc107'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <div class="sam-badge">developed and idea by S.A.M.</div>
+    <audio id="bg-music" loop></audio>
+
+    <div id="stage-wrapper"></div>
+
+    <div class="ui-overlay">
+        <div class="progress" style="height: 3px; border-radius: 0; background: rgba(255,255,255,0.1);">
+            <div id="progress-bar" class="progress-bar bg-primary" role="progressbar" style="width: 0%"></div>
+        </div>
+
+        <nav class="navbar navbar-dark ui-bar px-4 py-3">
+            <div class="container-fluid d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="dropup">
+                        <button class="btn btn-outline-secondary btn-sm rounded-circle p-2" data-bs-toggle="dropdown"><i class="bi bi-list fs-5"></i></button>
+                        <ul class="dropdown-menu dropdown-menu-dark shadow-lg mb-3 border-secondary">
+                            <li><button class="dropdown-item" onclick="Engine.io.save()"><i class="bi bi-download me-2"></i> Save JSON</button></li>
+                            <li><label class="dropdown-item cursor-pointer"><i class="bi bi-folder2-open me-2"></i> Load JSON <input type="file" hidden onchange="Engine.io.load(this)"></label></li>
+                            <li><label class="dropdown-item cursor-pointer"><i class="bi bi-music-note-beamed me-2"></i> Music <input type="file" hidden onchange="Engine.io.music(this)"></label></li>
+                        </ul>
+                    </div>
+                    <div class="d-none d-md-block lh-1">
+                        <div class="text-primary fw-bold small ls-1">AUTO-VIDEO</div>
+                        <div id="meta-info" class="text-secondary small font-monospace" style="font-size: 10px;">READY</div>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-4">
+                    <button class="btn btn-link text-secondary p-0" onclick="Engine.prev()"><i class="bi bi-skip-backward-fill fs-2"></i></button>
+                    <button id="play-btn" class="btn btn-light rounded-circle p-0 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;" onclick="Engine.togglePlay()"><i class="bi bi-play-fill fs-1 ms-1"></i></button>
+                    <button class="btn btn-link text-secondary p-0" onclick="Engine.next()"><i class="bi bi-skip-forward-fill fs-2"></i></button>
+                </div>
+
+                <div class="d-flex align-items-center gap-3">
+                    <button class="btn btn-link text-secondary p-0" onclick="Engine.toggleMute()"><i id="mute-icon" class="bi bi-volume-up-fill fs-4"></i></button>
+                    <button class="btn btn-primary btn-sm rounded-pill px-4 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#aiModal"><i class="bi bi-stars me-1"></i> Generate</button>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <!-- AI MODAL -->
+    <div class="modal fade" id="aiModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content bg-dark border-secondary text-light">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title font-monospace">AI ARCHITECT</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-secondary small mb-3">Powered by S.A.M. | Supports 41 Scene Types</p>
+                    <textarea id="ai-prompt" class="form-control bg-black text-white border-secondary mb-3 font-monospace" rows="4" placeholder="Topic..."></textarea>
+                    <div id="gen-status" class="text-warning small font-monospace mb-3" style="min-height: 20px;"></div>
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary fw-bold" id="gen-btn" onclick="Engine.ai.generate()">Generate</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        //  THE MASSIVE DEMO DATASET (41 SCENE TYPES)
+        // ==========================================
+        const DEMO_DATA = {
+            meta: {
+                title: "The 41 Scene Showcase",
+                audio: "https://res.cloudinary.com/dmttn34te/video/upload/v1703666639/suspense-drone-11652_r6u5qf.mp3"
+            },
+            scenes: [
+                // --- GROUP 1: STANDARD & CINEMATIC ---
+
+                // 1. Cinematic Title
+                {
+                    type: "title_cinematic",
+                    html: `<div class="absolute inset-0 bg-cover bg-center opacity-50" style="background-image:url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564');"></div><div class="relative z-10 flex flex-col items-center justify-center h-full text-center"><div id="s1-sub" class="reveal-hidden inline-block px-3 py-1 border border-red-500 text-red-500 text-xs tracking-[0.5em] mb-4">S.A.M. ENGINE</div><h1 id="s1-head" class="reveal-hidden text-8xl font-head font-bold uppercase tracking-tight">ULTIMATE<br><span class="text-red-600">SHOWCASE</span></h1></div>`,
+                    steps: [{
+                        narration: "Welcome. This is the complete catalog of 41 unique scene types.",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#s1-sub'
+                        }, {
+                            type: 'reveal',
+                            target: '#s1-head'
+                        }]
+                    }]
+                },
+                // 2. Standard Bullets
+                {
+                    type: "bullets",
+                    html: `<div class="w-full h-full bg-black flex flex-col justify-center px-20"><h2 class="text-4xl font-bold mb-10 text-blue-500">Key Features</h2><ul class="space-y-6 text-2xl"><li id="b1" class="reveal-hidden flex items-center gap-4"><i class="bi bi-check-circle text-green-500"></i> Zero Error Architecture</li><li id="b2" class="reveal-hidden flex items-center gap-4"><i class="bi bi-check-circle text-green-500"></i> 40+ Unique Types</li><li id="b3" class="reveal-hidden flex items-center gap-4"><i class="bi bi-check-circle text-green-500"></i> AI Generated</li></ul></div>`,
+                    steps: [{
+                            narration: "First, the architecture is bulletproof.",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#b1'
+                            }]
+                        },
+                        {
+                            narration: "Second, the variety is unmatched.",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#b2'
+                            }]
+                        },
+                        {
+                            narration: "Third, it is all automated.",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#b3'
+                            }]
+                        }
+                    ]
+                },
+                // 3. Fullscreen Image
+                {
+                    type: "image",
+                    html: `<div class="w-full h-full relative"><img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b" class="w-full h-full object-cover"><div class="absolute bottom-10 left-10 bg-black/80 p-4 rounded-xl"><h3 class="text-xl font-bold">Visual Fidelity</h3></div></div>`,
+                    steps: [{
+                        narration: "High resolution imagery is handled natively.",
+                        actions: []
+                    }]
+                },
+                // 4. Video Background
+                {
+                    type: "video",
+                    html: `<div class="w-full h-full relative"><video src="https://media.w3.org/2010/05/sintel/trailer.mp4" autoplay loop muted class="w-full h-full object-cover opacity-60"></video><h1 class="absolute inset-0 flex items-center justify-center text-6xl font-bold mix-blend-overlay">MOTION</h1></div>`,
+                    steps: [{
+                        narration: "Video backgrounds add depth and motion.",
+                        actions: []
+                    }]
+                },
+                // 5. Quote
+                {
+                    type: "quote",
+                    html: `<div class="w-full h-full bg-zinc-900 flex items-center justify-center p-20"><div class="text-center"><i class="bi bi-quote text-6xl text-gray-700"></i><h1 class="text-4xl font-serif italic leading-relaxed mb-8">"Any sufficiently advanced technology is indistinguishable from magic."</h1><div class="text-xl text-blue-500 font-bold tracking-widest uppercase">- Arthur C. Clarke</div></div></div>`,
+                    steps: [{
+                        narration: "As Arthur C. Clarke famously said...",
+                        actions: []
+                    }]
+                },
+
+                // --- GROUP 2: DOCUMENTARY & JOURNALISM ---
+
+                // 6. Newspaper (3D)
+                {
+                    type: "newspaper",
+                    html: `<div class="w-full h-full flex items-center justify-center bg-gray-200 text-black font-serif"><div class="w-[600px] h-[800px] bg-white shadow-2xl p-10 transform -rotate-2"><h1 class="text-6xl font-head font-bold border-b-4 border-black mb-4">THE DAILY</h1><p class="text-lg leading-relaxed">The new engine guarantees <span id="news-w1" class="transition-colors duration-300">perfect sync</span>. It handles <span id="news-w2" class="transition-colors duration-300">every scenario</span>.</p></div></div>`,
+                    steps: [{
+                            narration: "We have solved synchronization.",
+                            actions: [{
+                                type: 'highlight',
+                                target: '#news-w1'
+                            }]
+                        },
+                        {
+                            narration: "Covering every possible scenario.",
+                            actions: [{
+                                type: 'highlight',
+                                target: '#news-w2'
+                            }]
+                        }
+                    ]
+                },
+                // 7. Map Points
+                {
+                    type: "map_points",
+                    html: `<div class="w-full h-full bg-[#111] relative overflow-hidden"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/World_map_blank_without_borders.svg/2000px-World_map_blank_without_borders.svg.png" class="absolute inset-0 w-full h-full object-cover opacity-20"><div id="mp1" class="reveal-hidden absolute top-[30%] left-[20%] w-4 h-4 bg-red-500 rounded-full shadow-[0_0_20px_red]"></div><div id="mpl" class="reveal-hidden absolute top-[30%] left-[20%] w-[40%] h-[2px] bg-red-500 origin-left"></div><div id="mp2" class="reveal-hidden absolute top-[35%] left-[60%] w-4 h-4 bg-red-500 rounded-full shadow-[0_0_20px_red]"></div></div>`,
+                    steps: [{
+                            narration: "From the US...",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#mp1'
+                            }]
+                        },
+                        {
+                            narration: "Across the globe...",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#mpl'
+                            }]
+                        },
+                        {
+                            narration: "To Europe.",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#mp2'
+                            }]
+                        }
+                    ]
+                },
+                // 8. Kinetic Typography
+                {
+                    type: "kinetic",
+                    html: `<div class="w-full h-full bg-red-600 flex items-center justify-center overflow-hidden"><h1 id="k1" class="reveal-hidden text-[15vw] font-black leading-none text-black">FAST</h1><h1 id="k2" class="reveal-hidden absolute text-[15vw] font-black leading-none text-white mix-blend-difference">LOUD</h1></div>`,
+                    steps: [{
+                            narration: "It is fast.",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#k1'
+                            }]
+                        },
+                        {
+                            narration: "It is loud.",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#k2'
+                            }]
+                        }
+                    ]
+                },
+                // 9. Docu-Title
+                {
+                    type: "docu_title",
+                    html: `<div class="w-full h-full flex items-center justify-center bg-black"><h1 class="text-9xl font-head text-white font-bold tracking-tighter">THE <span class="text-red-600">CRISIS</span></h1><div class="absolute inset-0 bg-[radial-gradient(circle,transparent_20%,#000_100%)]"></div></div>`,
+                    steps: [{
+                        narration: "The crisis began overnight.",
+                        actions: []
+                    }]
+                },
+                // 10. Spotlight
+                {
+                    type: "spotlight",
+                    html: `<div class="w-full h-full flex items-center justify-center bg-white text-black font-serif p-20 relative"><p class="text-2xl leading-loose">CONFIDENTIAL DOCUMENT<br>Project Alpha is hereby authorized to begin phase two immediately...</p><div class="absolute inset-0 bg-black/90 [mask-image:radial-gradient(circle_at_center,transparent_100px,black_150px)] animate-pulse"></div></div>`,
+                    steps: [{
+                        narration: "Only one phrase mattered.",
+                        actions: []
+                    }]
+                },
+                // 11. Film Strip
+                {
+                    type: "film_strip",
+                    html: `<div class="w-full h-full bg-black flex flex-col justify-center overflow-hidden"><div class="flex gap-4 animate-[ticker_20s_linear_infinite]"><div class="w-64 h-40 bg-gray-800 border-y-8 border-dashed border-gray-600 shrink-0"></div><div class="w-64 h-40 bg-gray-700 border-y-8 border-dashed border-gray-600 shrink-0"></div><div class="w-64 h-40 bg-gray-800 border-y-8 border-dashed border-gray-600 shrink-0"></div><div class="w-64 h-40 bg-gray-700 border-y-8 border-dashed border-gray-600 shrink-0"></div><div class="w-64 h-40 bg-gray-800 border-y-8 border-dashed border-gray-600 shrink-0"></div></div></div>`,
+                    steps: [{
+                        narration: "A sequence of events that changed history.",
+                        actions: []
+                    }]
+                },
+                // 12. Picture in Picture
+                {
+                    type: "pip",
+                    html: `<div class="w-full h-full relative"><img src="https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b" class="w-full h-full object-cover grayscale"><div class="absolute bottom-10 right-10 w-64 h-40 bg-black border-2 border-white shadow-2xl overflow-hidden"><video src="https://media.w3.org/2010/05/sintel/trailer.mp4" autoplay loop muted class="w-full h-full object-cover"></video></div></div>`,
+                    steps: [{
+                        narration: "While the city slept, the digital world was active.",
+                        actions: []
+                    }]
+                },
+
+                // --- GROUP 3: SOCIAL MEDIA ---
+
+                // 13. Social Post
+                {
+                    type: "social_post",
+                    html: `<div class="w-full h-full flex items-center justify-center bg-zinc-900"><div id="s5-card" class="reveal-hidden w-[500px] bg-black border border-zinc-800 rounded-xl p-6"><div class="flex items-center gap-3 mb-4"><div class="w-12 h-12 bg-gray-700 rounded-full"></div><div><div class="font-bold">S.A.M.</div><div class="text-gray-500 text-sm">@architect</div></div></div><p class="text-xl mb-4">Generating all scene types. <span class="text-blue-500">#AI</span></p><div class="flex gap-6 text-gray-500"><i class="bi bi-heart-fill text-red-500"> 1.2k</i></div></div></div>`,
+                    steps: [{
+                        narration: "Social proof is integrated directly into the narrative.",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#s5-card'
+                        }]
+                    }]
+                },
+                // 14. Chat Conversation
+                {
+                    type: "chat_conv",
+                    html: `<div class="w-full h-full flex items-center justify-center bg-zinc-900"><div class="w-[400px] h-[600px] bg-black border border-zinc-800 rounded-3xl p-6 flex flex-col justify-end gap-3"><div id="c1" class="reveal-hidden chat-bubble bg-zinc-800 self-start">Did you see the news?</div><div id="c2" class="reveal-hidden chat-bubble bg-blue-600 self-end">The AI update?</div><div id="c3" class="reveal-hidden chat-bubble bg-zinc-800 self-start">It's changing everything.</div></div></div>`,
+                    steps: [{
+                            narration: "Conversations unfold naturally.",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#c1'
+                            }]
+                        },
+                        {
+                            narration: "Back and forth.",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#c2'
+                            }]
+                        },
+                        {
+                            narration: "Building the narrative.",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#c3'
+                            }]
+                        }
+                    ]
+                },
+                // 15. Breaking News
+                {
+                    type: "breaking_news",
+                    html: `<div class="w-full h-full bg-cover bg-center" style="background-image:url('https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=2070');"><div class="absolute bottom-10 left-0 w-full h-24 bg-red-600 flex items-center overflow-hidden border-t-4 border-yellow-400"><div class="px-8 font-head text-3xl font-bold bg-red-700 h-full flex items-center z-10">BREAKING</div><div class="scrolling-ticker text-2xl font-bold uppercase ml-4">Market hits all time high • Global sync achieved • S.A.M. Engine released • </div></div></div>`,
+                    steps: [{
+                        narration: "Breaking news tickers create urgency.",
+                        actions: []
+                    }]
+                },
+                // 16. Notification Stack
+                {
+                    type: "notifications",
+                    html: `<div class="w-full h-full flex flex-col items-center justify-center gap-4 bg-gray-900"><div id="n1" class="reveal-hidden w-[350px] bg-white/10 backdrop-blur p-4 rounded-2xl flex gap-3 border border-white/10"><div class="w-10 h-10 bg-green-500 rounded-lg"></div><div><div class="font-bold">Message</div><div class="text-sm">Project approved!</div></div></div><div id="n2" class="reveal-hidden w-[350px] bg-white/10 backdrop-blur p-4 rounded-2xl flex gap-3 border border-white/10"><div class="w-10 h-10 bg-blue-500 rounded-lg"></div><div><div class="font-bold">Email</div><div class="text-sm">Contract signed.</div></div></div></div>`,
+                    steps: [{
+                            narration: "Information overload.",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#n1'
+                            }]
+                        },
+                        {
+                            narration: "Coming in fast.",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#n2'
+                            }]
+                        }
+                    ]
+                },
+
+                // --- GROUP 4: DATA VISUALIZATION ---
+
+                // 17. Chart Split
+                {
+                    type: "chart_split",
+                    html: `<div class="w-full h-full flex"><div class="w-1/3 bg-[#0a0a0a] flex flex-col justify-center p-12 border-r border-white/10"><h2 id="s4-h" class="reveal-hidden text-5xl font-bold mb-4">Data<br><span class="text-blue-500">Analytics</span></h2></div><div class="w-2/3 bg-black flex items-center justify-center p-12"><canvas id="s4-chart"></canvas></div></div>`,
+                    chartConfig: {
+                        type: 'bar',
+                        data: {
+                            labels: ['A', 'B', 'C'],
+                            datasets: [{
+                                label: 'Val',
+                                data: [40, 80, 100],
+                                backgroundColor: ['#333', '#333', '#0d6efd']
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                y: {
+                                    grid: {
+                                        color: '#333'
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    steps: [{
+                        narration: "Visualizing data is instant.",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#s4-h'
+                        }, {
+                            type: 'chart_highlight',
+                            target: '#s4-chart',
+                            value: 2
+                        }]
+                    }]
+                },
+                // 18. Full Chart
+                {
+                    type: "chart_full",
+                    html: `<div class="w-full h-full bg-black p-20"><canvas id="fullChart"></canvas></div>`,
+                    chartConfig: {
+                        type: 'line',
+                        data: {
+                            labels: ['Jan', 'Feb', 'Mar', 'Apr'],
+                            datasets: [{
+                                label: 'Growth',
+                                data: [10, 40, 35, 90],
+                                borderColor: '#eab308',
+                                tension: 0.4
+                            }]
+                        }
+                    },
+                    steps: [{
+                        narration: "Full screen detailed analysis.",
+                        actions: []
+                    }]
+                },
+                // 19. 3D Plot
+                {
+                    type: "3d_plot",
+                    html: `<div class="w-full h-full bg-black flex items-center justify-center"><div id="plot-div" class="w-[90%] h-[90%]"></div></div>`,
+                    script: "(ctx)=>{ Plotly.newPlot(ctx.root.querySelector('#plot-div'), [{type:'scatter3d', mode:'lines', x:[0,1,2,3,4,5], y:[0,1,0,1,0,1], z:[0,1,2,3,4,5], line:{width:6, color:'#0d6efd'}}], {paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)', scene:{xaxis:{color:'#fff'},yaxis:{color:'#fff'},zaxis:{color:'#fff'}}}); return { cleanup:()=>Plotly.purge(ctx.root.querySelector('#plot-div')) } }",
+                    steps: [{
+                        narration: "Interactive 3D models in real time.",
+                        actions: []
+                    }]
+                },
+                // 20. Timeline
+                {
+                    type: "timeline",
+                    html: `<div class="w-full h-full flex items-center justify-center bg-zinc-950"><div class="w-[800px] h-[2px] bg-gray-700 relative"><div id="t1" class="reveal-hidden absolute -top-3 left-[10%] w-6 h-6 bg-blue-500 rounded-full border-4 border-black"></div><div id="t1-txt" class="reveal-hidden absolute top-8 left-[10%] -translate-x-1/2 text-center w-32"><div class="font-bold">2020</div></div><div id="t2" class="reveal-hidden absolute -top-3 left-[50%] w-6 h-6 bg-blue-500 rounded-full border-4 border-black"></div><div id="t2-txt" class="reveal-hidden absolute top-8 left-[50%] -translate-x-1/2 text-center w-32"><div class="font-bold">2023</div></div></div></div>`,
+                    steps: [{
+                            narration: "Started in 2020.",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#t1'
+                            }, {
+                                type: 'reveal',
+                                target: '#t1-txt'
+                            }]
+                        },
+                        {
+                            narration: "Peaked in 2023.",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#t2'
+                            }, {
+                                type: 'reveal',
+                                target: '#t2-txt'
+                            }]
+                        }
+                    ]
+                },
+                // 21. Table
+                {
+                    type: "table",
+                    html: `<div class="w-full h-full flex items-center justify-center bg-black"><table class="w-[800px] text-left border-collapse"><thead class="text-blue-500 border-b border-gray-700"><tr><th class="p-4">Item</th><th class="p-4">Status</th></tr></thead><tbody class="text-gray-300"><tr><td class="p-4 border-b border-gray-800">Engine</td><td class="p-4 border-b border-gray-800 text-green-500">Ready</td></tr><tr><td class="p-4 border-b border-gray-800">UI</td><td class="p-4 border-b border-gray-800 text-green-500">Ready</td></tr></tbody></table></div>`,
+                    steps: [{
+                        narration: "Structured tabular data.",
+                        actions: []
+                    }]
+                },
+                // 22. Funnel
+                {
+                    type: "funnel",
+                    html: `<div class="w-full h-full flex flex-col items-center justify-center bg-black gap-2"><div class="w-[600px] bg-blue-900 p-4 text-center rounded">Leads</div><div class="w-[400px] bg-blue-700 p-4 text-center rounded">Prospects</div><div class="w-[200px] bg-blue-500 p-4 text-center rounded">Sales</div></div>`,
+                    steps: [{
+                        narration: "Filtering down the results.",
+                        actions: []
+                    }]
+                },
+                // 23. Calendar
+                {
+                    type: "calendar",
+                    html: `<div class="w-full h-full flex items-center justify-center bg-black"><div class="grid grid-cols-7 gap-2 w-[400px]"><div class="bg-gray-800 aspect-square rounded flex items-center justify-center">1</div><div class="bg-gray-800 aspect-square rounded flex items-center justify-center">2</div><div class="bg-red-600 aspect-square rounded flex items-center justify-center font-bold">3</div></div></div>`,
+                    steps: [{
+                        narration: "Marking the critical date.",
+                        actions: []
+                    }]
+                },
+                // 24. Number Counter
+                {
+                    type: "counter",
+                    html: `<div class="w-full h-full flex items-center justify-center bg-black"><h1 id="count" class="text-9xl font-mono text-green-500">0</h1></div>`,
+                    script: "(ctx)=>{ let val=0; const el=ctx.root.querySelector('#count'); const int=setInterval(()=>{ val+=142; el.innerText=val; },50); return { cleanup:()=>clearInterval(int) } }",
+                    steps: [{
+                        narration: "The numbers kept rising.",
+                        actions: []
+                    }]
+                },
+                // 25. Flowchart
+                {
+                    type: "flowchart",
+                    html: `<div class="w-full h-full flex items-center justify-center bg-black gap-8"><div class="p-6 border border-white rounded">Start</div><i class="bi bi-arrow-right text-3xl"></i><div class="p-6 border border-white rounded">Process</div><i class="bi bi-arrow-right text-3xl"></i><div class="p-6 bg-white text-black rounded font-bold">End</div></div>`,
+                    steps: [{
+                        narration: "A logical flow of events.",
+                        actions: []
+                    }]
+                },
+
+                // --- GROUP 5: TECH & EDUCATION ---
+
+                // 26. Code Terminal
+                {
+                    type: "code_terminal",
+                    html: `<div class="w-full h-full flex items-center justify-center bg-[#0d1117]"><div id="s6-win" class="reveal-hidden w-[800px] bg-[#161b22] rounded-lg border border-gray-700 overflow-hidden"><div class="bg-[#0d1117] p-3 border-b border-gray-700 flex gap-2"><div class="w-3 h-3 rounded-full bg-red-500"></div></div><pre class="!m-0 !p-6 !bg-transparent text-sm"><code class="language-javascript">const ai = new Architect();\nreturn ai.build(scene);</code></pre></div></div>`,
+                    steps: [{
+                        narration: "Explaining complex code.",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#s6-win'
+                        }]
+                    }]
+                },
+                // 27. Concept Sketch
+                {
+                    type: "concept",
+                    html: `<div class="w-full h-full bg-white flex items-center justify-center"><svg width="400" height="400" viewBox="0 0 400 400" class="stroke-black stroke-[3] fill-none"><path id="sketch-path" d="M50,200 Q200,50 350,200 T50,200" stroke-dasharray="1000" stroke-dashoffset="1000" class="transition-all duration-[2s]"></path></svg><div id="sketch-label" class="reveal-hidden absolute bottom-20 text-black font-hand text-3xl">Feedback Loop</div></div>`,
+                    script: "(ctx)=>{ return { onStep: (i)=>{ if(i===0) ctx.root.querySelector('#sketch-path').style.strokeDashoffset = 0; } } }",
+                    steps: [{
+                        narration: "The concept is a continuous loop.",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#sketch-label'
+                        }]
+                    }]
+                },
+                // 28. Quiz
+                {
+                    type: "quiz",
+                    html: `<div class="w-full h-full flex flex-col items-center justify-center bg-blue-900"><h2 class="text-4xl mb-8 font-bold">What comes next?</h2><div class="grid grid-cols-2 gap-4"><button class="bg-white/10 p-6 rounded-xl hover:bg-white/20 text-xl">Alpha</button><button class="bg-white/10 p-6 rounded-xl hover:bg-green-500 transition text-xl">Beta</button></div></div>`,
+                    steps: [{
+                        narration: "Can you guess the answer?",
+                        actions: []
+                    }]
+                },
+                // 29. Tree
+                {
+                    type: "tree",
+                    html: `<div class="w-full h-full flex flex-col items-center justify-center bg-black gap-8"><div class="p-4 border border-white rounded">Root</div><div class="flex gap-16 border-t border-white pt-8 relative"><div class="p-4 border border-white rounded">Child A</div><div class="p-4 border border-white rounded">Child B</div></div></div>`,
+                    steps: [{
+                        narration: "Branching out the hierarchy.",
+                        actions: []
+                    }]
+                },
+                // 30. Generative Art (P5 Style Canvas)
+                {
+                    type: "matrix",
+                    html: `<div class="absolute inset-0 bg-black"><canvas id="matrix" class="w-full h-full"></canvas><h1 class="absolute inset-0 flex items-center justify-center text-6xl font-mono text-green-500 font-bold mix-blend-screen reveal-hidden" id="s16-t">LIMITLESS</h1></div>`,
+                    script: "(ctx)=>{ const cvs=ctx.root.querySelector('#matrix'); const c=cvs.getContext('2d'); cvs.width=window.innerWidth; cvs.height=window.innerHeight; const cols=Math.floor(cvs.width/20); const ypos=Array(cols).fill(0); const interval=setInterval(()=>{ c.fillStyle='#0001'; c.fillRect(0,0,cvs.width,cvs.height); c.fillStyle='#0f0'; c.font='15px monospace'; ypos.forEach((y,ind)=>{ const text=String.fromCharCode(Math.random()*128); const x=ind*20; c.fillText(text,x,y); if(y>100+Math.random()*10000) ypos[ind]=0; else ypos[ind]=y+20; }); },50); return { cleanup:()=>clearInterval(interval) } }",
+                    steps: [{
+                        narration: "With custom scripts, anything is possible.",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#s16-t'
+                        }]
+                    }]
+                },
+
+                // --- GROUP 6: COMPARISON & LOGIC ---
+
+                // 31. Comparison
+                {
+                    type: "comparison",
+                    html: `<div class="w-full h-full flex"><div class="w-1/2 bg-zinc-900 flex flex-col items-center justify-center border-r border-white/10 blur-siblings"><h2 class="text-4xl font-bold mb-4">OLD</h2><ul class="text-gray-400 space-y-4"><li>Manual</li><li>Slow</li></ul></div><div class="w-1/2 bg-black flex flex-col items-center justify-center focus-mode"><h2 class="text-4xl font-bold mb-4 text-blue-500">NEW</h2><ul class="text-white space-y-4"><li>Automated</li><li>Instant</li></ul></div></div>`,
+                    steps: [{
+                        narration: "Comparing the old versus the new.",
+                        actions: []
+                    }]
+                },
+                // 32. Pros and Cons
+                {
+                    type: "pros_cons",
+                    html: `<div class="w-full h-full flex bg-black"><div class="w-1/2 p-10 border-r border-gray-800"><h2 class="text-green-500 text-3xl mb-6">PROS</h2><div class="flex gap-2 mb-2"><i class="bi bi-check-lg text-green-500"></i> Fast</div></div><div class="w-1/2 p-10"><h2 class="text-red-500 text-3xl mb-6">CONS</h2><div class="flex gap-2 mb-2"><i class="bi bi-x-lg text-red-500"></i> Expensive</div></div></div>`,
+                    steps: [{
+                        narration: "Weighing the benefits.",
+                        actions: []
+                    }]
+                },
+                // 33. Venn Diagram
+                {
+                    type: "venn",
+                    html: `<div class="w-full h-full flex items-center justify-center bg-white"><div class="w-64 h-64 rounded-full bg-red-500/50 -mr-10 flex items-center justify-center font-bold text-black">Design</div><div class="w-64 h-64 rounded-full bg-blue-500/50 -ml-10 flex items-center justify-center font-bold text-black">Code</div></div>`,
+                    steps: [{
+                        narration: "The intersection of design and code.",
+                        actions: []
+                    }]
+                },
+                // 34. Tier List
+                {
+                    type: "tier_list",
+                    html: `<div class="w-full h-full bg-black p-10 flex flex-col gap-2"><div class="flex h-24"><div class="w-24 bg-red-500 flex items-center justify-center font-bold text-2xl">S</div><div class="flex-1 bg-gray-900 flex items-center p-4 gap-4"><div class="w-16 h-16 bg-white rounded"></div></div></div><div class="flex h-24"><div class="w-24 bg-orange-500 flex items-center justify-center font-bold text-2xl">A</div><div class="flex-1 bg-gray-900"></div></div></div>`,
+                    steps: [{
+                        narration: "Ranking the top contenders.",
+                        actions: []
+                    }]
+                },
+                // 35. Image Slider
+                {
+                    type: "slider",
+                    html: `<div class="w-full h-full relative overflow-hidden"><div class="absolute inset-0 bg-blue-500 flex items-center justify-center text-4xl font-bold">AFTER</div><div class="absolute inset-0 bg-red-500 flex items-center justify-center text-4xl font-bold" style="clip-path: inset(0 50% 0 0);">BEFORE</div><div class="absolute inset-y-0 left-1/2 w-1 bg-white"></div></div>`,
+                    steps: [{
+                        narration: "A complete transformation.",
+                        actions: []
+                    }]
+                },
+
+                // --- GROUP 7: LAYOUT & MOTION ---
+
+                // 36. Bento Grid
+                {
+                    type: "bento",
+                    html: `<div class="w-full h-full bg-zinc-950 p-12 flex items-center justify-center"><div class="grid grid-cols-3 grid-rows-2 gap-4 w-full max-w-5xl h-[600px]"><div id="b1" class="reveal-hidden col-span-2 bg-zinc-900 rounded-3xl p-8 border border-white/5"><h3 class="text-2xl font-bold">Analytics</h3></div><div id="b2" class="reveal-hidden row-span-2 bg-blue-600 rounded-3xl p-8"><h3 class="text-2xl font-bold">Growth</h3></div><div id="b3" class="reveal-hidden bg-zinc-900 rounded-3xl p-8 border border-white/5"><h3 class="text-2xl font-bold">Users</h3></div></div></div>`,
+                    steps: [{
+                            narration: "Structured data.",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#b1'
+                            }]
+                        },
+                        {
+                            narration: "Driving growth.",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#b2'
+                            }]
+                        },
+                        {
+                            narration: "For all users.",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#b3'
+                            }]
+                        }
+                    ]
+                },
+                // 37. Card Carousel
+                {
+                    type: "carousel",
+                    html: `<div class="w-full h-full flex items-center bg-black overflow-hidden"><div class="flex gap-8 px-20"><div class="w-64 h-96 bg-gray-800 rounded-2xl shrink-0"></div><div class="w-64 h-96 bg-gray-700 rounded-2xl shrink-0 scale-110 border-2 border-white"></div><div class="w-64 h-96 bg-gray-800 rounded-2xl shrink-0"></div></div></div>`,
+                    steps: [{
+                        narration: "Scrolling through options.",
+                        actions: []
+                    }]
+                },
+                // 38. Photo Collage
+                {
+                    type: "collage",
+                    html: `<div class="w-full h-full bg-zinc-100 relative"><div class="absolute top-1/4 left-1/4 w-64 h-64 bg-white shadow-xl rotate-6 p-2"><div class="w-full h-full bg-gray-300"></div></div><div class="absolute top-1/3 left-1/2 w-64 h-64 bg-white shadow-xl -rotate-3 p-2 z-10"><div class="w-full h-full bg-gray-400"></div></div></div>`,
+                    steps: [{
+                        narration: "Memories scattered on the table.",
+                        actions: []
+                    }]
+                },
+                // 39. Parallax Scroll
+                {
+                    type: "parallax",
+                    html: `<div class="w-full h-full bg-black flex items-center justify-center perspective-[10px]"><div class="absolute text-[20vw] text-gray-800 font-black translate-z-[-10px]">DEEP</div><div class="relative text-9xl text-white font-bold">LAYER</div></div>`,
+                    steps: [{
+                        narration: "Depth creates immersion.",
+                        actions: []
+                    }]
+                },
+                // 40. Exploded View
+                {
+                    type: "exploded",
+                    html: `<div class="w-full h-full bg-gray-900 flex items-center justify-center perspective-[1000px]"><div class="relative w-64 h-64 transform-style-3d rotate-x-60 rotate-z-45"><div class="absolute inset-0 bg-red-500 translate-z-[100px] opacity-80"></div><div class="absolute inset-0 bg-blue-500 translate-z-[50px] opacity-80"></div><div class="absolute inset-0 bg-green-500"></div></div></div>`,
+                    steps: [{
+                        narration: "Breaking it down layer by layer.",
+                        actions: []
+                    }]
+                },
+
+                // --- GROUP 8: NARRATIVE & SEARCH ---
+
+                // 41. Search Browser
+                {
+                    type: "search",
+                    html: `<div class="w-full h-full bg-white flex flex-col items-center justify-center"><h1 class="text-6xl font-bold text-gray-500 mb-8">Google</h1><div class="w-[600px] border rounded-full p-4 shadow text-xl text-left pl-6">What is the future of AI?<span class="animate-pulse">|</span></div></div>`,
+                    steps: [{
+                        narration: "It starts with a simple question.",
+                        actions: []
+                    }]
+                },
+                // End Scene
+                {
+                    type: "end",
+                    html: `<div class="w-full h-full bg-black flex items-center justify-center"><h1 class="text-white text-4xl tracking-widest uppercase">FIN</h1></div>`,
+                    steps: [{
+                        narration: "Thank you for watching.",
+                        actions: []
+                    }]
+                }
+            ]
+        };
+        // --- 2. ENGINE CORE ---
+        const Engine = {
+            data: null,
+            state: {
+                sceneIdx: 0,
+                stepIdx: 0,
+                isPaused: true,
+                activeScript: null
+            },
+            tts: window.speechSynthesis,
+
+            init(json) {
+                this.data = json;
+                this.state = {
+                    sceneIdx: 0,
+                    stepIdx: 0,
+                    isPaused: true,
+                    activeScript: null
+                };
+                const audio = document.getElementById('bg-music');
+                if (json.meta.audio) audio.src = json.meta.audio;
+                audio.volume = 0.2;
+                this.renderDOM(0);
+                this.updateUI();
+            },
+
+            renderDOM(idx) {
+                const stage = document.getElementById('stage-wrapper');
+                const scene = this.data.scenes[idx];
+                if (this.state.activeScript?.cleanup) try {
+                    this.state.activeScript.cleanup()
+                } catch (e) {};
+                this.state.activeScript = null;
+                const layer = document.createElement('div');
+                layer.className = 'slide-layer active';
+                layer.innerHTML = scene.html;
+                stage.innerHTML = '';
+                stage.appendChild(layer);
+                this.hydrate(layer, scene);
+            },
+
+            hydrate(root, scene) {
+                if (root.querySelector('pre')) Prism.highlightAllUnder(root);
+                if (scene.chartConfig) {
+                    const ctx = root.querySelector('canvas');
+                    if (ctx) new Chart(ctx, scene.chartConfig);
+                }
+                if (scene.script) {
+                    try {
+                        const createFn = new Function('return ' + scene.script)();
+                        this.state.activeScript = createFn({
+                            root,
+                            window
+                        });
+                        if (this.state.activeScript.init) this.state.activeScript.init();
+                    } catch (e) {}
+                }
+            },
+
+            playSequence() {
+                if (this.state.isPaused) return;
+                const scene = this.data.scenes[this.state.sceneIdx];
+                const step = scene.steps[this.state.stepIdx];
+                if (step.actions) this.executeActions(step.actions);
+                if (this.state.activeScript?.onStep) this.state.activeScript.onStep(this.state.stepIdx);
+                this.updateUI();
+                this.speak(step.narration, () => this.advance());
+            },
+
+            executeActions(actions) {
+                actions.forEach(act => {
+                    try {
+                        const el = document.querySelector(act.target);
+                        if (!el) return;
+                        switch (act.type) {
+                            case 'reveal':
+                                el.classList.remove('reveal-hidden');
+                                el.classList.add('reveal-visible');
+                                break;
+                            case 'highlight':
+                                el.classList.add('highlight-text');
+                                break;
+                            case 'chart_highlight':
+                                const chart = Chart.getChart(el);
+                                if (chart) {
+                                    chart.data.datasets[0].backgroundColor = chart.data.labels.map((_, i) => i === act.value ? '#0d6efd' : '#333');
+                                    chart.update();
+                                }
+                                break;
+                        }
+                    } catch (e) {}
+                });
+            },
+
+            speak(text, cb) {
+                if (!text) {
+                    setTimeout(cb, 1000);
+                    return;
+                }
+                this.tts.cancel();
+                const u = new SpeechSynthesisUtterance(text);
+                const v = this.tts.getVoices().find(v => v.name.includes("Google US")) || this.tts.getVoices()[0];
+                if (v) u.voice = v;
+                u.onend = () => setTimeout(cb, 600);
+                this.tts.speak(u);
+            },
+
+            advance() {
+                if (this.state.isPaused) return;
+                const scene = this.data.scenes[this.state.sceneIdx];
+                if (this.state.stepIdx < scene.steps.length - 1) {
+                    this.state.stepIdx++;
+                    this.playSequence();
+                } else if (this.state.sceneIdx < this.data.scenes.length - 1) {
+                    this.state.sceneIdx++;
+                    this.state.stepIdx = 0;
+                    this.renderDOM(this.state.sceneIdx);
+                    setTimeout(() => this.playSequence(), 800);
+                } else {
+                    this.togglePlay();
+                }
+            },
+
+            togglePlay() {
+                this.state.isPaused = !this.state.isPaused;
+                const btn = document.getElementById('play-btn');
+                const music = document.getElementById('bg-music');
+                if (!this.state.isPaused) {
+                    btn.innerHTML = '<i class="bi bi-pause-fill fs-1"></i>';
+                    btn.classList.add('btn-primary');
+                    btn.classList.remove('btn-light');
+                    music.play().catch(() => {});
+                    this.playSequence();
+                } else {
+                    btn.innerHTML = '<i class="bi bi-play-fill fs-1 ms-1"></i>';
+                    btn.classList.add('btn-light');
+                    btn.classList.remove('btn-primary');
+                    music.pause();
+                    this.tts.cancel();
+                }
+            },
+            next() {
+                this.state.isPaused = true;
+                this.tts.cancel();
+                if (this.state.sceneIdx < this.data.scenes.length - 1) {
+                    this.state.sceneIdx++;
+                    this.state.stepIdx = 0;
+                    this.renderDOM(this.state.sceneIdx);
+                    this.updateUI();
+                }
+            },
+            prev() {
+                this.state.isPaused = true;
+                this.tts.cancel();
+                if (this.state.sceneIdx > 0) {
+                    this.state.sceneIdx--;
+                    this.state.stepIdx = 0;
+                    this.renderDOM(this.state.sceneIdx);
+                    this.updateUI();
+                }
+            },
+            updateUI() {
+                const pct = ((this.state.sceneIdx + 1) / this.data.scenes.length) * 100;
+                document.getElementById('progress-bar').style.width = `${pct}%`;
+                document.getElementById('meta-info').innerText = `SCENE ${this.state.sceneIdx + 1}/${this.data.scenes.length}`;
+            },
+            toggleMute() {
+                const m = document.getElementById('bg-music');
+                m.muted = !m.muted;
+                document.getElementById('mute-icon').className = m.muted ? 'bi bi-volume-mute-fill fs-4' : 'bi bi-volume-up-fill fs-4';
+            },
+
+            io: {
+                save: () => {
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(new Blob([JSON.stringify(Engine.data)], {
+                        type: 'application/json'
+                    }));
+                    a.download = 'autovideo.json';
+                    a.click();
+                },
+                load: (inp) => {
+                    const r = new FileReader();
+                    r.onload = e => Engine.init(JSON.parse(e.target.result));
+                    r.readAsText(inp.files[0]);
+                },
+                music: (inp) => {
+                    if (inp.files[0]) document.getElementById('bg-music').src = URL.createObjectURL(inp.files[0]);
+                }
+            },
+
+            ai: {
+                generate: async () => {
+                    const prompt = document.getElementById('ai-prompt').value;
+                    const btn = document.getElementById('gen-btn');
+                    const status = document.getElementById('gen-status');
+
+                    if (!prompt) return;
+
+                    btn.disabled = true;
+                    status.innerText = "S.A.M. Analyzing Genre & Mood...";
+
+                    // 1. We provide the STRUCTURE of the 41 scenes, but tell AI to ignore the STYLING of the examples.
+                    const sceneLibrary = JSON.stringify(DEMO_DATA.scenes.map(s => ({
+                        type: s.type,
+                        structure_hint: s.html.replace(/class="[^"]*"/g, 'class="[INSERT_YOUR_THEME_HERE]"').substring(0, 150) + "..."
+                    })));
+
+                    const sysPrompt = `
+                    # ROLE
+                    You are S.A.M. (Senior Art Machine), the Universal Video Director.
+                    
+                    # USER TOPIC
+                    "${prompt}"
+
+                    # PHASE 1: VISUAL IDENTITY (CRITICAL)
+                    First, determine the **MOOD** of this topic.
+                    - Is it Happy? Sad? Corporate? Retro? Futuristic? Nature?
+                    - **Define a Tailwind CSS Theme** based on this mood.
+                    - Example (Nature): bg-green-50, text-emerald-900, font-serif.
+                    - Example (Tech): bg-slate-900, text-blue-400, font-mono.
+                    - Example (Kids): bg-yellow-100, text-purple-600, font-comic, rounded-3xl.
+                    
+                    **APPLY THIS THEME CONSISTENTLY TO ALL SCENES.**
+
+                    # PHASE 2: SCENE ARCHITECTURE
+                    You have access to 41 Scene Logic Types (Newspaper, Map, Chart, Chat, etc.).
+                    Use the logic of these types, but **completely rewrite the HTML/CSS** to match your chosen Theme.
+                    
+                    Scene Logic Library (Reference Only):
+                    ${sceneLibrary}
+
+                    # PHASE 3: NARRATIVE & PACING
+                    - Create a **12-15 Scene** video.
+                    - **Flow**: Hook -> Context -> Deep Dive -> Data/Evidence -> Climax -> Outro.
+                    - **Granularity**: Break narration into 2-3 steps per scene.
+                    - **Sync**: Every step MUST have an 'action' (highlight/reveal/focus) on a specific HTML ID.
+
+                    # OUTPUT JSON FORMAT
+                    {
+                      "meta": { "title": "...", "audio": "MP3_URL" },
+                      "scenes": [
+                        {
+                          "type": "CHOOSE_TYPE",
+                          "html": "<div class='[YOUR_THEME_CLASSES]'><h1 id='id-1'>...</h1></div>",
+                          "chartConfig": { ... },
+                          "script": "(ctx)=>{...}",
+                          "steps": [
+                             { 
+                               "narration": "...", 
+                               "actions": [ { "type": "reveal", "target": "#id-1" } ] 
+                             }
+                          ]
+                        }
+                      ]
+                    }
+
+                    Output ONLY valid JSON.
+                    `;
+
+                    try {
+                        const res = await puter.ai.chat(sysPrompt);
+                        let json = res.message.content.trim();
+                        // Strip Markdown
+                        if (json.startsWith('```json')) json = json.replace(/^```json/, '').replace(/```$/, '');
+                        if (json.startsWith('```')) json = json.replace(/^```/, '').replace(/```$/, '');
+
+                        const data = JSON.parse(json);
+
+                        // Fallback audio
+                        if (!data.meta.audio) data.meta.audio = DEMO_DATA.meta.audio;
+
+                        Engine.init(data);
+                        bootstrap.Modal.getInstance(document.getElementById('aiModal')).hide();
+                    } catch (e) {
+                        console.error(e);
+                        status.innerText = "Generation Error. Retrying...";
+                    } finally {
+                        btn.disabled = false;
+                        status.innerText = "";
+                    }
+                }
+            }
+        };
+
+        window.onload = () => {
+            window.speechSynthesis.onvoiceschanged = () => {};
+            Engine.init(DEMO_DATA);
+        };
+    </script>
+</body>
+
+</html>
