@@ -1,0 +1,1552 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>auto-video</title>
+
+    <!-- LIBRARIES -->
+    <script src="https://js.puter.com/v2/"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- FONTS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&family=Playfair+Display:ital,wght@0,700;1,700&family=Space+Grotesk:wght@300;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #6366f1;
+            --accent: #06b6d4;
+            --glass: rgba(8, 8, 12, 0.96);
+            --border: rgba(255, 255, 255, 0.08);
+            --bar-height: 75px;
+            --ease-cinematic: cubic-bezier(0.33, 1, 0.68, 1);
+        }
+
+        body {
+            background-color: #000;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            color: white;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #stage-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #050505;
+            position: relative;
+            padding: 10px;
+            margin-bottom: var(--bar-height);
+        }
+
+        #stage-content {
+            background: #000;
+            position: relative;
+            aspect-ratio: 16/9;
+            width: 100%;
+            height: auto;
+            max-width: calc((100vh - var(--bar-height) - 40px) * (16/9));
+            max-height: 100%;
+            box-shadow: 0 50px 150px rgba(0, 0, 0, 1);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        #stage-content.portrait {
+            aspect-ratio: 9/16;
+            width: auto;
+            height: 100%;
+        }
+
+        /* TRANSITION OVERLAY */
+        #transition-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        .splash-flash {
+            animation: splashFlash 0.8s var(--ease-cinematic) forwards;
+        }
+
+        @keyframes splashFlash {
+            0% {
+                opacity: 0;
+                transform: scale(1);
+            }
+
+            30% {
+                opacity: 1;
+                transform: scale(1.1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: scale(1.2);
+            }
+        }
+
+        .slide-layer {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transform: scale(1.05);
+            filter: blur(15px);
+            transition: opacity 0.8s var(--ease-cinematic), transform 0.8s var(--ease-cinematic), filter 0.8s var(--ease-cinematic);
+            pointer-events: none;
+        }
+
+        .slide-layer.active {
+            opacity: 1;
+            transform: scale(1);
+            filter: blur(0);
+            pointer-events: auto;
+            z-index: 10;
+        }
+
+        /* UI DOCK */
+        .ui-layer {
+            position: fixed;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 95%;
+            max-width: 1000px;
+            height: var(--bar-height);
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            z-index: 2000;
+            backdrop-filter: blur(40px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-ui {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: #94a3b8;
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-ui:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            transform: translateY(-3px);
+        }
+
+        /* HOVER BRIDGES */
+        .vol-wrapper {
+            position: relative;
+            padding-top: 30px;
+            margin-top: -30px;
+        }
+
+        .vol-slider-box {
+            position: absolute;
+            bottom: 85px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #111116;
+            padding: 20px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            display: none;
+            flex-direction: column;
+            height: 160px;
+            z-index: 3000;
+        }
+
+        .vol-wrapper:hover .vol-slider-box {
+            display: flex;
+        }
+
+        .dropup-menu {
+            position: absolute;
+            bottom: 85px;
+            left: 0;
+            width: 280px;
+            background: #0a0a0f;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 10px;
+            display: none;
+            flex-direction: column;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9);
+        }
+
+        .dropup-menu.show {
+            display: flex;
+        }
+
+        .sub-menu-trigger {
+            position: relative;
+        }
+
+        .sub-menu-trigger::after {
+            content: '';
+            position: absolute;
+            right: -25px;
+            top: 0;
+            width: 30px;
+            height: 100%;
+        }
+
+        .sub-menu {
+            position: absolute;
+            left: calc(100% + 10px);
+            bottom: -10px;
+            width: 240px;
+            background: #0a0a0f;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            display: none;
+            flex-direction: column;
+            padding: 12px;
+        }
+
+        .sub-menu-trigger:hover .sub-menu {
+            display: flex;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 5000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal-box {
+            width: 900px;
+            max-width: 95%;
+            background: #0f172a;
+            border: 1px solid var(--border);
+            padding: 40px;
+            border-radius: 32px;
+        }
+
+        .code-editor {
+            width: 100%;
+            height: 400px;
+            background: #000;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            color: #38bdf8;
+            font-family: 'Roboto Mono', monospace;
+            padding: 25px;
+            font-size: 13px;
+            overflow-y: auto;
+            outline: none;
+            white-space: pre;
+        }
+
+        /* SCENE ANIMATIONS */
+        .reveal-hidden {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: 1.2s var(--ease-cinematic);
+        }
+
+        .reveal-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .highlight-text {
+            color: var(--accent);
+            text-shadow: 0 0 30px rgba(6, 182, 212, 0.6);
+            font-weight: 900;
+        }
+
+        @media (max-width: 768px) {
+            .hide-mobile {
+                display: none;
+            }
+
+            .ui-layer {
+                width: 98%;
+                padding: 0 1rem;
+                bottom: 10px;
+            }
+
+            #stage-container {
+                padding: 5px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="stage-container">
+        <div id="stage-content">
+            <div id="transition-overlay"></div>
+        </div>
+    </div>
+
+    <div class="ui-layer shadow-2xl">
+        <div class="control-group">
+            <div class="dropup-container">
+                <button class="btn-ui" onclick="Engine.ui.toggleMenu()"><i class="bi bi-cpu-fill"></i></button>
+                <div class="dropup-menu" id="main-menu">
+                    <div class="p-3 hover:bg-white/5 rounded-xl cursor-pointer flex items-center gap-3" onclick="Engine.ui.openModal('ai')">
+                        <i class="bi bi-stars text-primary"></i> <span>AI Architect</span>
+                    </div>
+                    <div class="p-3 hover:bg-white/5 rounded-xl cursor-pointer flex items-center gap-3" onclick="Engine.ui.openModal('import')">
+                        <i class="bi bi-code-slash text-green-500"></i> <span>Import & Editor</span>
+                    </div>
+                    <div class="p-3 hover:bg-white/5 rounded-xl cursor-pointer flex items-center justify-between sub-menu-trigger">
+                        <div class="flex items-center gap-3"><i class="bi bi-music-note-beamed text-accent"></i> <span>Music Hub</span></div>
+                        <i class="bi bi-chevron-right text-[10px]"></i>
+                        <div class="sub-menu">
+                            <div class="p-2 hover:bg-white/5 rounded-lg cursor-pointer text-xs mb-1" onclick="Engine.audio.set('m1')">Study 1</div>
+                            <div class="p-2 hover:bg-white/5 rounded-lg cursor-pointer text-xs mb-1" onclick="Engine.audio.set('m2')">Study 2</div>
+                            <div class="border-t border-white/10 mt-2 pt-2">
+                                <input type="file" hidden id="music-upload" accept="audio/*" onchange="Engine.audio.upload(this)">
+                                <button onclick="document.getElementById('music-upload').click()" class="w-full bg-primary/20 text-primary py-2 rounded-lg text-[10px] font-black uppercase">Upload Music</button>
+                            </div>
+                            <div id="user-music-list" class="mt-2 max-h-32 overflow-y-auto"></div>
+                        </div>
+                    </div>
+                    <div class="p-3 hover:bg-white/5 rounded-xl cursor-pointer flex items-center gap-3" onclick="Engine.ui.toggleRatio()">
+                        <i class="bi bi-aspect-ratio"></i> <span>Toggle Ratio</span>
+                    </div>
+                </div>
+            </div>
+            <div id="meta-info" class="text-[10px] font-mono text-gray-500 uppercase tracking-widest ml-2">READY</div>
+        </div>
+
+        <div class="control-group">
+            <button class="btn-ui hide-mobile" onclick="Engine.prev()"><i class="bi bi-chevron-left"></i></button>
+            <button class="btn-ui btn-primary-ui scale-125" id="play-btn" onclick="Engine.togglePlay()"><i class="bi bi-play-fill" style="font-size:2rem;"></i></button>
+            <button class="btn-ui hide-mobile" onclick="Engine.next()"><i class="bi bi-chevron-right"></i></button>
+        </div>
+
+        <div class="control-group">
+            <div class="vol-wrapper">
+                <button class="btn-ui"><i class="bi bi-volume-up-fill" id="mute-icon"></i></button>
+                <div class="vol-slider-box">
+                    <input type="range" class="vol-slider" min="0" max="1" step="0.05" value="0.4" oninput="Engine.audio.setVolume(this.value)">
+                </div>
+            </div>
+            <button class="btn-ui" onclick="Engine.ui.toggleFullscreen()"><i class="bi bi-fullscreen"></i></button>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <div id="modal-ai" class="modal-overlay">
+        <div class="modal-box">
+            <h2 class="text-4xl font-black text-white mb-2 italic tracking-tighter">ARCHITECT</h2>
+            <textarea id="ai-prompt" class="w-full bg-black border border-white/5 rounded-2xl p-6 text-sm mb-6 h-48 outline-none focus:border-primary text-white" placeholder="Describe the topic..."></textarea>
+            <div class="grid grid-cols-2 gap-6 mb-8">
+                <select id="ai-voice-select" class="w-full bg-black border border-white/10 rounded-xl p-4 text-xs text-white"></select>
+                <select id="ai-mode-select" class="w-full bg-black border border-white/10 rounded-xl p-4 text-xs text-white">
+                    <option value="standard">Solo Narrator</option>
+                    <option value="podcast">Podcast Duo</option>
+                </select>
+            </div>
+            <div class="flex gap-4">
+                <button id="gen-btn" class="flex-1 bg-primary py-5 rounded-2xl font-black text-xs tracking-widest shadow-xl" onclick="Engine.ai.generate()">GENERATE MASTERPIECE</button>
+                <button class="flex-1 bg-white/5 py-5 rounded-2xl font-black text-xs tracking-widest" onclick="Engine.ui.closeModal()">CLOSE</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-import" class="modal-overlay">
+        <div class="modal-box">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-3xl font-black text-white italic">PROJECT EDITOR</h2>
+                <input type="file" hidden id="json-upload" accept=".json" onchange="Engine.io.importFile(this)">
+                <button onclick="document.getElementById('json-upload').click()" class="bg-primary/20 text-primary px-8 py-2 rounded-xl text-xs font-black uppercase tracking-widest border border-primary/30">Upload .JSON</button>
+            </div>
+            <div id="editor-area" class="code-editor mb-8" contenteditable="true"></div>
+            <div class="flex gap-4">
+                <button class="flex-1 bg-green-600 py-5 rounded-2xl font-black text-xs tracking-widest" onclick="Engine.io.applyEditor()">APPLY CHANGES</button>
+                <button class="flex-1 bg-white/5 py-5 rounded-2xl font-black text-xs tracking-widest" onclick="Engine.ui.closeModal()">CANCEL</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const Engine = {
+            data: null,
+            state: {
+                sceneIdx: 0,
+                stepIdx: 0,
+                isPaused: true,
+                voices: []
+            },
+            tts: window.speechSynthesis,
+            audioEl: new Audio(),
+
+            async init() {
+                this.audio.db = await this.audio.initDB();
+                this.audio.loadUserMusic();
+                window.speechSynthesis.onvoiceschanged = () => this.ui.populateVoices();
+                this.ui.populateVoices();
+                this.audioEl.src = "https://res.cloudinary.com/dmttn34te/video/upload/v1763064765/study-music-181044_jbuwpq.mp3";
+                this.load(DEMO_DATA);
+            },
+
+            load(json) {
+                this.data = json;
+                this.state.sceneIdx = 0;
+                this.state.stepIdx = 0;
+                this.state.isPaused = true;
+                this.render(0);
+                this.updateUI();
+            },
+
+            render(idx) {
+                const stage = document.getElementById('stage-content');
+                const overlay = document.getElementById('transition-overlay');
+                const scene = this.data.scenes[idx];
+
+                // Transition Splash
+                const splashColors = {
+                    'splash-yellow': '#eab308',
+                    'splash-red': '#ef4444',
+                    'splash-blue': '#6366f1'
+                };
+                if (splashColors[scene.transition]) {
+                    overlay.style.background = splashColors[scene.transition];
+                    overlay.classList.remove('splash-flash');
+                    void overlay.offsetWidth;
+                    overlay.classList.add('splash-flash');
+                }
+
+                const layer = document.createElement('div');
+                layer.className = `slide-layer trans-${scene.transition || 'focus-blur'}`;
+                layer.innerHTML = scene.html;
+
+                stage.appendChild(layer);
+                setTimeout(() => {
+                    Array.from(stage.children).forEach(c => {
+                        if (c !== layer && c.id !== 'transition-overlay') c.classList.remove('active');
+                    });
+                    layer.classList.add('active');
+                    // RUN SCENE SCRIPTS ONLY WHEN ACTIVE
+                    if (scene.script) {
+                        try {
+                            const fn = new Function('return ' + scene.script)();
+                            this.state.activeScript = fn({
+                                root: layer,
+                                window
+                            });
+                            if (this.state.activeScript.init) this.state.activeScript.init();
+                        } catch (e) {
+                            console.warn("Script Error", e);
+                        }
+                    }
+                    setTimeout(() => {
+                        Array.from(stage.children).forEach(c => {
+                            if (c !== layer && c.id !== 'transition-overlay') c.remove();
+                        });
+                    }, 1000);
+                }, 100);
+            },
+
+            playStep() {
+                if (this.state.isPaused) return;
+                const scene = this.data.scenes[this.state.sceneIdx];
+                const step = scene.steps[this.state.stepIdx];
+
+                if (step.actions) {
+                    step.actions.forEach(a => {
+                        const el = document.querySelector(a.target);
+                        if (el) {
+                            if (a.type === 'reveal') {
+                                el.classList.remove('reveal-hidden');
+                                el.classList.add('reveal-visible');
+                            }
+                            if (a.type === 'highlight') el.classList.add('highlight-text');
+                        }
+                    });
+                }
+
+                this.tts.cancel();
+                const u = new SpeechSynthesisUtterance(step.narration);
+                const stepLang = step.lang || scene.lang || this.data.meta.lang || "en-US";
+                u.voice = this.state.voices.find(v => v.lang.startsWith(stepLang)) || this.state.voices[0];
+                if (this.data.meta.mode === 'podcast' && this.state.stepIdx % 2 !== 0) u.pitch = 1.4;
+
+                u.onend = () => setTimeout(() => this.nextStep(), 900);
+                this.tts.speak(u);
+                this.updateUI();
+            },
+
+            nextStep() {
+                if (this.state.isPaused) return;
+                const scene = this.data.scenes[this.state.sceneIdx];
+                if (this.state.stepIdx < scene.steps.length - 1) {
+                    this.state.stepIdx++;
+                    this.playStep();
+                } else if (this.state.sceneIdx < this.data.scenes.length - 1) {
+                    this.state.sceneIdx++;
+                    this.state.stepIdx = 0;
+                    this.render(this.state.sceneIdx);
+                    setTimeout(() => this.playStep(), 1200);
+                }
+            },
+
+            togglePlay() {
+                this.state.isPaused = !this.state.isPaused;
+                if (!this.state.isPaused) {
+                    this.audioEl.play().catch(() => {});
+                    this.playStep();
+                } else {
+                    this.audioEl.pause();
+                    this.tts.cancel();
+                }
+                this.updateUI();
+            },
+
+            next() {
+                this.state.isPaused = true;
+                this.tts.cancel();
+                if (this.state.sceneIdx < this.data.scenes.length - 1) {
+                    this.state.sceneIdx++;
+                    this.state.stepIdx = 0;
+                    this.render(this.state.sceneIdx);
+                }
+                this.updateUI();
+            },
+            prev() {
+                this.state.isPaused = true;
+                this.tts.cancel();
+                if (this.state.sceneIdx > 0) {
+                    this.state.sceneIdx--;
+                    this.state.stepIdx = 0;
+                    this.render(this.state.sceneIdx);
+                }
+                this.updateUI();
+            },
+
+            updateUI() {
+                document.getElementById('play-btn').innerHTML = this.state.isPaused ? '<i class="bi bi-play-fill"></i>' : '<i class="bi bi-pause-fill"></i>';
+                document.getElementById('meta-info').innerText = `SCENE ${this.state.sceneIdx + 1}/${this.data.scenes.length}`;
+            },
+
+            audio: {
+                db: null,
+                setVolume: (v) => Engine.audioEl.volume = v,
+                initDB: () => new Promise(res => {
+                    const req = indexedDB.open("AutoVideo_Elite_Assets", 1);
+                    req.onupgradeneeded = e => e.target.result.createObjectStore("music", {
+                        keyPath: "id"
+                    });
+                    req.onsuccess = e => res(e.target.result);
+                }),
+                upload: async (input) => {
+                    const file = input.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = async e => {
+                        const tx = Engine.audio.db.transaction("music", "readwrite");
+                        tx.objectStore("music").put({
+                            id: "track_" + Date.now(),
+                            name: file.name,
+                            data: e.target.result
+                        });
+                        Engine.audio.loadUserMusic();
+                    };
+                    reader.readAsDataURL(file);
+                },
+                loadUserMusic: async () => {
+                    const list = document.getElementById('user-music-list');
+                    list.innerHTML = "";
+                    const tx = Engine.audio.db.transaction("music", "readonly");
+                    tx.objectStore("music").openCursor().onsuccess = e => {
+                        const cursor = e.target.result;
+                        if (cursor) {
+                            const div = document.createElement('div');
+                            div.className = "p-2 hover:bg-white/5 rounded text-[10px] cursor-pointer";
+                            div.innerHTML = `<i class="bi bi-play-circle-fill"></i> ${cursor.value.name.substring(0, 20)}...`;
+                            div.onclick = () => {
+                                Engine.audioEl.src = cursor.value.data;
+                                Engine.audioEl.play();
+                            };
+                            list.appendChild(div);
+                            cursor.continue();
+                        }
+                    };
+                },
+                set: (id) => {
+                    const tracks = {
+                        m1: "https://res.cloudinary.com/dmttn34te/video/upload/v1763065409/study-110111_at7lye.mp3",
+                        m2: "https://res.cloudinary.com/dmttn34te/video/upload/v1763064765/study-music-181044_jbuwpq.mp3"
+                    };
+                    Engine.audioEl.src = tracks[id];
+                    Engine.audioEl.play();
+                }
+            },
+
+            ui: {
+                toggleMenu: () => document.getElementById('main-menu').classList.toggle('show'),
+                openModal: (id) => {
+                    document.getElementById('modal-' + id).classList.add('open');
+                    if (id === 'import') document.getElementById('editor-area').innerText = JSON.stringify(Engine.data, null, 4);
+                },
+                closeModal: () => document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open')),
+                toggleRatio: () => {
+                    Engine.state.isVertical = !Engine.state.isVertical;
+                    document.getElementById('stage-content').className = Engine.state.isVertical ? 'vertical' : '';
+                },
+                toggleFullscreen: () => {
+                    if (!document.fullscreenElement) document.body.requestFullscreen();
+                    else document.exitFullscreen();
+                },
+                populateVoices: () => {
+                    const v = window.speechSynthesis.getVoices();
+                    Engine.state.voices = v;
+                    const sel = document.getElementById('ai-voice-select');
+                    sel.innerHTML = [...new Set(v.map(voice => voice.lang))].sort().map(l => `<option value="${l}">${l}</option>`).join('');
+                }
+            },
+
+            io: {
+                save: () => {
+                    const b = new Blob([JSON.stringify(Engine.data)], {
+                        type: "application/json"
+                    });
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(b);
+                    a.download = "video.json";
+                    a.click();
+                },
+                importFile: (input) => {
+                    const file = input.files[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onload = (e) => document.getElementById('editor-area').innerText = JSON.stringify(JSON.parse(e.target.result), null, 4);
+                    reader.readAsText(file);
+                },
+                applyEditor: () => {
+                    try {
+                        Engine.load(JSON.parse(document.getElementById('editor-area').innerText));
+                        Engine.ui.closeModal();
+                    } catch (e) {
+                        alert("Invalid JSON Syntax");
+                    }
+                }
+            },
+
+            ai: {
+                generate: async () => {
+                    const prompt = document.getElementById('ai-prompt').value;
+                    const lang = document.getElementById('ai-voice-select').value;
+                    const mode = document.getElementById('ai-mode-select').value;
+                    if (!prompt) return;
+                    const btn = document.getElementById('gen-btn');
+                    btn.disabled = true;
+                    btn.innerText = "DIRECTING...";
+
+                    const sys = `
+                    # APP: auto-video
+                    # ROLE: Elite Netflix/YouTube Documentary Director (Production Level)
+
+                    # TASK
+                    Generate a high-fidelity 50-scene JSON presentation for: "${prompt}".
+                    Target Language: "${lang}". Audio: "${mode}".
+
+                    # SCENE BLUEPRINT LOGIC
+                    Every scene MUST follow this PREMIUM structure:
+                    1. TRANSITIONS: Use ONLY: "whip-pan", "portal", "infinite-zoom", "roll", "glitch", "neon-slash", "hologram-shatter".
+                    2. VISUALS: Use high-contrast meshes: bg-[radial-gradient(circle_at_top_right,_#1e1b4b_0%,_#000_100%)], bg-[#450a0a], bg-zinc-950.
+                    3. TYPOGRAPHY: Use "font-black italic tracking-tighter" for headers. Use glows: "drop-shadow-[0_0_30px_rgba(99,102,241,0.6)]".
+                    4. MULTILINGUAL:  Example: English (S1), Hindi (S2), Bengali (S3), then switch based on user choice.
+                    5. As people also prefer English and that language , so using english visual is allowed , but narration text should be in that languages characters, words
+                    # 41 SCENE TYPES CATALOG: 
+                    (You can invent new scene types as per need , you can choose scene types as per need scene type repetition also allowed )
+                    title_cinematic, bullets, quote, image, video, newspaper, map_points, kinetic, docu_title, spotlight, film_strip, pip, social_post, chat_conv, breaking_news, notifications, chart_split, chart_full, 3d_plot, timeline, table, funnel, calendar, counter, flowchart, code_terminal, concept, quiz, tree, matrix, comparison, pros_cons, venn, tier_list, slider, bento, carousel, collage, parallax, exploded, search, end.
+
+                    # NARRATION
+                    Break complex scenes into 5-6 narration phases. Each phase MUST have a visual "action" (reveal, highlight, chart_highlight, pointing).
+
+                    # OUTPUT
+                    Output ONLY valid JSON based on this blueprint: ${JSON.stringify(DEMO_DATA)}
+                    Valid JSON ONLY. Maximize variety. No placeholders.
+                    `;
+
+                    try {
+                        const res = await puter.ai.chat(sys);
+                        Engine.load(JSON.parse(res.message.content.replace(/```json|```/g, "").trim()));
+                        Engine.ui.closeModal();
+                    } catch (e) {
+                        console.error(e);
+                    } finally {
+                        btn.disabled = false;
+                        btn.innerText = "GENERATE MASTERPIECE";
+                    }
+                }
+            }
+        };
+
+        const DEMO_DATA = {
+            meta: {
+                title: "Kalam: The Immortal Scientist",
+                mode: "standard",
+                lang: "hi-IN",
+                audio: "https://res.cloudinary.com/dmttn34te/video/upload/v1763064765/study-music-181044_jbuwpq.mp3"
+            },
+            scenes: [
+                // --- SCENE 1: TITLE CINEMATIC (ENGLISH) ---
+                {
+                    type: "title_cinematic",
+                    transition: "infinite-zoom",
+                    lang: "en-US",
+                    html: `<div class="w-full h-full bg-[radial-gradient(circle_at_top_right,_#1e1b4b_0%,_#000_100%)] flex flex-col items-center justify-center p-10">
+                <h1 id="t1" class="reveal-hidden text-[10vw] font-black italic text-white drop-shadow-[0_0_50px_rgba(99,102,241,0.6)]">THE LEGEND</h1>
+                <div id="t1-bar" class="reveal-hidden w-64 h-1 bg-gradient-to-r from-primary to-accent mt-4"></div>
+                <p id="t1-sub" class="reveal-hidden text-[12px] text-gray-500 uppercase tracking-[1.2em] mt-8 font-black">Dr. APJ Abdul Kalam</p>
+            </div>`,
+                    steps: [{
+                            narration: "In the history of India, one name stands above all. A man with zero haters.",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#t1'
+                            }]
+                        },
+                        {
+                            narration: "The Missile Man. The People's President.",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#t1-bar'
+                            }, {
+                                type: 'reveal',
+                                target: '#t1-sub'
+                            }]
+                        }
+                    ]
+                },
+                // --- SCENE 2: DOCU_TITLE (HINDI) ---
+                {
+                    type: "docu_title",
+                    transition: "whip-pan",
+                    lang: "hi-IN",
+                    html: `<div class="w-full h-full bg-[#450a0a] flex items-center justify-center p-10">
+                <h1 id="t2" class="reveal-hidden text-[12vw] font-black text-white italic tracking-tighter drop-shadow-2xl">अग्नि की उड़ान</h1>
+            </div>`,
+                    steps: [{
+                        narration: "यह कहानी है एक साधारण भारतीय की, जिसने असाधारण सपने देखे।",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#t2'
+                        }]
+                    }]
+                },
+                // --- SCENE 3: QUOTE (BENGALI) ---
+                {
+                    type: "quote",
+                    transition: "portal",
+                    lang: "bn-IN",
+                    html: `<div class="w-full h-full bg-zinc-950 flex flex-col items-center justify-center p-20 text-center">
+                <h1 id="t3" class="reveal-hidden text-7xl font-serif italic text-white leading-tight shadow-xl">"স্বপ্ন সেটা নয় যা তুমি ঘুমিয়ে দেখো, স্বপ্ন সেটাই যা তোমাকে ঘুমোতে দেয় না।"</h1>
+                <div id="t3-line" class="reveal-hidden w-20 h-1 bg-primary mt-10"></div>
+            </div>`,
+                    steps: [{
+                        narration: "স্বপ্ন সেটা নয় যা তুমি ঘুমিয়ে দেখো, স্বপ্ন সেটাই যা তোমাকে ঘুমোতে দেয় না।",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#t3'
+                        }, {
+                            type: 'reveal',
+                            target: '#t3-line'
+                        }]
+                    }]
+                },
+                // --- SCENE 4: MAP_POINTS (RAMESHWARAM) ---
+                {
+                    type: "map_points",
+                    transition: "neon-slash",
+                    lang: "hi-IN",
+                    html: `<div class="w-full h-full relative overflow-hidden bg-black">
+                <div id="map4-c" class="w-full h-full relative z-10"></div>
+                <div id="m4-ui" class="reveal-hidden absolute top-10 left-10 bg-black/80 backdrop-blur-xl p-8 border border-white/10 rounded-3xl z-[1000]">
+                    <h3 class="text-primary font-black italic text-4xl">रामेश्वरम</h3>
+                    <p class="text-zinc-400 mt-2 font-bold uppercase tracking-widest text-xs">जन्म: 15 अक्टूबर 1931</p>
+                </div>
+            </div>`,
+                    script: `(ctx)=>{
+                const map = L.map(ctx.root.querySelector('#map4-c'), {zoomControl: false}).setView([9.2876, 79.3129], 10);
+                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map);
+                const rameshwaramPolygon = L.polygon([
+                    [9.314, 79.256], [9.325, 79.287], [9.330, 79.312], [9.318, 79.345], [9.285, 79.362], [9.264, 79.338], [9.271, 79.295], [9.288, 79.262]
+                ], {color: '#ef4444', weight: 3, fillOpacity: 0.3}).addTo(map);
+                setTimeout(() => map.flyTo([9.2876, 79.3129], 15, {duration: 3}), 1000);
+                return { cleanup: () => map.remove() };
+            }`,
+                    steps: [{
+                            narration: "तमिलनाडु के इस छोटे से द्वीप रामेश्वरम में उनका जन्म हुआ।",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#m4-ui'
+                            }]
+                        },
+                        {
+                            narration: "ज़ूम इन करते हैं उनके बचपन के घर की ओर।",
+                            actions: []
+                        }
+                    ]
+                },
+                // --- SCENE 5: IMAGE (HUMBLE BEGINNINGS) ---
+                {
+                    type: "image",
+                    transition: "focus-blur",
+                    html: `<div class="w-full h-full relative bg-black">
+                <img src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=2070" class="w-full h-full object-cover opacity-60">
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent flex flex-col justify-end p-20">
+                    <h2 id="i5-t" class="reveal-hidden text-7xl font-black text-white italic drop-shadow-2xl">अखबार बेचने वाला लड़का</h2>
+                </div>
+            </div>`,
+                    steps: [{
+                        narration: "परिवार की मदद के लिए उन्होंने बचपन में अखबार तक बेचे।",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#i5-t'
+                        }]
+                    }]
+                },
+                // --- SCENE 6: BULLETS (EDUCATION) ---
+                {
+                    type: "bullets",
+                    transition: "roll",
+                    html: `<div class="w-full h-full bg-zinc-950 flex flex-col justify-center px-32">
+                <h2 id="b6-h" class="reveal-hidden text-6xl font-black text-primary italic mb-12">शिक्षा की यात्रा</h2>
+                <ul class="space-y-6">
+                    <li id="b6-1" class="reveal-hidden text-4xl text-zinc-300 italic"><i class="bi bi-mortarboard-fill text-accent mr-4"></i> श्वार्ट्ज हायर सेकेंडरी स्कूल</li>
+                    <li id="b6-2" class="reveal-hidden text-4xl text-zinc-300 italic"><i class="bi bi-building text-accent mr-4"></i> सेंट जोसेफ कॉलेज, त्रिची</li>
+                    <li id="b6-3" class="reveal-hidden text-4xl text-zinc-300 italic"><i class="bi bi-airplane-engines-fill text-accent mr-4"></i> मद्रास इंस्टीट्यूट ऑफ टेक्नोलॉजी (MIT)</li>
+                </ul>
+            </div>`,
+                    steps: [{
+                            narration: "शिक्षा ने उनके जीवन की दिशा बदल दी।",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#b6-h'
+                            }]
+                        },
+                        {
+                            narration: "कठिन परिश्रम से उन्होंने मद्रास से एयरोस्पेस इंजीनियरिंग की।",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#b6-1'
+                            }, {
+                                type: 'reveal',
+                                target: '#b6-2'
+                            }, {
+                                type: 'reveal',
+                                target: '#b6-3'
+                            }, {
+                                type: 'highlight',
+                                target: '#b6-3'
+                            }]
+                        }
+                    ]
+                },
+                // --- SCENE 7: TIMELINE ---
+                {
+                    type: "timeline",
+                    transition: "hologram-shatter",
+                    html: `<div class="w-full h-full bg-black flex items-center justify-center p-20">
+                <div class="w-full h-2 bg-zinc-800 relative">
+                    <div id="tl7-1" class="reveal-hidden absolute -top-4 left-[20%] w-10 h-10 bg-primary rounded-full border-4 border-black"></div>
+                    <div id="tl7-2" class="reveal-hidden absolute -top-4 left-[80%] w-10 h-10 bg-accent rounded-full border-4 border-black"></div>
+                </div>
+                <div class="flex justify-between w-full mt-10 text-white font-black italic tracking-tighter text-2xl">
+                    <div id="tl7-t1" class="reveal-hidden w-1/3 text-center">1958: DRDO प्रवेश</div>
+                    <div id="tl7-t2" class="reveal-hidden w-1/3 text-center">1969: ISRO तबादला</div>
+                </div>
+            </div>`,
+                    steps: [{
+                            narration: "करियर की शुरुआत 1958 में DRDO से हुई।",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#tl7-1'
+                            }, {
+                                type: 'reveal',
+                                target: '#tl7-t1'
+                            }]
+                        },
+                        {
+                            narration: "और 1969 में वे इसरो चले गए, जहाँ इतिहास रचा जाना था।",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#tl7-2'
+                            }, {
+                                type: 'reveal',
+                                target: '#tl7-t2'
+                            }]
+                        }
+                    ]
+                },
+                // --- SCENE 8: CONCEPT (WINGS OF FIRE) ---
+                {
+                    type: "concept",
+                    transition: "glitch",
+                    html: `<div class="w-full h-full bg-white flex items-center justify-center relative">
+                <svg width="600" height="400" viewBox="0 0 600 400" class="stroke-black stroke-[4] fill-none"><path id="c8" d="M100,300 C150,50 450,50 500,300" stroke-dasharray="1000" stroke-dashoffset="1000" class="transition-all duration-[2s]"></path></svg>
+                <h2 id="c8-t" class="reveal-hidden absolute bottom-12 text-black font-black text-5xl italic tracking-tighter">सपनों की उड़ान</h2>
+            </div>`,
+                    script: "(ctx)=>{ return { onStep: (i)=>{ if(i===1) ctx.root.querySelector('#c8').style.strokeDashoffset=0; } } }",
+                    steps: [{
+                            narration: "ज़मीन से आसमान तक की यह उड़ान आसान नहीं थी।",
+                            actions: []
+                        },
+                        {
+                            narration: "उन्होंने हमें हार न मानना सिखाया।",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#c8-t'
+                            }]
+                        }
+                    ]
+                },
+                // --- SCENE 9: NEWSPAPER (SLV-3 SUCCESS) ---
+                {
+                    type: "newspaper",
+                    transition: "splash-red",
+                    html: `<div class="w-full h-full bg-zinc-300 flex items-center justify-center p-10">
+                <div id="n9" class="reveal-hidden w-[550px] h-[780px] bg-[#f4e4bc] shadow-2xl p-12 transform rotate-1 border-t-[10px] border-black">
+                    <h1 class="text-6xl font-black border-b-4 border-black mb-4 uppercase tracking-tighter text-black">दैनिक समाचार</h1>
+                    <h2 id="n9-h" class="reveal-hidden text-3xl font-black text-red-700 leading-tight mb-8 underline italic">SLV-3 सफल: भारत अंतरिक्ष में!</h2>
+                    <p class="text-sm font-serif italic text-black text-justify">रोहिणी सैटेलाइट लॉन्च। मिशन डायरेक्टर कलाम ने रचा इतिहास।</p>
+                </div>
+            </div>`,
+                    steps: [{
+                            narration: "18 जुलाई 1980... अखबारों में एक ही सुर्खी थी।",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#n9'
+                            }]
+                        },
+                        {
+                            narration: "SLV-3 की सफलता ने भारत को स्पेस क्लब में शामिल कर दिया।",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#n9-h'
+                            }]
+                        }
+                    ]
+                },
+                // --- SCENE 10: CHART_SPLIT (ISRO SATELLITES) ---
+                {
+                    type: "chart_split",
+                    transition: "zoom-shimmer",
+                    html: `<div class="w-full h-full flex bg-[#050505]">
+                <div class="w-1/2 p-24 flex flex-col justify-center border-r border-white/5 bg-zinc-950">
+                    <h2 id="c10-h" class="reveal-hidden text-7xl font-black text-white italic leading-tight">ISRO<br><span class="text-primary underline decoration-8">क्रांति</span></h2>
+                </div>
+                <div class="w-1/2 p-16 flex items-center justify-center"><canvas id="ch10" class="w-full h-full"></canvas></div>
+            </div>`,
+                    chartConfig: {
+                        type: 'bar',
+                        data: {
+                            labels: ['70s', '80s', '90s', '00s'],
+                            datasets: [{
+                                data: [2, 8, 22, 55],
+                                backgroundColor: ['#333', '#6366f1', '#333', '#333']
+                            }]
+                        },
+                        options: {
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    display: false
+                                }
+                            }
+                        }
+                    },
+                    steps: [{
+                            narration: "70 के दशक के संघर्ष के बाद...",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#c10-h'
+                            }]
+                        },
+                        {
+                            narration: "80 के दशक में कलाम सर ने इसरो की तस्वीर बदल दी।",
+                            actions: [{
+                                type: 'chart_highlight',
+                                target: '#ch10',
+                                value: 1
+                            }]
+                        }
+                    ]
+                },
+                // --- SCENE 11: VIDEO (ROCKET LAUNCH) ---
+                {
+                    type: "video",
+                    transition: "infinite-zoom",
+                    html: `<div class="w-full h-full relative overflow-hidden bg-black">
+                <video src="https://media.w3.org/2010/05/sintel/trailer.mp4" autoplay loop muted class="w-full h-full object-cover opacity-60"></video>
+                <div class="absolute inset-0 flex items-center justify-center"><h1 id="v11-t" class="reveal-hidden text-[12vw] font-black text-white mix-blend-overlay tracking-tighter">LIFTOFF</h1></div>
+            </div>`,
+                    steps: [{
+                        narration: "हर रॉकेट लॉन्च के पीछे एक टीम की वर्षों की मेहनत होती है।",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#v11-t'
+                        }]
+                    }]
+                },
+                // --- SCENE 12: CODE_TERMINAL (NAVIGATION) ---
+                {
+                    type: "code_terminal",
+                    transition: "glitch",
+                    html: `<div class="w-full h-full bg-[#050505] flex items-center justify-center p-20">
+                <div id="tm12" class="reveal-hidden w-full max-w-4xl bg-[#0d1117] rounded-[2.5rem] border border-white/10 shadow-2xl">
+                    <div class="bg-black p-5 flex gap-3 border-b border-white/5"><div class="w-4 h-4 bg-red-500 rounded-full"></div></div>
+                    <pre class="p-10 text-primary font-mono text-xl"><code>[ISRO_SYS] init_navigation_logic();\n> Altitude check... OK\n> <span id="tm12-ok" class="text-green-500 font-black animate-pulse">DEPLOY_SATELLITE_SUCCESS</span></code></pre>
+                </div>
+            </div>`,
+                    steps: [{
+                        narration: "सॉफ्टवेयर और गणित का अचूक तालमेल।",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#tm12'
+                        }, {
+                            type: 'reveal',
+                            target: '#tm12-ok'
+                        }]
+                    }]
+                },
+                // --- SCENE 13: 3D_PLOT (MISSILE TRAJECTORY) ---
+                {
+                    type: "3d_plot",
+                    transition: "whip-pan",
+                    html: `<div class="w-full h-full bg-black flex items-center justify-center"><div id="pl13" class="w-[80%] h-[80%]"></div></div>`,
+                    script: "(ctx)=>{ Plotly.newPlot(ctx.root.querySelector('#pl13'), [{type:'scatter3d', mode:'lines', x:[0,1,2,3], y:[0,10,50,100], z:[0,2,10,30], line:{color:'#6366f1', width:8}}], {paper_bgcolor:'rgba(0,0,0,0)', scene:{xaxis:{color:'#fff'},yaxis:{color:'#fff'},zaxis:{color:'#fff'}}}, {displayModeBar:false}); return { cleanup:()=>Plotly.purge(ctx.root.querySelector('#pl13')) } }",
+                    steps: [{
+                        narration: "मिसाइल के प्रक्षेपवक्र की 3D गणना ने हमें दुनिया के शीर्ष देशों में ला खड़ा किया।",
+                        actions: []
+                    }]
+                },
+                // --- SCENE 14: KINETIC (AGNI MISSILE) ---
+                {
+                    type: "kinetic",
+                    transition: "neon-slash",
+                    html: `<div class="w-full h-full bg-red-600 flex flex-col items-center justify-center overflow-hidden">
+                <h1 id="k14-1" class="reveal-hidden text-[18vw] font-black text-white italic leading-none tracking-tighter">AGNI</h1>
+            </div>`,
+                    steps: [{
+                        narration: "और फिर आई अग्नि मिसाइल। भारत का ब्रह्मास्त्र।",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#k14-1'
+                        }]
+                    }]
+                },
+                // --- SCENE 15: TABLE (MISSILE VARIANTS) ---
+                {
+                    type: "table",
+                    transition: "roll",
+                    html: `<div class="w-full h-full bg-zinc-950 p-24 flex flex-col justify-center">
+                <h2 class="text-4xl font-black text-white italic mb-12">Missile Development</h2>
+                <table class="w-full text-left border-collapse text-2xl text-white font-bold italic">
+                    <tr id="tb15-1" class="reveal-hidden border-b border-white/5"><td class="py-8">PRITHVI</td><td class="py-8 text-primary">Surface to Surface</td></tr>
+                    <tr id="tb15-2" class="reveal-hidden border-b border-white/5"><td class="py-8">AGNI</td><td class="py-8 text-primary">Ballistic</td></tr>
+                </table>
+            </div>`,
+                    steps: [{
+                        narration: "पृथ्वी, अग्नि, त्रिशूल, नाग और आकाश।",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#tb15-1'
+                        }, {
+                            type: 'reveal',
+                            target: '#tb15-2'
+                        }]
+                    }]
+                },
+                // --- SCENE 16: FUNNEL (IGMDP) ---
+                {
+                    type: "funnel",
+                    transition: "focus-blur",
+                    html: `<div class="w-full h-full bg-black flex flex-col items-center justify-center gap-4">
+                <div id="fn16-1" class="reveal-hidden w-[700px] h-20 bg-primary/20 rounded-full border border-primary/40 flex items-center justify-center text-white text-3xl font-light italic">IGMDP Program</div>
+                <div id="fn16-2" class="reveal-hidden w-[400px] h-20 bg-primary rounded-full flex items-center justify-center text-white text-4xl font-black italic shadow-[0_0_80px_#6366f1]">Self-Reliant India</div>
+            </div>`,
+                    steps: [{
+                        narration: "IGMDP कार्यक्रम से भारत रक्षा क्षेत्र में पूरी तरह आत्मनिर्भर हो गया।",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#fn16-1'
+                        }, {
+                            type: 'reveal',
+                            target: '#fn16-2'
+                        }]
+                    }]
+                },
+                // --- SCENE 17: P5_DIAGRAM (ROCKET PHYSICS) ---
+                {
+                    type: "p5_diagram",
+                    transition: "portal",
+                    html: `<div id="p5-box17" class="w-full h-full bg-black"></div>`,
+                    script: `(ctx)=>{ new p5((p)=>{ p.setup=()=>{p.createCanvas(p.windowWidth, p.windowHeight);p.noFill();}; p.draw=()=>{p.background(0,10); p.stroke(99,102,241); p.translate(p.width/2, p.height/2); p.rotate(p.frameCount*0.01); p.ellipse(0,0,p.sin(p.frameCount*0.02)*400);}; }, ctx.root.querySelector('#p5-box17')); return { cleanup: ()=>{} }; }`,
+                    steps: [{
+                        narration: "जटिल भौतिकी को उन्होंने साधारण तरीके से लागू किया।",
+                        actions: []
+                    }]
+                },
+                // --- SCENE 18: COMPARISON (IMPORT VS MAKE IN INDIA) ---
+                {
+                    type: "comparison",
+                    transition: "splash-yellow",
+                    html: `<div class="w-full h-full flex bg-black">
+                <div id="cp18-1" class="w-1/2 flex flex-col items-center justify-center grayscale opacity-30"><h2 class="text-4xl font-black text-white italic">IMPORTING</h2></div>
+                <div id="cp18-2" class="w-1/2 flex flex-col items-center justify-center bg-primary/10 shadow-inner"><h2 class="text-6xl font-black text-primary italic">MADE IN INDIA</h2></div>
+            </div>`,
+                    steps: [{
+                        narration: "आयात पर निर्भरता खत्म हुई और 'मेड इन इंडिया' का गौरव बढ़ा।",
+                        actions: [{
+                            type: 'highlight',
+                            target: '#cp18-1'
+                        }, {
+                            type: 'highlight',
+                            target: '#cp18-2'
+                        }]
+                    }]
+                },
+                // --- SCENE 19: MAP_POINTS (POKHRAN) ---
+                {
+                    type: "map_points",
+                    transition: "zoom-shimmer",
+                    lang: "hi-IN",
+                    html: `<div class="w-full h-full relative bg-black"><div id="map19-c" class="w-full h-full relative z-10"></div><div id="m19-ui" class="reveal-hidden absolute top-10 right-10 bg-red-900 p-8 border border-white/10 rounded-3xl z-[1000]"><h3 class="text-white font-black italic text-5xl">Pokhran</h3></div></div>`,
+                    script: `(ctx)=>{
+                const map = L.map(ctx.root.querySelector('#map19-c'), {zoomControl: false}).setView([26.9124, 71.9120], 10);
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{y}/{x}{r}.png').addTo(map);
+                L.polygon([[26.95, 71.85], [26.98, 71.92], [26.94, 72.00], [26.88, 71.95], [26.85, 71.88], [26.90, 71.82]], {color:'#eab308', weight:4, fillOpacity:0.4}).addTo(map);
+                setTimeout(() => map.flyTo([26.9124, 71.9120], 13, {duration: 2}), 500);
+                return { cleanup: () => map.remove() };
+            }`,
+                    steps: [{
+                        narration: "राजस्थान का पोखरण... 1998 में यहाँ जमीन कांप उठी थी।",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#m19-ui'
+                        }]
+                    }]
+                },
+                // --- SCENE 20: SPOTLIGHT (SECRET MISSION) ---
+                {
+                    type: "spotlight",
+                    transition: "whip-pan",
+                    html: `<div class="w-full h-full bg-zinc-100 flex items-center justify-center p-20 relative">
+                <div class="max-w-2xl bg-white p-16 shadow-2xl border-l-[25px] border-red-600"><h2 class="text-4xl font-black italic">OPERATION SHAKTI</h2><p id="s20-p" class="text-2xl mt-4"><span class="bg-yellow-200">CIA was blinded.</span></p></div>
+                <div class="absolute inset-0 bg-black/95 pointer-events-none" style="background: radial-gradient(circle at center, transparent 150px, black 300px);"></div>
+            </div>`,
+                    steps: [{
+                        narration: "ऑपरेशन शक्ति इतना गुप्त था कि अमेरिकी खुफिया एजेंसी CIA को भी भनक नहीं लगी।",
+                        actions: [{
+                            type: 'highlight',
+                            target: '#s20-p'
+                        }]
+                    }]
+                },
+                // --- SCENE 21: BREAKING_NEWS (NUCLEAR INDIA) ---
+                {
+                    type: "breaking_news",
+                    transition: "splash-red",
+                    html: `<div class="w-full h-full bg-cover bg-center relative" style="background-image:url('https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=2070')"><div class="absolute bottom-10 left-0 w-full h-32 bg-red-600 flex items-center overflow-hidden"><div class="whitespace-nowrap animate-[ticker_10s_linear_infinite] text-4xl font-black text-white uppercase italic ml-10">भारत अब परमाणु शक्ति संपन्न राष्ट्र • पोखरण में सफल परीक्षण •</div></div></div>`,
+                    steps: [{
+                        narration: "दुनिया के लिए यह एक ब्रेकिंग न्यूज़ थी, भारत अब एक परमाणु शक्ति था।",
+                        actions: []
+                    }]
+                },
+                // --- SCENE 22: PROS_CONS (NUCLEAR TECH) ---
+                {
+                    type: "pros_cons",
+                    transition: "glitch",
+                    html: `<div class="w-full h-full bg-[#050505] flex p-20 gap-16"><div class="w-1/2 bg-zinc-950 p-16 rounded-[4rem] border-t-8 border-green-500"><h2 class="text-green-500 text-5xl font-black italic">सुरक्षा</h2><p id="pc22-1" class="reveal-hidden text-3xl text-white italic mt-6">अभेद्य राष्ट्र</p></div><div class="w-1/2 bg-zinc-950 p-16 rounded-[4rem] border-t-8 border-red-500"><h2 class="text-red-500 text-5xl font-black italic">चुनौती</h2><p id="pc22-2" class="reveal-hidden text-3xl text-white italic mt-6">वैश्विक प्रतिबंध</p></div></div>`,
+                    steps: [{
+                        narration: "इसके बाद भारत पर प्रतिबंध लगे, लेकिन हमारी सुरक्षा सर्वोपरि थी।",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#pc22-1'
+                        }, {
+                            type: 'reveal',
+                            target: '#pc22-2'
+                        }]
+                    }]
+                },
+                // --- SCENE 23: CHART_FULL (R&D BUDGET) ---
+                {
+                    type: "chart_full",
+                    transition: "infinite-zoom",
+                    html: `<div class="w-full h-full bg-black p-24 flex flex-col"><div class="flex-1"><canvas id="ch23"></canvas></div></div>`,
+                    chartConfig: {
+                        type: 'line',
+                        data: {
+                            labels: ['90s', '00s', '10s'],
+                            datasets: [{
+                                data: [10, 50, 100],
+                                borderColor: '#fbbf24',
+                                borderWidth: 8,
+                                fill: true,
+                                backgroundColor: 'rgba(251,191,36,0.1)'
+                            }]
+                        }
+                    },
+                    steps: [{
+                        narration: "विज्ञान पर बजट बढ़ा और शोध को नई गति मिली।",
+                        actions: []
+                    }]
+                },
+                // --- SCENE 24: NOTIFICATIONS (AWARDS) ---
+                {
+                    type: "notifications",
+                    transition: "neon-slash",
+                    html: `<div class="w-full h-full bg-slate-950 flex flex-col items-center justify-center gap-8"><div id="nt24" class="reveal-hidden bg-primary/20 p-8 rounded-[3rem] shadow-2xl text-white font-black italic text-3xl"><i class="bi bi-award"></i> भारत रत्न (1997)</div></div>`,
+                    steps: [{
+                        narration: "देश ने उन्हें अपने सर्वोच्च सम्मान, भारत रत्न से नवाजा।",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#nt24'
+                        }]
+                    }]
+                },
+                // --- SCENE 25: CALENDAR (OATH TAKING) ---
+                {
+                    type: "calendar",
+                    transition: "roll",
+                    html: `<div class="w-full h-full bg-zinc-950 flex flex-col items-center justify-center p-20"><div class="grid grid-cols-3 gap-6 text-white font-black italic"><div id="cl25" class="p-8 bg-white text-black rounded-3xl text-6xl shadow-[0_0_120px_rgba(255,255,255,0.4)]">2002</div></div><p id="cl25-t" class="reveal-hidden mt-12 text-primary font-black text-3xl italic">राष्ट्रपति पद की शपथ</p></div>`,
+                    steps: [{
+                        narration: "2002 में वे भारत के 11वें राष्ट्रपति बने।",
+                        actions: [{
+                            type: 'highlight',
+                            target: '#cl25'
+                        }, {
+                            type: 'reveal',
+                            target: '#cl25-t'
+                        }]
+                    }]
+                },
+                // --- SCENE 26: PIP (PRESIDENT VS COMMON MAN) ---
+                {
+                    type: "pip",
+                    transition: "portal",
+                    html: `<div class="w-full h-full relative bg-zinc-900"><div id="pp26" class="reveal-hidden absolute top-10 right-10 w-[600px] h-[350px] bg-black border-4 border-primary rounded-3xl flex items-center justify-center text-4xl font-black text-white italic shadow-[0_0_100px_rgba(99,102,241,0.5)]">जनता का नायक</div></div>`,
+                    steps: [{
+                        narration: "वे महल में रहे, लेकिन दिल हमेशा आम जनता के साथ धड़कता था।",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#pp26'
+                        }]
+                    }]
+                },
+                // --- SCENE 27: VENN (THE PERFECT HUMAN) ---
+                {
+                    type: "venn",
+                    transition: "splash-blue",
+                    html: `<div class="w-full h-full bg-white flex items-center justify-center relative"><div id="vn27-1" class="reveal-hidden w-[400px] h-[400px] rounded-full bg-red-600/60 -mr-32 flex items-center justify-center text-4xl font-black text-white">वैज्ञानिक</div><div id="vn27-2" class="reveal-hidden w-[400px] h-[400px] rounded-full bg-blue-600/60 -ml-32 flex items-center justify-center text-4xl font-black text-white">इंसान</div><div id="vn27-3" class="reveal-hidden absolute text-black font-black text-2xl italic underline">कालाम सर</div></div>`,
+                    steps: [{
+                        narration: "एक महान वैज्ञानिक और उससे भी महान इंसान।",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#vn27-1'
+                        }, {
+                            type: 'reveal',
+                            target: '#vn27-2'
+                        }, {
+                            type: 'reveal',
+                            target: '#vn27-3'
+                        }]
+                    }]
+                },
+                // --- SCENE 28: CAROUSEL (BOOKS) ---
+                {
+                    type: "carousel",
+                    transition: "whip-pan",
+                    html: `<div class="w-full h-full bg-black flex items-center justify-center overflow-hidden"><div id="cr28" class="w-80 h-[500px] bg-gradient-to-b from-primary to-blue-900 rounded-3xl shadow-[0_0_100px_rgba(99,102,241,0.4)] flex flex-col items-center justify-center p-10 text-center"><h2 class="text-4xl font-black text-white italic">India 2020</h2></div></div>`,
+                    steps: [{
+                        narration: "उनकी लिखी किताबों ने युवाओं को एक नई दिशा दी।",
+                        actions: [{
+                            type: 'highlight',
+                            target: '#cr28'
+                        }]
+                    }]
+                },
+                // --- SCENE 29: MATRIX (VISION 2020) ---
+                {
+                    type: "matrix",
+                    transition: "glitch",
+                    html: `<div class="w-full h-full bg-black relative flex items-center justify-center"><h1 id="mx29-t" class="reveal-hidden relative z-10 text-[10vw] font-mono text-primary font-black italic">VISION 2020</h1></div>`,
+                    steps: [{
+                        narration: "विजन 2020: एक विकसित भारत का उनका सपना।",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#mx29-t'
+                        }]
+                    }]
+                },
+                // --- SCENE 30: SOCIAL_POST (YOUTH ICON) ---
+                {
+                    type: "social_post",
+                    transition: "focus-blur",
+                    html: `<div class="w-full h-full bg-zinc-950 flex items-center justify-center"><div id="sp30" class="reveal-hidden w-[650px] bg-black border border-white/10 rounded-[3rem] p-12"><p class="text-3xl text-white italic font-black">"युवा शक्ति ही देश का भविष्य है।"</p></div></div>`,
+                    steps: [{
+                        narration: "सोशल मीडिया पर आज भी वे युवाओं के सबसे बड़े रोल मॉडल हैं।",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#sp30'
+                        }]
+                    }]
+                },
+                // --- SCENE 31: CHAT_CONV (STUDENT INTERACTION) ---
+                {
+                    type: "chat_conv",
+                    transition: "splash-yellow",
+                    html: `<div class="w-full h-full bg-zinc-900 flex items-center justify-center"><div class="w-[450px] bg-black border border-white/5 rounded-[3rem] p-10 flex flex-col gap-6"><div id="ch31" class="reveal-hidden self-end bg-primary p-5 rounded-3xl text-white text-xl font-black italic">बड़े सपने देखो!</div></div></div>`,
+                    steps: [{
+                        narration: "छात्रों से उनकी बातचीत हमेशा ऊर्जा से भरी होती थी।",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#ch31'
+                        }]
+                    }]
+                },
+                // --- SCENE 32: SLIDER (ISRO TRANSFORMATION) ---
+                {
+                    type: "slider",
+                    transition: "zoom-shimmer",
+                    html: `<div class="w-full h-full relative overflow-hidden bg-black"><div id="sl32" class="absolute inset-0 bg-primary flex items-center justify-center transition-all duration-[2s]" style="clip-path: inset(0 100% 0 0);"><h1 class="text-[12vw] font-black text-white italic">MODERN ISRO</h1></div></div>`,
+                    script: "(ctx)=>{ return { onStep: (i)=>{ if(i===1) ctx.root.querySelector('#sl32').style.clipPath='inset(0 0 0 0)'; } } }",
+                    steps: [{
+                        narration: "उन्होंने इसरो को एक नई पहचान दी।",
+                        actions: []
+                    }, {
+                        narration: "आज का आधुनिक इसरो उनकी ही देन है।",
+                        actions: []
+                    }]
+                },
+                // --- SCENE 33: QUIZ (ZERO HATERS) ---
+                {
+                    type: "quiz",
+                    transition: "neon-slash",
+                    html: `<div class="w-full h-full bg-primary flex flex-col items-center justify-center p-20"><h2 class="text-6xl font-black text-white mb-16 italic">जीरो हेटर्स वाला नेता?</h2><button id="qz33" class="bg-white p-12 rounded-[3rem] text-4xl text-primary font-black italic shadow-2xl">A.P.J. ABDUL KALAM</button></div>`,
+                    steps: [{
+                        narration: "वे एक ऐसे इंसान थे जिनसे हर धर्म और हर वर्ग प्यार करता था।",
+                        actions: [{
+                            type: 'highlight',
+                            target: '#qz33',
+                            class: 'scale-110'
+                        }]
+                    }]
+                },
+                // --- SCENE 34: TREE (NATION BUILDING) ---
+                {
+                    type: "tree",
+                    transition: "hologram-shatter",
+                    html: `<div class="w-full h-full bg-zinc-950 flex flex-col items-center justify-center text-white"><div id="tr34" class="reveal-hidden p-10 border-4 border-primary rounded-3xl font-black text-4xl italic">राष्ट्र निर्माण</div></div>`,
+                    steps: [{
+                        narration: "राष्ट्र निर्माण ही उनके जीवन का एकमात्र वृक्ष था।",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#tr34'
+                        }]
+                    }]
+                },
+                // --- SCENE 35: FLOWCHART (THINK -> ACHIEVE) ---
+                {
+                    type: "flowchart",
+                    transition: "roll",
+                    html: `<div class="w-full h-full bg-black flex items-center justify-center gap-10 text-white"><div id="fl35-1" class="reveal-hidden text-3xl italic">सोचो</div><div id="fl35-2" class="reveal-hidden bg-white text-black font-black text-4xl italic p-10 rounded-[3rem]">पाओ</div></div>`,
+                    steps: [{
+                        narration: "सोचो और उसे हासिल करो।",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#fl35-1'
+                        }, {
+                            type: 'reveal',
+                            target: '#fl35-2'
+                        }]
+                    }]
+                },
+                // --- SCENE 36: COUNTER (MILLIONS INSPIRED) ---
+                {
+                    type: "counter",
+                    transition: "glitch",
+                    html: `<div class="w-full h-full bg-[#050505] flex flex-col items-center justify-center"><h1 id="ct36" class="text-white text-[15vw] font-black italic">100M+</h1></div>`,
+                    steps: [{
+                        narration: "करोड़ों युवाओं की प्रेरणा।",
+                        actions: []
+                    }]
+                },
+                // --- SCENE 37: COLLAGE (SMILE) ---
+                {
+                    type: "collage",
+                    transition: "splash-red",
+                    html: `<div class="w-full h-full bg-zinc-100 flex items-center justify-center"><div id="co37" class="reveal-hidden w-[500px] h-[400px] bg-primary shadow-2xl rotate-[-2deg]"></div></div>`,
+                    steps: [{
+                        narration: "उनकी मुस्कान में पूरे भारत की उम्मीद बसती थी।",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#co37'
+                        }]
+                    }]
+                },
+                // --- SCENE 38: PARALLAX (LEGEND) ---
+                {
+                    type: "parallax",
+                    transition: "whip-pan",
+                    html: `<div class="w-full h-full bg-black flex items-center justify-center overflow-hidden"><div id="pa38" class="relative text-[15vw] font-black text-white italic drop-shadow-[0_0_150px_rgba(255,255,255,0.1)]">LEGEND</div></div>`,
+                    steps: [{
+                        narration: "वे एक लिविंग लीजेंड थे।",
+                        actions: []
+                    }]
+                },
+                // --- SCENE 39: EXPLODED (SIMPLICITY) ---
+                {
+                    type: "exploded",
+                    transition: "infinite-zoom",
+                    html: `<div class="w-full h-full bg-[#030303] flex items-center justify-center"><div id="ex39" class="w-96 h-96 bg-blue-950 border-[8px] border-white/5 shadow-2xl"></div></div>`,
+                    steps: [{
+                        narration: "उनकी सादगी ही उनका सबसे बड़ा गहना थी।",
+                        actions: []
+                    }]
+                },
+                // --- SCENE 40: SEARCH (GREATEST INDIAN) ---
+                {
+                    type: "search",
+                    transition: "portal",
+                    html: `<div class="w-full h-full bg-white flex flex-col items-center justify-center"><div id="sr40-txt" class="text-5xl font-black italic text-black">Greatest Indian? Kalam.</div></div>`,
+                    steps: [{
+                        narration: "महानतम भारतीय की खोज हमेशा उन्हीं पर आकर रुकती है।",
+                        actions: []
+                    }]
+                },
+                // --- SCENE 41: FILM_STRIP (LIFETIME) ---
+                {
+                    type: "film_strip",
+                    transition: "zoom-shimmer",
+                    html: `<div class="w-full h-full bg-zinc-900 flex flex-col justify-center gap-10 overflow-hidden"><div class="w-[500px] h-64 bg-primary text-7xl font-black italic text-white flex items-center justify-center">LIFETIME</div></div>`,
+                    steps: [{
+                        narration: "एक जीवन, अनंत उपलब्धियां।",
+                        actions: []
+                    }]
+                },
+                // --- SCENE 42: BENTO (VALUES) ---
+                {
+                    type: "bento",
+                    transition: "splash-blue",
+                    html: `<div class="w-full h-full bg-black flex items-center justify-center"><div class="w-full max-w-4xl h-[600px] bg-zinc-900 rounded-[3rem] p-12 text-center text-white font-black text-5xl">VALUES</div></div>`,
+                    steps: [{
+                        narration: "सत्य, निष्ठा और राष्ट्रप्रेम।",
+                        actions: []
+                    }]
+                },
+                // --- SCENE 43: TIER_LIST (LEADERS) ---
+                {
+                    type: "tier_list",
+                    transition: "neon-slash",
+                    html: `<div class="w-full h-full bg-zinc-950 flex flex-col justify-center items-center"><h1 class="text-9xl font-black text-red-600 shadow-2xl">S - TIER</h1></div>`,
+                    steps: [{
+                        narration: "वे भारत के इतिहास में सबसे महान नेताओं की श्रेणी में शीर्ष पर हैं।",
+                        actions: []
+                    }]
+                },
+                // --- SCENE 44: DOCU_TITLE (THE FINAL DAYS) ---
+                {
+                    type: "docu_title",
+                    transition: "focus-blur",
+                    html: `<div class="w-full h-full bg-[#111] flex items-center justify-center"><h1 class="text-8xl font-black text-white italic">अंतिम विदाई</h1></div>`,
+                    steps: [{
+                        narration: "27 जुलाई 2015, शिलॉन्ग।",
+                        actions: []
+                    }]
+                },
+                // --- SCENE 45: IMAGE (SHILLONG) ---
+                {
+                    type: "image",
+                    transition: "whip-pan",
+                    html: `<div class="w-full h-full"><img src="https://images.unsplash.com/photo-1485827404703-89b55fcc595e?q=80&w=2070" class="w-full h-full object-cover brightness-50"></div>`,
+                    steps: [{
+                        narration: "छात्रों को पढ़ाते हुए ही उन्होंने अपने प्राण त्यागे।",
+                        actions: []
+                    }]
+                },
+                // --- SCENE 46: BULLETS (LEGACY) ---
+                {
+                    type: "bullets",
+                    transition: "splash-yellow",
+                    html: `<div class="w-full h-full bg-zinc-950 flex flex-col justify-center px-32"><h2 class="text-6xl font-black text-primary italic mb-12">विरासत</h2></div>`,
+                    steps: [{
+                        narration: "उनकी विरासत आज भी हमें रास्ता दिखा रही है।",
+                        actions: []
+                    }]
+                },
+                // --- SCENE 47: END CINEMATIC ---
+                {
+                    type: "end",
+                    transition: "infinite-zoom",
+                    html: `<div class="w-full h-full bg-black flex flex-col items-center justify-center p-10 relative overflow-hidden">
+                <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_#111_0%,_#000_100%)]"></div>
+                <h1 id="end-txt" class="reveal-hidden text-[12vw] tracking-[2.5em] font-light text-white italic opacity-10 mb-20 animate-pulse">FIN</h1>
+                <div id="end-bar" class="reveal-hidden w-64 h-1 bg-primary shadow-[0_0_80px_#6366f1]"></div>
+                <p id="end-sub" class="reveal-hidden mt-8 text-gray-500 font-mono tracking-widest text-xs uppercase italic">Immortal Kalam // Sam</p>
+            </div>`,
+                    steps: [{
+                        narration: "कालाम सर अमर हैं। जय हिन्द।",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#end-txt'
+                        }, {
+                            type: 'reveal',
+                            target: '#end-bar'
+                        }, {
+                            type: 'reveal',
+                            target: '#end-sub'
+                        }]
+                    }]
+                }
+            ]
+        };
+        window.onload = () => Engine.init();
+    </script>
+</body>
+
+</html>
