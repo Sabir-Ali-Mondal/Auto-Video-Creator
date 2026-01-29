@@ -692,450 +692,439 @@
         // --- OMNI-DEMO DATA (60 SCENES) ---
         const DEMO_DATA = {
             meta: {
-                title: "মেডিকেল মাইক্রোবায়োলজি: ইউনিট-১ (বাংলা লেকচার)",
+                title: "Advanced Medical Microbiology: Unit-1 (B.Sc. Level)",
                 audio: "https://res.cloudinary.com/dmttn34te/video/upload/v1763064765/study-music-181044_jbuwpq.mp3",
                 lang: "bn-IN"
             },
             scenes: [
-                // --- বিভাগ ১: ভূমিকা ---
-
-                // ১. লেকচার ওপেনার
+                // --- SCENE 1: OPENING TITLE ---
                 {
-                    html: `<div class="w-full h-full bg-[#050505] flex flex-col items-center justify-center p-10 border-[20px] border-zinc-900">
-                <p class="text-primary font-mono tracking-[0.5em] mb-4">অ্যাকাডেমিক সেশন ২০২৫</p>
-                <h1 id="t1" class="opacity-0 translate-y-4 ts-huge font-black text-white italic transition-all duration-1000">MICROBIOLOGY</h1>
-                <div id="bar" class="w-0 h-1 bg-white my-6 transition-all duration-1000"></div>
-                <h2 id="t2" class="opacity-0 translate-y-4 ts-lg font-light text-gray-400 uppercase transition-all duration-1000">ইউনিট ১: সংক্রমণ ও মিথস্ক্রিয়া</h2>
+                    html: `<div class="w-full h-full bg-[#000] flex flex-col items-center justify-center p-6 border-b-[8px] border-primary">
+                <p class="text-blue-400 font-mono ts-sm tracking-[0.4em] mb-2">B.Sc. MICROBIOLOGY</p>
+                <h1 id="t1" class="opacity-0 translate-y-4 ts-lg font-black text-white italic text-center transition-all duration-1000">MEDICAL MICROBIOLOGY<br>UNIT-1</h1>
+                <div id="bar" class="w-0 h-1 bg-white my-4 transition-all duration-1000"></div>
+                <h2 id="t2" class="opacity-0 translate-y-4 ts-sm font-light text-gray-400 uppercase transition-all duration-1000">Normal Microflora & Interaction</h2>
             </div>`,
                     steps: [{
-                            narration: "সুপ্রভাত ছাত্রছাত্রীরা। আজ আমরা মেডিকেল মাইক্রোবায়োলজির প্রথম ইউনিট শুরু করতে যাচ্ছি।",
+                            narration: "সুপ্রভাত। আজ আমরা বিএসসি মেডিকেল মাইক্রোবায়োলজির প্রথম ইউনিট শুরু করছি। আমাদের আজকের আলোচনার বিষয় নরমাল মাইক্রোফ্লোরা এবং হোস্ট-প্যাথোজেন মিথস্ক্রিয়া।",
                             actions: [{
                                 type: 'reveal',
                                 target: '#t1'
                             }]
                         },
                         {
-                            narration: "আজকের ক্লাসে আমরা আলোচনা করব অণুজীবরা কীভাবে আমাদের শরীরে বসবাস করে এবং সংক্রমণের বিভিন্ন ধাপগুলো কী কী।",
+                            narration: "এই ইউনিটে আমরা অণুজীবের সুরক্ষা প্রদানকারী ভূমিকা এবং তাদের রোগ সৃষ্টি করার আণবিক প্রক্রিয়াগুলো বিশদভাবে জানব।",
                             actions: [{
                                 type: 'reveal',
                                 target: '#t2'
                             }, {
                                 type: 'custom',
-                                fn: () => document.getElementById('bar').style.width = '30%'
+                                fn: () => document.getElementById('bar').style.width = '60%'
                             }]
                         }
                     ]
                 },
 
-                // ২. নরমাল মাইক্রোফ্লোরা: সংজ্ঞা
+                // --- SCENE 2: DEFINITION (ADVANCED) ---
                 {
-                    html: `<div class="w-full h-full flex bg-zinc-950">
-                <div class="w-1/2 p-16 flex flex-col justify-center">
-                    <h3 class="text-primary ts-base font-bold mb-4">মূল ধারণা</h3>
-                    <h2 class="text-white ts-lg font-black leading-tight mb-6">Normal Microflora</h2>
-                    <p class="text-gray-400 ts-base">যেসব অণুজীব সাধারণত সুস্থ মানুষের শরীরে <span id="m2" class="marker-swipe">স্থায়ীভাবে বসবাস করে</span> কিন্তু রোগ সৃষ্টি করে না, তাদের নরমাল মাইক্রোফ্লোরা বলে।</p>
-                </div>
-                <div class="w-1/2 relative bg-black">
-                    <img src="https://images.unsplash.com/photo-1579152276502-54243b85360f?q=80&w=2000" class="w-full h-full object-cover opacity-70">
+                    html: `<div class="w-full h-full bg-zinc-950 flex flex-col items-center justify-center p-8 text-center">
+                <h3 class="text-primary ts-base font-bold mb-4 uppercase">Indigenous Microbiota</h3>
+                <p id="p2" class="opacity-0 text-white ts-base leading-snug italic mb-6">"Microorganisms that establish a permanent residence without inducing pathology under homeostatic conditions."</p>
+                <div class="w-full h-48 rounded-2xl overflow-hidden border border-white/10">
+                    <img src="https://images.unsplash.com/photo-1583912267550-d44d7a125e6e?q=80&w=2000" class="w-full h-full object-cover grayscale opacity-60">
                 </div>
             </div>`,
-                    backup_svg: `<svg viewBox="0 0 100 100" class="bg-blue-900"><circle cx="50" cy="50" r="40" fill="none" stroke="white" stroke-dasharray="5"/></svg>`,
                     steps: [{
-                        narration: "প্রথমে জেনে নেওয়া যাক নরমাল মাইক্রোফ্লোরা কী। এরা হলো সেই সব অণুজীব যারা আমাদের শরীরে কোনো ক্ষতি না করেই বসবাস করে।",
+                        narration: "নরমাল মাইক্রোফ্লোরা বা ইন্ডিজেনাস মাইক্রোবায়োটা হলো সেই সব অণুজীব যারা সাধারণত আমাদের শরীরের সুস্থ অবস্থায় স্থায়ীভাবে বসবাস করে এবং কোনো রোগ সৃষ্টি করে না।",
                         actions: [{
-                            type: 'highlight',
-                            target: '#m2'
+                            type: 'reveal',
+                            target: '#p2'
                         }]
                     }]
                 },
 
-                // ৩. শরীরের বিভিন্ন স্থানে অণুজীবের বিন্যাস (SVG)
+                // --- SCENE 3: ESTABLISHMENT (P5.JS COLONIZATION) ---
                 {
-                    html: `<div class="w-full h-full bg-black flex items-center justify-center p-10">
-                <div class="w-1/2 h-full flex flex-col justify-center gap-4">
-                    <div id="s1" class="opacity-0 p-4 bg-zinc-900 border-l-4 border-blue-500 text-white font-bold">ত্বক: Staph. epidermidis</div>
-                    <div id="s2" class="opacity-0 p-4 bg-zinc-900 border-l-4 border-green-500 text-white font-bold">অন্ত্র: E. coli, Bacteroides</div>
-                    <div id="s3" class="opacity-0 p-4 bg-zinc-900 border-l-4 border-purple-500 text-white font-bold">গলা: Streptococci</div>
-                </div>
-                <div class="w-1/2 flex items-center justify-center">
-                    <svg viewBox="0 0 100 150" class="h-[80%] fill-none stroke-white stroke-1">
-                        <path d="M50,10 Q60,10 60,30 L60,120 Q60,140 50,140 T40,120 L40,30 Q40,10 50,10" />
-                        <circle cx="50" cy="20" r="8" />
-                    </svg>
+                    html: `<div id="p5-colony" class="w-full h-full bg-[#050505]"></div>
+                   <div class="absolute top-10 left-10"><h4 class="text-blue-400 ts-sm font-black uppercase">Colonization Dynamics</h4></div>`,
+                    script: `(ctx) => {
+                new p5((p) => {
+                    let bacteria = [];
+                    p.setup = () => { p.createCanvas(ctx.root.offsetWidth, ctx.root.offsetHeight); };
+                    p.draw = () => {
+                        p.background(0, 30);
+                        if(p.frameCount % 5 === 0) bacteria.push({x: p.random(p.width), y: p.random(p.height), r: 2, c: p.color(0, 150, 255)});
+                        bacteria.forEach(b => {
+                            p.fill(b.c); p.noStroke(); p.ellipse(b.x, b.y, b.r);
+                            if(b.r < 15) b.r += 0.2;
+                        });
+                    };
+                }, ctx.root.querySelector('#p5-colony'));
+            }`,
+                    steps: [{
+                        narration: "জন্মের ঠিক পর থেকেই মানবদেহে এই অণুজীবদের কলোনাইজেশন বা বসতি স্থাপন শুরু হয়। ডায়েট, পরিবেশ এবং বয়স এই কলোনাইজেশন প্রক্রিয়াকে প্রভাবিত করে।",
+                        actions: []
+                    }]
+                },
+
+                // --- SCENE 4: PROTECTIVE FUNCTIONS (ICON GRID) ---
+                {
+                    html: `<div class="w-full h-full bg-black p-8 flex flex-col justify-center">
+                <h2 class="text-white ts-base font-bold mb-8 border-l-4 border-primary pl-4">Protective Roles</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div id="f1" class="opacity-0 p-4 bg-zinc-900 rounded-xl border border-white/5"><b class="text-primary">Niche Exclusion:</b> Competing for attachment.</div>
+                    <div id="f2" class="opacity-0 p-4 bg-zinc-900 rounded-xl border border-white/5"><b class="text-primary">Metabolic:</b> Vit K & B12 synthesis.</div>
+                    <div id="f3" class="opacity-0 p-4 bg-zinc-900 rounded-xl border border-white/5"><b class="text-primary">Immune:</b> TLR priming.</div>
+                    <div id="f4" class="opacity-0 p-4 bg-zinc-900 rounded-xl border border-white/5"><b class="text-primary">Antagonism:</b> Bacteriocins.</div>
                 </div>
             </div>`,
                     steps: [{
-                            narration: "শরীরের বিভিন্ন স্থানে আলাদা আলাদা অণুজীব থাকে। যেমন ত্বকে থাকে স্ট্যাফাইলোকক্কাস এপিডারমিডিস।",
+                            narration: "এরা পুষ্টির জন্য প্যাথোজেনের সাথে প্রতিযোগিতা করে এবং ভিটামিন-কে ও বি-টুয়েলভ সংশ্লেষণে সাহায্য করে।",
                             actions: [{
                                 type: 'reveal',
-                                target: '#s1'
+                                target: '#f1'
+                            }, {
+                                type: 'reveal',
+                                target: '#f2'
                             }]
                         },
                         {
-                            narration: "আবার আমাদের অন্ত্রে থাকে ই-কোলাই এবং গলাতে থাকে স্ট্রেপ্টোকক্কাস প্রজাতি।",
+                            narration: "পাশাপাশি এরা ইমিউন সিস্টেমকে সক্রিয় রাখতে এবং ব্যাকটেরিওসিন নিঃসরণের মাধ্যমে শত্রু ব্যাকটেরিয়াকে ধ্বংস করতে সাহায্য করে।",
                             actions: [{
                                 type: 'reveal',
-                                target: '#s2'
+                                target: '#f3'
                             }, {
                                 type: 'reveal',
-                                target: '#s3'
+                                target: '#f4'
                             }]
                         }
                     ]
                 },
 
-                // ৪. অন্ত্রের অণুজীবের ঘনত্ব (Chart.js)
+                // --- SCENE 5: SKIN FLORA (STAPH EPIDERMIDIS) ---
                 {
-                    html: `<div class="w-full h-full bg-zinc-900 p-12 flex flex-col">
-                <h2 class="text-white ts-base font-bold mb-4">অন্ত্রে ব্যাকটেরিয়ার ঘনত্ব (log10)</h2>
-                <div class="flex-1"><canvas id="ch-gut"></canvas></div>
+                    html: `<div class="w-full h-full relative">
+                <img src="https://images.unsplash.com/photo-1516062423079-7ca13cdc7f5a?q=80&w=2000" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent flex flex-col justify-end p-8">
+                    <h2 class="text-white ts-lg font-black italic">SKIN MICROFLORA</h2>
+                    <p id="s5" class="opacity-0 text-blue-300 ts-base font-mono">Dominant: S. epidermidis</p>
+                </div>
+            </div>`,
+                    steps: [{
+                        narration: "ত্বকের প্রধান অণুজীব হলো স্ট্যাফাইলোকক্কাস এপিডারমিডিস। এরা ত্বকের ফ্যাটি অ্যাসিডকে ফ্যাটি অ্যাসিডে রূপান্তরিত করে ত্বকের পি-এইচ অম্লীয় রাখে, যা ক্ষতিকারক ব্যাকটেরিয়ার বৃদ্ধি রোধ করে।",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#s5'
+                        }]
+                    }]
+                },
+
+                // --- SCENE 6: BIOFILM KINETICS (P5.JS) ---
+                {
+                    html: `<div id="p5-bio" class="w-full h-full bg-[#0a0a0a]"></div>
+                   <div class="absolute bottom-10 left-10"><h3 class="text-red-500 ts-base font-black uppercase">Biofilm Formation</h3></div>`,
+                    script: `(ctx) => {
+                new p5((p) => {
+                    let matrix = [];
+                    p.setup = () => { p.createCanvas(ctx.root.offsetWidth, ctx.root.offsetHeight); };
+                    p.draw = () => {
+                        p.background(10);
+                        if(p.frameCount % 10 === 0) matrix.push({x: p.random(p.width), y: p.random(p.height), a: 0});
+                        matrix.forEach(m => {
+                            p.fill(239, 68, 68, m.a); p.noStroke();
+                            p.rect(m.x, m.y, 40, 40, 10);
+                            if(m.a < 150) m.a += 1;
+                        });
+                    };
+                }, ctx.root.querySelector('#p5-bio'));
+            }`,
+                    steps: [{
+                        narration: "ত্বক ক্ষতিগ্রস্ত হলে এই নরমাল ফ্লোরাগুলোই চিকিৎসায় ব্যবহৃত ক্যাথেটার বা ডিভাইসে 'বায়োফিল্ম' তৈরি করে সংক্রমণ ঘটাতে পারে। এটি বিএসসি স্তরের একটি গুরুত্বপূর্ণ ক্লিনিক্যাল কনসেপ্ট।",
+                        actions: []
+                    }]
+                },
+
+                // --- SCENE 7: ORAL MICROFLORA & DENTAL CARIES ---
+                {
+                    html: `<div class="w-full h-full bg-zinc-900 flex flex-col p-8">
+                <h2 class="text-white ts-base font-bold mb-4 underline decoration-primary">Oral & Throat Microbiota</h2>
+                <div class="flex-1 bg-black rounded-3xl p-6 flex flex-col justify-center gap-4">
+                    <div id="o1" class="opacity-0 text-white ts-base border-l-4 border-green-500 pl-4">Streptococcus viridans (Commensal)</div>
+                    <div id="o2" class="opacity-0 text-white ts-base border-l-4 border-red-500 pl-4">Streptococcus mutans (Cariogenic)</div>
+                </div>
+            </div>`,
+                    steps: [{
+                        narration: "মুখগহ্বরে স্ট্রেপ্টোকক্কাস ভিরিড্যান্স প্রধান ফ্লোরা হিসেবে থাকলেও, মিষ্টি জাতীয় খাদ্যের উপস্থিতিতে স্ট্রেপ্টোকক্কাস মিউট্যান্স দাঁতের এনামেল ক্ষয় করে ডেন্টাল ক্যারিস তৈরি করে।",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#o1'
+                        }, {
+                            type: 'reveal',
+                            target: '#o2'
+                        }]
+                    }]
+                },
+
+                // --- SCENE 8: GUT DENSITY (CHART.JS LOG SCALE) ---
+                {
+                    html: `<div class="w-full h-full bg-black p-8 flex flex-col">
+                <h2 class="text-white ts-base font-bold mb-4 text-center">GI Tract Microbial Density</h2>
+                <div class="flex-1"><canvas id="ch-density"></canvas></div>
             </div>`,
                     script: `(ctx) => {
-                ctx.chart('#ch-gut', {
+                ctx.chart('#ch-density', {
                     type: 'bar',
-                    data: { labels: ['পাকস্থলী', 'ডিউডেনাম', 'ইলিয়াম', 'কোলন'], datasets: [{ data: [3, 4, 8, 12], backgroundColor: '#10b981' }] },
-                    options: { scales: { y: { beginAtZero: true, title: { display: true, text: 'ব্যাকটেরিয়া প্রতি গ্রাম', color: '#fff' } } } }
+                    data: { labels: ['Stomach', 'Jejunum', 'Ileum', 'Colon'], datasets: [{ label: 'Log CFU/g', data: [3, 4, 8, 12], backgroundColor: '#6366f1' }] },
+                    options: { scales: { y: { beginAtZero: true, grid: { color: '#222' }, ticks: { color: '#fff' } }, x: { ticks: { color: '#fff' } } } }
                 });
             }`,
                     steps: [{
-                        narration: "লক্ষ্য করো, কোলন বা মলাশয়ে ব্যাকটেরিয়ার ঘনত্ব সবথেকে বেশি থাকে, যা প্রতি গ্রামে প্রায় ১০ টু দ্য পাওয়ার ১২ পর্যন্ত হতে পারে।",
+                        narration: "পরিপাকতন্ত্রে ব্যাকটেরিয়ার ঘনত্ব পাকস্থলী থেকে কোলনের দিকে ক্রমাগত বাড়তে থাকে। কোলনে এই ঘনত্ব প্রতি গ্রামে প্রায় ১০ টু দ্য পাওয়ার ১২ সি-এফ-ইউ পর্যন্ত পৌঁছায়।",
                         actions: []
                     }]
                 },
 
-                // --- বিভাগ ২: রোগসৃষ্টির প্রক্রিয়া ---
-
-                // ৫. টার্মিনোলজি: প্যাথোজিনিসিটি বনাম ভিরুলেন্স
+                // --- SCENE 9: DYSBIOSIS (ADVANCED) ---
                 {
-                    html: `<div class="w-full h-full bg-black p-20 flex flex-col justify-center">
-                <h2 class="text-primary ts-lg font-black italic mb-10">গুরুত্বপূর্ণ সংজ্ঞা</h2>
-                <div class="space-y-6">
-                    <div id="def1" class="opacity-0 ts-base text-white border-b border-white/10 pb-4"><b>Pathogenicity:</b> রোগ সৃষ্টি করার গুণগত ক্ষমতা।</div>
-                    <div id="def2" class="opacity-0 ts-base text-white border-b border-white/10 pb-4"><b>Virulence:</b> রোগের তীব্রতা মাপার পরিমাণগত একক।</div>
-                    <div id="def3" class="opacity-0 ts-base text-white"><b>Infection:</b> শরীরে প্যাথোজেনের প্রবেশ ও সংখ্যাবৃদ্ধি।</div>
-                </div>
+                    html: `<div class="w-full h-full bg-red-950/20 flex flex-col items-center justify-center p-8 text-center">
+                <h2 class="text-red-500 ts-lg font-black italic mb-4">DYSBIOSIS</h2>
+                <p class="text-white ts-base leading-tight">Disruption of the microbial equilibrium leads to opportunistic domination.</p>
+                <div id="dys" class="opacity-0 mt-8 p-4 bg-white/5 border border-red-500 rounded-xl text-red-500 font-mono ts-sm">Antibiotic Associated Diarrhea (C. difficile)</div>
             </div>`,
                     steps: [{
-                            narration: "পরীক্ষার জন্য এই সংজ্ঞাগুলো খুব গুরুত্বপূর্ণ। প্যাথোজিনিসিটি হলো রোগ সৃষ্টির ক্ষমতা।",
-                            actions: [{
-                                type: 'reveal',
-                                target: '#def1'
-                            }]
-                        },
-                        {
-                            narration: "আর ভিরুলেন্স বলতে বোঝায় সেই রোগের তীব্রতা কতটা বেশি।",
-                            actions: [{
-                                type: 'reveal',
-                                target: '#def2'
-                            }, {
-                                type: 'reveal',
-                                target: '#def3'
-                            }]
-                        }
-                    ]
+                        narration: "অ্যান্টিবায়োটিকের অপব্যবহারের ফলে নরমাল ফ্লোরার ভারসাম্য নষ্ট হয়ে 'ডিসবায়োসিস' ঘটে, যা ক্লস্ট্রিডিওডিস ডিফিকাল এর মতো প্যাথোজেনকে রোগ সৃষ্টির সুযোগ দেয়।",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#dys'
+                        }]
+                    }]
                 },
 
-                // ৬. এক্সোটক্সিন বনাম এন্ডোটক্সিন
+                // --- SCENE 10: UROGENITAL LACTOBACILLUS ---
                 {
-                    html: `<div class="w-full h-full flex bg-[#050505]">
-                <div class="w-1/2 p-10 border-r border-white/10">
-                    <h3 class="text-blue-400 ts-base font-bold">Exotoxins</h3>
-                    <p class="text-gray-400 ts-sm mt-4">জীবন্ত ব্যাকটেরিয়া থেকে নিঃসৃত হয়। প্রধানত গ্রাম-পজিটিভ। অত্যন্ত বিষাক্ত।</p>
-                </div>
-                <div class="w-1/2 p-10">
-                    <h3 class="text-red-400 ts-base font-bold">Endotoxins (LPS)</h3>
-                    <p class="text-gray-400 ts-sm mt-4">ব্যাকটেরিয়ার কোষ প্রাচীরের অংশ। গ্রাম-নেগেটিভ। ব্যাকটেরিয়া মারা গেলে নির্গত হয়।</p>
-                </div>
+                    html: `<div class="w-full h-full bg-[#0a1a0a] flex flex-col items-center justify-center p-10">
+                <svg viewBox="0 0 100 100" class="w-1/2 mb-8">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="#22c55e" stroke-width="2"/>
+                    <text x="50" y="55" fill="#22c55e" text-anchor="middle" font-size="12" font-weight="bold">pH < 4.5</text>
+                </svg>
+                <h3 class="text-white ts-base font-bold">Vaginal Homeostasis</h3>
+                <p class="text-gray-400 ts-sm mt-2">Lactobacillus species produce lactic acid & H2O2.</p>
             </div>`,
                     steps: [{
-                        narration: "টক্সিন দুই ধরণের হতে পারে। জীবন্ত ব্যাকটেরিয়া থেকে নির্গত হলে তা এক্সোটক্সিন, আর কোষ প্রাচীর থেকে এলে তা এন্ডোটক্সিন।",
+                        narration: "ইউরোজেনাইটাল ট্র্যাক্টে ল্যাকটোব্যাসিলাস প্রজাতি ল্যাকটিক অ্যাসিড তৈরি করে পি-এইচ ৪.৫ এর নিচে রাখে, যা ক্যান্ডিডার মতো প্যাথোজেনের বৃদ্ধি ঠেকিয়ে দেয়।",
                         actions: []
                     }]
                 },
 
-                // ৭. এন্ডোটক্সিন বা এল.পি.এস শক (Cascade)
+                // --- SCENE 11: HOST-PATHOGEN INTERACTION FLOW ---
                 {
-                    html: `<div class="w-full h-full bg-red-950/20 flex flex-col items-center justify-center p-10">
-                <h2 class="text-red-500 ts-lg font-black mb-10">এল.পি.এস শক প্রসেস</h2>
-                <div class="flex gap-8 items-center text-white">
-                    <div class="p-4 bg-red-600 rounded-lg">LPS নির্গমন</div>
-                    <div>→</div>
-                    <div class="p-4 bg-red-700 rounded-lg">সাইটোকাইন নিঃসরণ</div>
-                    <div>→</div>
-                    <div id="shock" class="opacity-0 p-8 bg-black border-4 border-red-500 text-red-500 font-black">SEPTIC SHOCK</div>
+                    html: `<div class="w-full h-full bg-zinc-950 p-10 flex flex-col justify-center">
+                <h2 class="text-primary ts-base font-black mb-10 text-center uppercase tracking-widest">Molecular Pathogenesis</h2>
+                <div class="flex flex-col gap-4">
+                    <div id="st1" class="opacity-0 p-4 bg-black border-l-4 border-blue-500 text-white">1. Adhesion (Pili/Adhesins)</div>
+                    <div id="st2" class="opacity-0 p-4 bg-black border-l-4 border-green-500 text-white">2. Invasion (Hyaluronidase)</div>
+                    <div id="st3" class="opacity-0 p-4 bg-black border-l-4 border-red-500 text-white">3. Evasion (Capsule/Antigenic Shift)</div>
                 </div>
             </div>`,
                     steps: [{
-                            narration: "গ্রাম-নেগেটিভ ব্যাকটেরিয়া মারা গেলে এল.পি.এস নির্গত হয়, যা শরীরে তীব্র প্রতিক্রিয়া সৃষ্টি করে।",
-                            actions: []
-                        },
-                        {
-                            narration: "এর ফলে রক্তচাপ কমে যায় এবং রোগী সেপ্টিক শকে চলে যেতে পারে।",
-                            actions: [{
-                                type: 'reveal',
-                                target: '#shock'
-                            }]
-                        }
-                    ]
+                        narration: "প্যাথোজেনেসিস শুরু হয় হোস্ট সেলে অ্যাডহিশন বা আটকে থাকার মাধ্যমে। এরপর এনজাইমের সাহায্যে ইনভেসন এবং ইমিউন সিস্টেমকে ফাঁকি দেওয়ার মাধ্যমে সংক্রমণ পূর্ণতা পায়।",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#st1'
+                        }, {
+                            type: 'reveal',
+                            target: '#st2'
+                        }, {
+                            type: 'reveal',
+                            target: '#st3'
+                        }]
+                    }]
                 },
 
-                // --- বিভাগ ৩: সংক্রমণ বিস্তার ---
-
-                // ৮. সংক্রমণের পথসমূহ
+                // --- SCENE 12: VIRULENCE TERMINOLOGY (LD50) ---
                 {
-                    html: `<div class="w-full h-full bg-zinc-900 p-12">
-                <h2 class="text-white ts-lg font-black mb-8">সংক্রমণের বিস্তার</h2>
-                <div class="grid grid-cols-3 gap-6">
-                    <div id="route1" class="opacity-0 aspect-square bg-black border border-white/10 flex flex-col items-center justify-center p-4">
-                        <i class="bi bi-people-fill text-4xl text-blue-500 mb-2"></i>
-                        <p class="text-xs">সরাসরি সংস্পর্শ</p>
-                    </div>
-                    <div id="route2" class="opacity-0 aspect-square bg-black border border-white/10 flex flex-col items-center justify-center p-4">
-                        <i class="bi bi-wind text-4xl text-green-500 mb-2"></i>
-                        <p class="text-xs">বাতাস বা ড্রপলেট</p>
-                    </div>
-                    <div id="route3" class="opacity-0 aspect-square bg-black border border-white/10 flex flex-col items-center justify-center p-4">
-                        <i class="bi bi-bug-fill text-4xl text-red-500 mb-2"></i>
-                        <p class="text-xs">ভেক্টর (মশা/মাছি)</p>
-                    </div>
+                    html: `<div class="w-full h-full bg-black p-10 flex flex-col justify-center">
+                <h2 class="text-white ts-base font-bold mb-8 italic border-b border-primary pb-2">Quantitative Pathogenicity</h2>
+                <div class="grid grid-cols-1 gap-6">
+                    <div id="v1" class="opacity-0"><b class="text-primary">LD50:</b> Lethal Dose required to kill 50% of test population.</div>
+                    <div id="v2" class="opacity-0"><b class="text-primary">ID50:</b> Infectious Dose required to cause disease in 50% population.</div>
                 </div>
             </div>`,
                     steps: [{
-                            narration: "সংক্রমণ বিভিন্নভাবে ছড়াতে পারে। সরাসরি স্পর্শের মাধ্যমে বা বাতাসের ড্রপলেটের মাধ্যমে রোগ বিস্তার লাভ করে।",
-                            actions: [{
-                                type: 'reveal',
-                                target: '#route1'
-                            }]
-                        },
-                        {
-                            narration: "আবার মশা বা মাছির মতো ভেক্টরও রোগ ছড়াতে বড় ভূমিকা পালন করে।",
-                            actions: [{
-                                type: 'reveal',
-                                target: '#route2'
-                            }, {
-                                type: 'reveal',
-                                target: '#route3'
-                            }]
-                        }
-                    ]
+                        narration: "বিএসসি মাইক্রোবায়োলজিতে ভিরুলেন্স পরিমাপ করা হয় এল-ডি-ফিফটি এবং আই-ডি-ফিফটি এর মাধ্যমে। এটি সংক্রমণের তীব্রতার একটি গাণিতিক প্রকাশ।",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#v1'
+                        }, {
+                            type: 'reveal',
+                            target: '#v2'
+                        }]
+                    }]
                 },
 
-                // ৯. ড্রপলেট বনাম অ্যারোসল (p5.js)
+                // --- SCENE 13: CARRIER STATE (CASE STUDY) ---
                 {
-                    html: `<div id="p5-air" class="w-full h-full bg-[#050505]"></div>
-                   <div class="absolute top-10 right-10 p-6 bg-black/80 border border-white/10 rounded-xl">
-                        <h4 class="text-white font-bold">ড্রপলেট ডায়নামিক্স</h4>
-                        <p class="text-gray-500 text-xs">ছোট কণা বাতাসে ভেসে থাকে।</p>
-                   </div>`,
-                    script: `(ctx) => {
-                new p5((p) => {
-                    let particles = [];
-                    p.setup = () => { p.createCanvas(ctx.root.offsetWidth, ctx.root.offsetHeight); };
-                    p.draw = () => {
-                        p.background(0, 50);
-                        if(p.frameCount % 2 === 0) particles.push({x: 50, y: p.height/2, vx: p.random(2, 8), vy: p.random(-1, 1), sz: p.random(1, 10)});
-                        particles.forEach((pt, i) => {
-                            p.fill(200); p.noStroke(); p.ellipse(pt.x, pt.y, pt.sz);
-                            pt.x += pt.vx; pt.y += pt.vy; pt.vy += (pt.sz * 0.05);
-                            if(pt.x > p.width || pt.y > p.height) particles.splice(i, 1);
-                        });
-                    };
-                }, ctx.root.querySelector('#p5-air'));
-            }`,
+                    html: `<div class="w-full h-full bg-[#111] flex flex-col items-center justify-center p-8 text-center border-x-4 border-white/5">
+                <div class="w-24 h-24 bg-white/10 rounded-full flex items-center justify-center mb-6 border border-white/20">
+                    <i class="bi bi-person-exclamation text-5xl text-blue-400"></i>
+                </div>
+                <h2 class="text-white ts-base font-bold">ASMPTOMATIC CARRIERS</h2>
+                <p class="text-gray-500 ts-sm mt-4 italic">"Individuals who harbor the pathogen without overt clinical symptoms."</p>
+                <p class="text-primary ts-sm font-mono mt-4">Example: Typhoid Mary (S. Typhi)</p>
+            </div>`,
                     steps: [{
-                        narration: "ভারী ড্রপলেটগুলো দ্রুত মাটিতে পড়ে যায়, কিন্তু ছোট অ্যারোসল কণা বাতাসে কয়েক ঘণ্টা ভেসে থাকতে পারে।",
+                        narration: "ক্যারিয়ার বা বাহকরা হলো সেই সব ব্যক্তি যারা প্যাথোজেন বহন করে কিন্তু নিজেরা অসুস্থ হয় না। টাইফয়েড মেরি এর একটি ধ্রুপদী উদাহরণ।",
                         actions: []
                     }]
                 },
 
-                // --- বিভাগ ৪: হাসপাতালে সংক্রমণ (Nosocomial) ---
-
-                // ১০. নসোকোমিয়াল ইনফেকশন: সংজ্ঞা
+                // --- SCENE 14: OPPORTUNISTIC PATHOGENS ---
                 {
                     html: `<div class="w-full h-full relative">
-                <img src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=2000" class="w-full h-full object-cover">
-                <div class="absolute inset-0 bg-black/60 flex flex-col items-center justify-center p-10">
-                    <h2 class="text-white ts-xl font-black italic mb-4">NOSOCOMIAL</h2>
-                    <p class="text-blue-400 ts-base font-mono">ভর্তির ৪৮ ঘণ্টা পর অর্জিত সংক্রমণ।</p>
+                <img src="https://images.unsplash.com/photo-1579152276502-54243b85360f?q=80&w=2000" class="w-full h-full object-cover opacity-30 grayscale">
+                <div class="absolute inset-0 flex flex-col items-center justify-center p-12 text-center bg-blue-900/10">
+                    <h2 class="text-white ts-xl font-black italic tracking-tighter">OPPORTUNISTIC</h2>
+                    <p id="o14" class="opacity-0 text-blue-400 ts-base font-bold mt-4">Compromised Host Defense = Pathological Transition</p>
+                </div>
+            </div>`,
+                    steps: [{
+                        narration: "ইমিউন সিস্টেম দুর্বল হয়ে পড়লে আমাদের শরীরের বন্ধু মাইক্রোফ্লোরাই 'অপর্চুনিস্টিক প্যাথোজেন' হিসেবে আত্মপ্রকাশ করে রোগ সৃষ্টি করতে পারে।",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#o14'
+                        }]
+                    }]
+                },
+
+                // --- SCENE 15: NOSOCOMIAL (HOSPITAL ACQUIRED) ---
+                {
+                    html: `<div class="w-full h-full bg-zinc-950 p-8 flex flex-col">
+                <h2 class="text-red-500 ts-base font-black mb-6 uppercase">Nosocomial Infections (HAI)</h2>
+                <div class="flex-1 bg-black/50 border border-white/5 rounded-3xl p-8 flex flex-col justify-center">
+                    <ul class="text-white ts-base space-y-4 font-light">
+                        <li>• Acquired > 48hrs after admission.</li>
+                        <li>• Major source: Medical Devices.</li>
+                        <li>• High antibiotic resistance (ESKAPE Pathogens).</li>
+                    </ul>
                 </div>
             </div>`,
                     backup_svg: `<svg viewBox="0 0 100 100" class="bg-red-900"><rect x="40" y="20" width="20" height="60" fill="white"/><rect x="20" y="40" width="60" height="20" fill="white"/></svg>`,
                     steps: [{
-                        narration: "নসোকোমিয়াল ইনফেকশন হলো সেই সংক্রমণ যা একজন রোগী হাসপাতালে ভর্তির ৪৮ ঘণ্টা পর অর্জন করেন।",
+                        narration: "নসোকোমিয়াল ইনফেকশন হলো সেই সব সংক্রমণ যা হাসপাতালে ভর্তির ৪৮ ঘণ্টা পর শুরু হয়। এগুলো সাধারণত মাল্টি-ড্রাগ রেজিস্ট্যান্ট হয়ে থাকে।",
                         actions: []
                     }]
                 },
 
-                // ১১. কেস স্টাডি: ক্লিবসিয়েলা (২০২৪)
+                // --- SCENE 16: MODES OF TRANSMISSION (GRID) ---
                 {
-                    html: `<div class="w-full h-full bg-[#f8fafc] p-16 flex items-center justify-center">
-                <div class="max-w-4xl bg-white shadow-2xl p-12 border-t-[16px] border-blue-600">
-                    <p class="text-blue-600 font-bold tracking-widest text-sm mb-4">গবেষণা সংবাদ | ২০২৪</p>
-                    <h2 class="text-slate-900 ts-lg font-black leading-tight mb-6">ক্লিবসিয়েলা সংক্রমণের নতুন কারণ</h2>
-                    <p class="text-slate-600 ts-base">"গবেষকরা দেখেছেন কীভাবে ক্লিবসিয়েলা ব্যাকটেরিয়া হাসপাতালের পরিবেশে টিকে থাকার জন্য নতুন কৌশল অবলম্বন করছে।"</p>
+                    html: `<div class="w-full h-full bg-black p-8">
+                <h2 class="text-white ts-base font-bold mb-8">Advanced Transmission Modes</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div id="tr1" class="opacity-0 p-4 bg-zinc-900 rounded-xl">Fomites (Inanimate)</div>
+                    <div id="tr2" class="opacity-0 p-4 bg-zinc-900 rounded-xl">Droplet Nuclei (< 5μm)</div>
+                    <div id="tr3" class="opacity-0 p-4 bg-zinc-900 rounded-xl">Zoonotic (Animal)</div>
+                    <div id="tr4" class="opacity-0 p-4 bg-zinc-900 rounded-xl">Iatrogenic (Clinical)</div>
                 </div>
             </div>`,
                     steps: [{
-                        narration: "২০২৪ সালের একটি গবেষণায় দেখা গেছে, ক্লিবসিয়েলা ব্যাকটেরিয়া হাসপাতালের চিকিৎসার সরঞ্জাম ব্যবহার করে দ্রুত ছড়িয়ে পড়ছে।",
-                        actions: []
-                    }]
-                },
-
-                // ১২. ক্যাথিটারে বায়োফিল্ম (p5.js)
-                {
-                    html: `<div id="p5-biofilm" class="w-full h-full bg-[#111]"></div>
-                   <div class="absolute bottom-10 left-10"><h3 class="text-white ts-lg font-bold">বায়োফিল্ম তৈরি</h3></div>`,
-                    script: `(ctx) => {
-                new p5((p) => {
-                    let cells = [];
-                    p.setup = () => { p.createCanvas(ctx.root.offsetWidth, ctx.root.offsetHeight); };
-                    p.draw = () => {
-                        p.background(10); p.stroke(255, 50); p.line(0, p.height/2, p.width, p.height/2);
-                        if(p.frameCount % 20 === 0) cells.push({x: p.random(p.width), y: p.height/2, r: 5});
-                        cells.forEach(c => {
-                            p.fill(16, 185, 129); p.ellipse(c.x, c.y, c.r);
-                            if(c.r < 40) c.r += 0.2;
-                        });
-                    };
-                }, ctx.root.querySelector('#p5-biofilm'));
-            }`,
-                    steps: [{
-                        narration: "অণুজীবরা ক্যাথিটারের গায়ে বায়োফিল্ম তৈরি করে, যা তাদের অ্যান্টিবায়োটিকের হাত থেকে রক্ষা করে।",
-                        actions: []
-                    }]
-                },
-
-                // --- বিভাগ ৫: ক্লিনিক্যাল স্যাম্পল হ্যান্ডলিং ---
-
-                // ১৩. স্যাম্পল সংগ্রহের মূলনীতি
-                {
-                    html: `<div class="w-full h-full bg-[#0d1117] p-12 flex flex-col justify-center">
-                <h2 class="text-primary ts-lg font-black mb-8">Clinical Sample Handling</h2>
-                <div class="grid grid-cols-2 gap-4 text-white">
-                    <div class="p-4 bg-zinc-900 border border-white/10 rounded-xl">১. অ্যাসেপটিক টেকনিক</div>
-                    <div class="p-4 bg-zinc-900 border border-white/10 rounded-xl">২. সঠিক স্থান থেকে সংগ্রহ</div>
-                    <div class="p-4 bg-zinc-900 border border-white/10 rounded-xl">৩. পর্যাপ্ত পরিমাণ</div>
-                    <div class="p-4 bg-zinc-900 border border-white/10 rounded-xl">৪. দ্রুত পরিবহন</div>
-                </div>
-            </div>`,
-                    steps: [{
-                        narration: "মাইক্রোবায়োলজির সোনালী নিয়ম হলো: রিপোর্টের মান নির্ভর করে স্যাম্পলের মানের ওপর।",
-                        actions: []
-                    }]
-                },
-
-                // ১৪. ব্লাড কালচার প্রোটোকল
-                {
-                    html: `<div class="w-full h-full bg-black flex p-10 gap-10">
-                <div class="w-1/2 flex flex-col justify-center">
-                    <h3 class="text-red-500 font-bold mb-4">ধাপে ধাপে</h3>
-                    <h2 class="text-white ts-lg font-black">Blood Culture</h2>
-                    <p class="text-gray-400 mt-4">অ্যান্টিবায়োটিক শুরু করার আগে স্যাম্পল সংগ্রহ করা উচিত। সাধারণত ১০ থেকে ২০ মিলি রক্ত প্রয়োজন।</p>
-                </div>
-                <div class="w-1/2">
-                    <img src="https://images.unsplash.com/photo-1579152276502-54243b85360f?q=80&w=2000" class="w-full h-full object-cover rounded-3xl">
-                </div>
-            </div>`,
-                    steps: [{
-                        narration: "ব্লাড কালচারের ক্ষেত্রে সঠিক সময় এবং অ্যাসেপটিক পদ্ধতি বজায় রাখা অত্যন্ত জরুরি।",
-                        actions: []
-                    }]
-                },
-
-                // ১৫. ট্রান্সপোর্ট মিডিয়া: ক্যারি-ব্লেয়ার ও স্টুয়ার্ট
-                {
-                    html: `<div class="w-full h-full bg-zinc-950 flex flex-col items-center justify-center p-20">
-                <div class="w-full max-w-2xl bg-zinc-900 border border-white/10 p-10 rounded-3xl">
-                    <h3 class="text-white ts-base font-bold mb-6">ট্রান্সপোর্ট মিডিয়া</h3>
-                    <ul class="space-y-4 text-blue-400 font-mono italic">
-                        <li>>> Cary-Blair: মলের স্যাম্পলের জন্য</li>
-                        <li>>> Amies: সোয়াব স্যাম্পলের জন্য</li>
-                        <li>>> Stuart's: সাধারণ ব্যবহারের জন্য</li>
-                    </ul>
-                </div>
-            </div>`,
-                    steps: [{
-                        narration: "যদি ল্যাব দূরে হয়, তবে প্যাথোজেনগুলোকে বাঁচিয়ে রাখার জন্য আমরা ট্রান্সপোর্ট মিডিয়া ব্যবহার করি।",
-                        actions: []
-                    }]
-                },
-
-                // --- বিভাগ ৬: বর্তমান চ্যালেঞ্জ ---
-
-                // ১৬. অ্যান্টিমাইক্রোবিয়াল রেজিস্ট্যান্স (AMR) ম্যাপ
-                {
-                    html: `<div id="map-amr" class="w-full h-full z-0"></div>
-                   <div class="absolute bottom-10 left-10 z-[500] bg-red-950 border border-red-500 p-6 rounded-xl">
-                        <h3 class="text-white font-bold">AMR হটস্পট</h3>
-                        <p class="text-white/70 text-xs">সারা বিশ্বে রেজিস্ট্যান্স বাড়ছে।</p>
-                   </div>`,
-                    script: `(ctx) => {
-                const map = ctx.map('#map-amr', {zoomControl:false}).setView([22.9868, 87.8550], 5);
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{y}/{x}{r}.png').addTo(map);
-                L.circleMarker([22.5726, 88.3639], {color: 'red', radius: 10}).addTo(map);
-            }`,
-                    steps: [{
-                        narration: "বিশেষজ্ঞরা সতর্ক করেছেন যে ড্রাগ রেজিস্ট্যান্স এখন একটি বড় হুমকি। সঠিক স্যাম্পল হ্যান্ডলিং এর বিরুদ্ধে লড়াইয়ের প্রথম ধাপ।",
-                        actions: []
-                    }]
-                },
-
-                // ১৭. সারসংক্ষেপ: সংক্রমণের চেইন
-                {
-                    html: `<div class="w-full h-full bg-black flex flex-col items-center justify-center p-10 text-center text-white">
-                <h1 class="ts-lg font-black mb-10">ইউনিট-১ সারসংক্ষেপ</h1>
-                <div class="flex gap-4">
-                    <div class="p-6 bg-zinc-800 rounded-lg">অণুজীব শনাক্তকরণ</div>
-                    <div class="p-6 bg-zinc-800 rounded-lg">মিথস্ক্রিয়া বিশ্লেষণ</div>
-                    <div class="p-6 bg-zinc-800 rounded-lg">প্রোটোকল পালন</div>
-                </div>
-            </div>`,
-                    steps: [{
-                        narration: "আমরা আজ আলোচনা করলাম শরীরের নিজস্ব অণুজীব এবং প্যাথোজেনের সাথে লড়াইয়ের বিভিন্ন দিক।",
-                        actions: []
-                    }]
-                },
-
-                // ১৮. পরীক্ষার প্রস্তুতি
-                {
-                    html: `<div class="w-full h-full bg-zinc-900 p-16 flex flex-col justify-center text-white">
-                <h2 class="text-primary ts-base font-bold mb-6">পরীক্ষার জন্য গুরুত্বপূর্ণ প্রশ্ন</h2>
-                <ul class="space-y-4 ts-base">
-                    <li>১. সিমবায়োসিস এবং কমেনসালিজম কী?</li>
-                    <li>২. এক্সোটক্সিন ও এন্ডোটক্সিনের পার্থক্য লেখ।</li>
-                    <li>৩. স্যাম্পল সংগ্রহের ৪টি মূলনীতি কী কী?</li>
-                    <li>৪. এল.পি.এস সেপ্টিক শক কীভাবে তৈরি করে?</li>
-                </ul>
-            </div>`,
-                    steps: [{
-                        narration: "এই চারটি প্রশ্ন পরীক্ষার জন্য খুব ভালো করে তৈরি করবে। এগুলো প্রায়ই পেশাদার পরীক্ষায় আসে।",
-                        actions: []
-                    }]
-                },
-
-                // ১৯. অনুপ্রেরণামূলক উক্তি
-                {
-                    html: `<div class="w-full h-full bg-black flex items-center justify-center p-20 text-center">
-                <p class="text-gray-400 ts-lg font-serif italic">"অদৃশ্য অণুজীবের জগতকে বোঝার মাধ্যমেই আমরা অদৃশ্য শত্রুকে জয় করতে পারি।"</p>
-            </div>`,
-                    steps: [{
-                        narration: "মনে রেখো, সবথেকে বড় শত্রু তারাই যাদের আমরা খালি চোখে দেখতে পাই না।",
-                        actions: []
-                    }]
-                },
-
-                // ২০. লেকচারের সমাপ্তি
-                {
-                    html: `<div class="w-full h-full bg-black flex flex-col items-center justify-center p-10">
-                <h1 id="end" class="opacity-0 ts-xl font-black text-white italic tracking-tighter transition-all duration-1000">LECTURE END</h1>
-                <div class="w-24 h-1 bg-primary my-6"></div>
-                <p class="text-gray-500 font-mono text-xs uppercase tracking-widest">Medical Microbiology Series</p>
-            </div>`,
-                    steps: [{
-                        narration: "আজকের লেকচার এখানেই শেষ। ধন্যবাদ মনোযোগ দিয়ে শোনার জন্য।",
+                        narration: "সংক্রমণ বিভিন্ন উপায়ে ছড়ায়; যেমন ফোমাইট বা নির্জীব বস্তুর মাধ্যমে, ড্রপলেট নিউক্লিয়াসের মাধ্যমে অথবা সরাসরি ল্যাবরেটরি দুর্ঘটনার মাধ্যমে।",
                         actions: [{
                             type: 'reveal',
-                            target: '#end'
+                            target: '#tr1'
+                        }, {
+                            type: 'reveal',
+                            target: '#tr2'
+                        }, {
+                            type: 'reveal',
+                            target: '#tr3'
+                        }, {
+                            type: 'reveal',
+                            target: '#tr4'
+                        }]
+                    }]
+                },
+
+                // --- SCENE 17: LPS STRUCTURE (ADVANCED SVG) ---
+                {
+                    html: `<div class="w-full h-full bg-[#0a0a0a] flex flex-col items-center justify-center p-10">
+                <h2 class="text-red-500 ts-base font-black italic mb-10">LPS (Endotoxin) Architecture</h2>
+                <svg viewBox="0 0 300 150" class="w-full max-w-lg">
+                    <rect id="lipid" x="20" y="60" width="60" height="40" fill="#ef4444" rx="5"/>
+                    <text x="50" y="85" fill="white" text-anchor="middle" font-size="8">Lipid A</text>
+                    <rect x="80" y="70" width="80" height="20" fill="#f97316"/>
+                    <text x="120" y="85" fill="white" text-anchor="middle" font-size="8">Core</text>
+                    <path d="M160,80 L280,80" stroke="#eab308" stroke-width="12" stroke-dasharray="10"/>
+                    <text x="220" y="65" fill="#eab308" text-anchor="middle" font-size="8">O-Antigen</text>
+                </svg>
+            </div>`,
+                    steps: [{
+                        narration: "এন্ডোটক্সিন বা এল-পি-এস এর আণবিক গঠনে লিপিড-এ হলো বিষাক্ত অংশ। এটি গ্রাম-নেগেটিভ ব্যাকটেরিয়ার মৃত্যুর পর নির্গত হয় এবং হোস্টের ইমিউন সিস্টেমকে আক্রমণ করে।",
+                        actions: []
+                    }]
+                },
+
+                // --- SCENE 18: LPS TLR4 SIGNALING (SVG ANIMATION) ---
+                {
+                    html: `<div class="w-full h-full bg-black flex flex-col items-center justify-center p-8">
+                <svg viewBox="0 0 200 150" class="w-3/4">
+                    <line x1="20" y1="100" x2="180" y2="100" stroke="#333" stroke-width="5"/> <!-- Membrane -->
+                    <path id="receptor" d="M100,100 L100,60" stroke="#6366f1" stroke-width="4"/>
+                    <circle id="lps-dot" cx="100" cy="20" r="6" fill="#ef4444" class="opacity-0"/>
+                </svg>
+                <div id="storm" class="opacity-0 mt-8 p-4 bg-red-600/30 border border-red-600 rounded text-red-500 font-black ts-base">CYTOKINE STORM</div>
+            </div>`,
+                    steps: [{
+                            narration: "লিপিড-এ হোস্ট সেলের TLR4 রিসেপ্টরের সাথে যুক্ত হয়ে প্রো-ইনফ্ল্যামেটরি সাইটোকাইন নিঃসরণ শুরু করে।",
+                            actions: [{
+                                type: 'custom',
+                                fn: () => {
+                                    document.getElementById('lps-dot').classList.remove('opacity-0');
+                                    document.getElementById('lps-dot').setAttribute('cy', '50');
+                                }
+                            }]
+                        },
+                        {
+                            narration: "এর ফলে সাইটোকাইন স্টর্ম তৈরি হয়, যা টিস্যু ড্যামেজ এবং সেপ্টিক শকের মূল কারণ। এটি একটি জটিল প্যাথোফিজিওলজিক্যাল প্রক্রিয়া।",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#storm'
+                            }]
+                        }
+                    ]
+                },
+
+                // --- SCENE 19: CLINICAL SPECIMEN PRINCIPLES ---
+                {
+                    html: `<div class="w-full h-full bg-[#0d1117] p-8 flex flex-col justify-center">
+                <h2 class="text-green-400 ts-base font-mono mb-4 border-b border-white/10">> Clinical_Asepsis_Protocol</h2>
+                <pre class="w-full bg-black/50 p-6 rounded-2xl border border-white/5"><code class="language-javascript text-blue-300 ts-sm" id="code-proc">
+// B.Sc. Standard Sampling
+1. Avoid Commensal Contamination
+2. Representative Sample Site
+3. Optimal Volume (Blood: 10-20ml)
+4. Cold Chain Maintenance (2-8°C)
+                </code></pre>
+            </div>`,
+                    script: `(ctx) => Prism.highlightElement(ctx.root.querySelector('#code-proc'))`,
+                    steps: [{
+                        narration: "ক্লিনিক্যাল নমুনা সংগ্রহের সময় নরমাল ফ্লোরা দ্বারা দূষণ রোধ করতে হবে। মনে রাখবেন, রিপোর্টের নির্ভুলতা নির্ভর করে নমুনার গুণমানের ওপর।",
+                        actions: []
+                    }]
+                },
+
+                // --- SCENE 20: SUMMARY & CLOSING ---
+                {
+                    html: `<div class="w-full h-full bg-black flex flex-col items-center justify-center p-10 border-[10px] border-zinc-900 text-center">
+                <h1 id="end-t" class="opacity-0 ts-lg font-black text-white italic transition-all duration-1000">LECTURE END</h1>
+                <div class="w-24 h-1 bg-primary my-4"></div>
+                <p class="text-gray-500 font-mono ts-sm uppercase tracking-widest">Medical Microbiology Series</p>
+                <p class="text-primary ts-sm mt-4">Next Unit: Advanced Immunology</p>
+            </div>`,
+                    steps: [{
+                        narration: "আজকের আলোচনা এখানেই শেষ। নরমাল ফ্লোরার ভারসাম্য এবং প্যাথোজেনেসিসের আণবিক প্রক্রিয়াগুলো পরীক্ষার জন্য অত্যন্ত গুরুত্বপূর্ণ। পরবর্তী ক্লাসে আমরা ইমিউনোলজি নিয়ে আলোচনা করব। ধন্যবাদ।",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#end-t'
                         }]
                     }]
                 }
