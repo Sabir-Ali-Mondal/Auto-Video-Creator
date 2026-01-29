@@ -1,0 +1,1148 @@
+<!-- 
+    AUTO-VIDEO v3.1 | THE OMNI-ENGINE FINAL
+    - Multi-Language Auto-Detect AI
+    - 4-Stage Zero-Fail Asset System
+    - Smart Background Preloader
+    - 60-Scene Omni-Demo Included
+-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Auto-Video Elite</title>
+
+    <!-- LIBRARIES -->
+    <script src="https://js.puter.com/v2/"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- FONTS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #6366f1;
+            --glass: rgba(10, 10, 12, 0.9);
+            --border: rgba(255, 255, 255, 0.12);
+            --ease: cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        body {
+            background-color: #000;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            color: white;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* STAGE */
+        #stage-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+            position: relative;
+        }
+
+        #stage-content {
+            background: #000;
+            position: relative;
+            aspect-ratio: 16/9;
+            width: 100%;
+            max-width: calc((100vh - 100px) * (16/9));
+            box-shadow: 0 0 0 1px #333, 0 50px 100px -20px rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+            container-type: size;
+            transition: aspect-ratio 0.5s var(--ease);
+        }
+
+        #stage-content.portrait {
+            aspect-ratio: 9/16;
+            max-width: none;
+            height: 95vh;
+            width: auto;
+        }
+
+        /* TEXT UTILS */
+        .ts-sm {
+            font-size: 2cqw;
+        }
+
+        .ts-base {
+            font-size: 3.5cqw;
+        }
+
+        .ts-lg {
+            font-size: 6cqw;
+        }
+
+        .ts-xl {
+            font-size: 10cqw;
+            line-height: 0.9;
+        }
+
+        .ts-huge {
+            font-size: 15cqw;
+            line-height: 0.8;
+            letter-spacing: -0.05em;
+        }
+
+        /* FALLBACK BACKGROUNDS */
+        .bg-fallback-tech {
+            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 4cqw 4cqw;
+        }
+
+        /* UI DOCK */
+        .ui-layer {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: auto;
+            min-width: 300px;
+            height: 70px;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 35px;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 0 1.5rem;
+            z-index: 2000;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+        }
+
+        .btn-ui {
+            background: rgba(255, 255, 255, 0.05);
+            color: #94a3b8;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: 0.2s;
+            position: relative;
+        }
+
+        .btn-ui:hover {
+            background: white;
+            color: black;
+            transform: translateY(-2px);
+        }
+
+        .btn-ui.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-play {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: white;
+            color: black;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+
+        .btn-play:hover {
+            background: #e0e7ff;
+            color: var(--primary);
+            transform: scale(1.1);
+        }
+
+        /* SYSTEM MENU */
+        #system-menu {
+            position: absolute;
+            bottom: 90px;
+            left: 0;
+            background: #09090b;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            width: 260px;
+            padding: 8px;
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+            transform-origin: bottom left;
+            animation: menuPop 0.2s var(--ease);
+        }
+
+        #system-menu.open {
+            display: flex;
+        }
+
+        @keyframes menuPop {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: #e2e8f0;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .menu-item i {
+            font-size: 1.1rem;
+            opacity: 0.7;
+        }
+
+        /* MODALS */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 5000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal-box {
+            width: 800px;
+            max-width: 90%;
+            background: #09090b;
+            border: 1px solid #27272a;
+            border-radius: 24px;
+            padding: 32px;
+        }
+
+        .slide-layer {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.8s var(--ease);
+            z-index: 1;
+        }
+
+        .slide-layer.active {
+            opacity: 1;
+            pointer-events: auto;
+            z-index: 10;
+        }
+
+        .marker-swipe {
+            background: linear-gradient(120deg, transparent 50%, var(--primary) 50%);
+            background-size: 250%;
+            background-position: 0%;
+            transition: background-position 0.5s ease-out;
+            padding: 0 4px;
+        }
+
+        .marker-swipe.active {
+            background-position: 100%;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="stage-container">
+        <div id="stage-content"></div>
+    </div>
+
+    <!-- MAIN DOCK -->
+    <div class="ui-layer">
+        <div class="relative">
+            <button class="btn-ui" onclick="Engine.ui.toggleMenu()" id="menu-btn"><i class="bi bi-grid-fill"></i></button>
+            <div id="system-menu">
+                <div class="menu-item" onclick="Engine.ui.openModal('ai')">
+                    <i class="bi bi-robot text-purple-400"></i> AI Architect
+                </div>
+                <div class="menu-item" onclick="Engine.ui.openModal('settings')">
+                    <i class="bi bi-sliders text-blue-400"></i> Studio Settings
+                </div>
+                <div class="menu-item" onclick="Engine.ui.openModal('import')">
+                    <i class="bi bi-code-slash text-green-400"></i> Code Editor
+                </div>
+                <div class="h-[1px] bg-white/10 my-1"></div>
+                <div class="menu-item" onclick="Engine.ui.toggleRatio()">
+                    <i class="bi bi-phone"></i> Toggle Portrait
+                </div>
+            </div>
+        </div>
+
+        <button class="btn-ui hide-mobile" onclick="Engine.prev()"><i class="bi bi-skip-start-fill"></i></button>
+        <button class="btn-play" id="play-btn" onclick="Engine.togglePlay()"><i class="bi bi-play-fill"></i></button>
+        <button class="btn-ui hide-mobile" onclick="Engine.next()"><i class="bi bi-skip-end-fill"></i></button>
+        <button class="btn-ui" onclick="Engine.ui.toggleFullscreen()"><i class="bi bi-arrows-fullscreen"></i></button>
+    </div>
+
+    <!-- AI MODAL -->
+    <div id="modal-ai" class="modal-overlay">
+        <div class="modal-box">
+            <h2 class="text-3xl font-black text-white italic mb-2">AI ARCHITECT <span class="bg-primary/20 text-primary text-xs px-2 py-1 rounded not-italic ml-2">v3.1</span></h2>
+            <textarea id="ai-prompt" class="w-full bg-black/50 border border-white/10 rounded-xl p-4 text-white focus:border-primary outline-none h-32 mb-6" placeholder="Describe the video topic..."></textarea>
+
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                    <label class="text-xs text-gray-500 font-bold mb-2 block">NARRATION LANGUAGE (AUTO)</label>
+                    <select id="ai-lang" class="w-full bg-black border border-white/10 rounded-lg p-3 text-sm text-white"></select>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500 font-bold mb-2 block">VISUAL STYLE</label>
+                    <select id="ai-style" class="w-full bg-black border border-white/10 rounded-lg p-3 text-sm text-white">
+                        <option value="cinematic">Cinematic Documentary</option>
+                        <option value="tech">High-Tech / Cyberpunk</option>
+                        <option value="paper">Minimal / Journalistic</option>
+                        <option value="retro">Retro / VHS Style</option>
+                    </select>
+                </div>
+            </div>
+
+            <button id="gen-btn" onclick="Engine.ai.generate()" class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl tracking-widest transition-all">GENERATE PROJECT</button>
+            <button onclick="Engine.ui.closeModal()" class="w-full mt-4 text-gray-500 hover:text-white py-2 text-xs">CANCEL</button>
+        </div>
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div id="modal-settings" class="modal-overlay">
+        <div class="modal-box">
+            <h2 class="text-2xl font-bold text-white mb-6">Studio Settings</h2>
+            <div class="mb-6">
+                <label class="text-xs text-gray-400 block mb-1">NARRATOR VOICE</label>
+                <select id="voice-select" class="w-full bg-black border border-white/10 rounded p-2 text-white text-sm" onchange="Engine.audio.setVoice(this.value)"></select>
+            </div>
+            <div class="mb-6">
+                <label class="text-xs text-gray-400 block mb-1">BACKGROUND MUSIC</label>
+                <select id="music-select" class="w-full bg-black border border-white/10 rounded p-2 text-white text-sm" onchange="Engine.audio.setTrack(this.value)">
+                    <option value="https://res.cloudinary.com/dmttn34te/video/upload/v1763064765/study-music-181044_jbuwpq.mp3">Cinematic Ambient</option>
+                    <option value="upload">Upload Custom...</option>
+                </select>
+                <input type="file" id="music-upload" hidden accept="audio/*" onchange="Engine.audio.handleUpload(this)">
+            </div>
+            <button onclick="Engine.ui.closeModal()" class="bg-white/10 w-full py-3 rounded-lg text-white font-bold">DONE</button>
+        </div>
+    </div>
+
+    <!-- CODE MODAL -->
+    <div id="modal-import" class="modal-overlay">
+        <div class="modal-box w-[900px]">
+            <h2 class="text-xl font-bold text-white mb-4">Project JSON Editor</h2>
+            <textarea id="json-editor" class="w-full h-[400px] bg-[#0d1117] text-green-400 font-mono text-xs p-4 rounded-lg border border-white/10 outline-none resize-none"></textarea>
+            <div class="mt-4 flex gap-3">
+                <button onclick="Engine.io.apply()" class="flex-1 bg-green-600 text-white font-bold py-3 rounded-lg">APPLY</button>
+                <button onclick="Engine.ui.closeModal()" class="px-6 py-3 text-gray-400 hover:text-white">CLOSE</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const Engine = {
+            data: null,
+            state: {
+                scene: 0,
+                step: 0,
+                paused: true,
+                voice: null
+            },
+            audioEl: new Audio(),
+            tts: window.speechSynthesis,
+
+            init: () => {
+                Engine.audioEl.loop = true;
+                Engine.audioEl.volume = 0.3;
+
+                // --- SYSTEM INITIALIZATION ---
+                const systemInit = () => {
+                    const voices = Engine.tts.getVoices();
+
+                    // 1. Settings Voice Dropdown
+                    const settingsSel = document.getElementById('voice-select');
+                    settingsSel.innerHTML = voices.map((v, i) => `<option value="${i}">${v.name} (${v.lang})</option>`).join('');
+
+                    // 2. AI Language Dropdown (Auto-Detect)
+                    const aiSel = document.getElementById('ai-lang');
+                    aiSel.innerHTML = '';
+                    const uniqueLangs = [...new Set(voices.map(v => v.lang))].sort();
+
+                    uniqueLangs.forEach(langCode => {
+                        const opt = document.createElement('option');
+                        opt.value = langCode;
+                        try {
+                            const readable = new Intl.DisplayNames([navigator.language], {
+                                type: 'language'
+                            }).of(langCode);
+                            opt.text = `${readable} (${langCode})`;
+                        } catch (e) {
+                            opt.text = langCode;
+                        }
+                        aiSel.appendChild(opt);
+                    });
+
+                    // 3. Set Defaults
+                    const defaultVoiceIdx = voices.findIndex(v => v.lang.startsWith('en'));
+                    Engine.state.voice = voices[defaultVoiceIdx > -1 ? defaultVoiceIdx : 0];
+                    settingsSel.value = defaultVoiceIdx > -1 ? defaultVoiceIdx : 0;
+
+                    const enLang = uniqueLangs.find(l => l.startsWith('en'));
+                    if (enLang) aiSel.value = enLang;
+                };
+
+                if (Engine.tts.getVoices().length > 0) systemInit();
+                else Engine.tts.onvoiceschanged = systemInit;
+
+                // Load Omni Demo
+                Engine.load(DEMO_DATA);
+            },
+
+            load: (json) => {
+                Engine.data = json;
+                Engine.state.scene = 0;
+                Engine.state.step = 0;
+                Engine.state.paused = true;
+                if (json.meta.audio) Engine.audioEl.src = json.meta.audio;
+                Engine.render(0);
+                Engine.loader.preload(1);
+                Engine.ui.update();
+            },
+
+            gfx: {
+                handleError: (img) => {
+                    const sceneIdx = parseInt(img.dataset.sceneIndex || 0);
+                    const attempt = parseInt(img.dataset.failCount || 0) + 1;
+                    img.dataset.failCount = attempt;
+
+                    // Stage 2: Backup SVG
+                    if (attempt === 1) {
+                        const scene = Engine.data.scenes[sceneIdx];
+                        if (scene.backup_svg) {
+                            const div = document.createElement('div');
+                            div.innerHTML = scene.backup_svg;
+                            div.className = "w-full h-full flex items-center justify-center bg-gray-900";
+                            img.replaceWith(div);
+                            return;
+                        }
+                    }
+                    // Stage 3: Random Fallback
+                    if (attempt <= 2) {
+                        img.src = `https://picsum.photos/seed/${sceneIdx}_abstract/1920/1080?grayscale&blur=2`;
+                        return;
+                    }
+                    // Stage 4: CSS Pattern
+                    img.style.display = 'none';
+                    img.parentElement.classList.add('bg-fallback-tech', 'bg-gray-900');
+                }
+            },
+
+            loader: {
+                preload: (nextIdx) => {
+                    for (let i = nextIdx; i < nextIdx + 2; i++) {
+                        if (Engine.data && Engine.data.scenes[i]) {
+                            const parser = new DOMParser();
+                            const doc = parser.parseFromString(Engine.data.scenes[i].html, 'text/html');
+                            doc.querySelectorAll('img').forEach(img => {
+                                const i = new Image();
+                                i.src = img.src;
+                            });
+                        }
+                    }
+                }
+            },
+
+            render: (idx) => {
+                if (!Engine.data.scenes[idx]) return;
+                const stage = document.getElementById('stage-content');
+                const scene = Engine.data.scenes[idx];
+
+                const layer = document.createElement('div');
+                layer.className = 'slide-layer bg-black';
+
+                // Inject HTML with Error Handler hook
+                let processedHTML = scene.html.replace(/<img /g, `<img data-scene-index="${idx}" onerror="Engine.gfx.handleError(this)" `);
+                layer.innerHTML = processedHTML;
+
+                stage.appendChild(layer);
+
+                if (scene.script) {
+                    setTimeout(() => {
+                        try {
+                            const fn = new Function('return ' + scene.script)();
+                            Engine.state.activeScript = fn({
+                                root: layer,
+                                chart: (id, cfg) => new Chart(layer.querySelector(id), cfg),
+                                map: (id, cfg) => L.map(layer.querySelector(id), cfg),
+                                p5: (sketch, id) => new p5(sketch, layer.querySelector(id)),
+                                window: window
+                            });
+                        } catch (e) {
+                            console.log(e);
+                        }
+                    }, 50);
+                }
+
+                requestAnimationFrame(() => {
+                    layer.classList.add('active');
+                    const old = stage.querySelectorAll('.slide-layer:not(:last-child)');
+                    old.forEach(l => {
+                        l.classList.remove('active');
+                        setTimeout(() => l.remove(), 800);
+                    });
+                });
+            },
+
+            playStep: () => {
+                if (Engine.state.paused) return;
+                const scene = Engine.data.scenes[Engine.state.scene];
+                const step = scene.steps[Engine.state.step];
+
+                if (step.actions) {
+                    step.actions.forEach(a => {
+                        const el = document.querySelector(a.target);
+                        if (el && a.type === 'reveal') el.classList.remove('opacity-0', 'translate-y-4', 'scale-90');
+                        if (el && a.type === 'highlight') el.classList.add('active');
+                        if (a.type === 'custom' && a.fn) a.fn();
+                        if (a.type === 'chart-update' && Engine.state.activeScript?.updateChart) Engine.state.activeScript.updateChart(a.value);
+                    });
+                }
+
+                Engine.tts.cancel();
+                const u = new SpeechSynthesisUtterance(step.narration);
+                u.voice = Engine.state.voice;
+                u.onend = () => {
+                    if (!Engine.state.paused) setTimeout(Engine.nextStep, 500);
+                };
+                Engine.tts.speak(u);
+            },
+
+            nextStep: () => {
+                if (Engine.state.paused) return;
+                const scene = Engine.data.scenes[Engine.state.scene];
+                if (Engine.state.step < scene.steps.length - 1) {
+                    Engine.state.step++;
+                    Engine.playStep();
+                } else if (Engine.state.scene < Engine.data.scenes.length - 1) {
+                    Engine.state.scene++;
+                    Engine.state.step = 0;
+                    Engine.render(Engine.state.scene);
+                    Engine.loader.preload(Engine.state.scene + 1);
+                    setTimeout(Engine.playStep, 1000);
+                } else {
+                    Engine.togglePlay();
+                }
+            },
+
+            togglePlay: () => {
+                Engine.state.paused = !Engine.state.paused;
+                const btn = document.getElementById('play-btn');
+                if (!Engine.state.paused) {
+                    btn.innerHTML = '<i class="bi bi-pause-fill"></i>';
+                    Engine.audioEl.play().catch(() => {});
+                    Engine.playStep();
+                } else {
+                    btn.innerHTML = '<i class="bi bi-play-fill"></i>';
+                    Engine.audioEl.pause();
+                    Engine.tts.cancel();
+                }
+            },
+
+            prev: () => {
+                if (Engine.state.scene > 0) {
+                    Engine.state.paused = true;
+                    Engine.state.scene--;
+                    Engine.state.step = 0;
+                    Engine.render(Engine.state.scene);
+                    Engine.ui.update();
+                }
+            },
+            next: () => {
+                if (Engine.state.scene < Engine.data.scenes.length - 1) {
+                    Engine.state.paused = true;
+                    Engine.state.scene++;
+                    Engine.state.step = 0;
+                    Engine.render(Engine.state.scene);
+                    Engine.loader.preload(Engine.state.scene + 1);
+                    Engine.ui.update();
+                }
+            },
+
+            ai: {
+                generate: async () => {
+                    const prompt = document.getElementById('ai-prompt').value;
+                    const langCode = document.getElementById('ai-lang').value;
+                    const style = document.getElementById('ai-style').value;
+                    const btn = document.getElementById('gen-btn');
+
+                    if (!prompt) return;
+                    btn.disabled = true;
+                    btn.innerText = "ARCHITECTING...";
+
+                    // Auto-Switch Voice to Match Language Selection
+                    const voices = Engine.tts.getVoices();
+                    const matchingVoice = voices.find(v => v.lang === langCode) || voices.find(v => v.lang.startsWith(langCode.split('-')[0]));
+                    if (matchingVoice) {
+                        Engine.state.voice = matchingVoice;
+                        const settingsSel = document.getElementById('voice-select');
+                        const idx = voices.indexOf(matchingVoice);
+                        if (idx > -1) settingsSel.value = idx;
+                    }
+
+                    const sys = `
+                        # ROLE: Elite Video Architect (v3.1)
+                        # TASK: Generate JSON for video topic: "${prompt}".
+                        # SETTINGS: Language=${langCode}, Style=${style}.
+                        # RULES:
+                        1. Structure: { meta: {...}, scenes: [ { type, html, backup_svg, script, steps: [...] } ] }.
+                        2. "html": Use Tailwind. Use <img src="UNSPLASH_URL">.
+                        3. "backup_svg": Provide an abstract <svg> string as backup for every image.
+                        4. "steps": Narrations MUST be in language code: ${langCode}.
+                        5. Output raw JSON only.
+                    `;
+
+                    try {
+                        const res = await puter.ai.chat(sys);
+                        const clean = res.message.content.replace(/```json|```/g, '').trim();
+                        Engine.load(JSON.parse(clean));
+                        Engine.ui.closeModal();
+                    } catch (e) {
+                        alert("AI Error");
+                    } finally {
+                        btn.disabled = false;
+                        btn.innerText = "GENERATE PROJECT";
+                    }
+                }
+            },
+
+            audio: {
+                setVoice: (idx) => Engine.state.voice = Engine.tts.getVoices()[idx],
+                setTrack: (url) => {
+                    if (url === 'upload') document.getElementById('music-upload').click();
+                    else Engine.audioEl.src = url;
+                },
+                handleUpload: (input) => {
+                    if (input.files[0]) Engine.audioEl.src = URL.createObjectURL(input.files[0]);
+                }
+            },
+
+            io: {
+                apply: () => {
+                    try {
+                        Engine.load(JSON.parse(document.getElementById('json-editor').value));
+                        Engine.ui.closeModal();
+                    } catch (e) {
+                        alert("Invalid JSON");
+                    }
+                }
+            },
+
+            ui: {
+                toggleMenu: () => {
+                    document.getElementById('system-menu').classList.toggle('open');
+                    document.getElementById('menu-btn').classList.toggle('active');
+                },
+                openModal: (id) => {
+                    document.getElementById('system-menu').classList.remove('open');
+                    document.getElementById('modal-' + id).classList.add('open');
+                    if (id === 'import') document.getElementById('json-editor').value = JSON.stringify(Engine.data, null, 2);
+                },
+                closeModal: () => document.querySelectorAll('.modal-overlay').forEach(e => e.classList.remove('open')),
+                toggleRatio: () => document.getElementById('stage-content').classList.toggle('portrait'),
+                toggleFullscreen: () => document.fullscreenElement ? document.exitFullscreen() : document.body.requestFullscreen(),
+                update: () => {
+                    document.getElementById('play-btn').innerHTML = Engine.state.paused ? '<i class="bi bi-play-fill"></i>' : '<i class="bi bi-pause-fill"></i>';
+                }
+            }
+        };
+
+        // --- OMNI-DEMO DATA (60 SCENES) ---
+        const DEMO_DATA = {
+            meta: {
+                title: "মেডিকেল মাইক্রোবায়োলজি: ইউনিট-১ (বাংলা লেকচার)",
+                audio: "https://res.cloudinary.com/dmttn34te/video/upload/v1763064765/study-music-181044_jbuwpq.mp3",
+                lang: "bn-IN"
+            },
+            scenes: [
+                // --- বিভাগ ১: ভূমিকা ---
+
+                // ১. লেকচার ওপেনার
+                {
+                    html: `<div class="w-full h-full bg-[#050505] flex flex-col items-center justify-center p-10 border-[20px] border-zinc-900">
+                <p class="text-primary font-mono tracking-[0.5em] mb-4">অ্যাকাডেমিক সেশন ২০২৫</p>
+                <h1 id="t1" class="opacity-0 translate-y-4 ts-huge font-black text-white italic transition-all duration-1000">MICROBIOLOGY</h1>
+                <div id="bar" class="w-0 h-1 bg-white my-6 transition-all duration-1000"></div>
+                <h2 id="t2" class="opacity-0 translate-y-4 ts-lg font-light text-gray-400 uppercase transition-all duration-1000">ইউনিট ১: সংক্রমণ ও মিথস্ক্রিয়া</h2>
+            </div>`,
+                    steps: [{
+                            narration: "সুপ্রভাত ছাত্রছাত্রীরা। আজ আমরা মেডিকেল মাইক্রোবায়োলজির প্রথম ইউনিট শুরু করতে যাচ্ছি।",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#t1'
+                            }]
+                        },
+                        {
+                            narration: "আজকের ক্লাসে আমরা আলোচনা করব অণুজীবরা কীভাবে আমাদের শরীরে বসবাস করে এবং সংক্রমণের বিভিন্ন ধাপগুলো কী কী।",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#t2'
+                            }, {
+                                type: 'custom',
+                                fn: () => document.getElementById('bar').style.width = '30%'
+                            }]
+                        }
+                    ]
+                },
+
+                // ২. নরমাল মাইক্রোফ্লোরা: সংজ্ঞা
+                {
+                    html: `<div class="w-full h-full flex bg-zinc-950">
+                <div class="w-1/2 p-16 flex flex-col justify-center">
+                    <h3 class="text-primary ts-base font-bold mb-4">মূল ধারণা</h3>
+                    <h2 class="text-white ts-lg font-black leading-tight mb-6">Normal Microflora</h2>
+                    <p class="text-gray-400 ts-base">যেসব অণুজীব সাধারণত সুস্থ মানুষের শরীরে <span id="m2" class="marker-swipe">স্থায়ীভাবে বসবাস করে</span> কিন্তু রোগ সৃষ্টি করে না, তাদের নরমাল মাইক্রোফ্লোরা বলে।</p>
+                </div>
+                <div class="w-1/2 relative bg-black">
+                    <img src="https://images.unsplash.com/photo-1579152276502-54243b85360f?q=80&w=2000" class="w-full h-full object-cover opacity-70">
+                </div>
+            </div>`,
+                    backup_svg: `<svg viewBox="0 0 100 100" class="bg-blue-900"><circle cx="50" cy="50" r="40" fill="none" stroke="white" stroke-dasharray="5"/></svg>`,
+                    steps: [{
+                        narration: "প্রথমে জেনে নেওয়া যাক নরমাল মাইক্রোফ্লোরা কী। এরা হলো সেই সব অণুজীব যারা আমাদের শরীরে কোনো ক্ষতি না করেই বসবাস করে।",
+                        actions: [{
+                            type: 'highlight',
+                            target: '#m2'
+                        }]
+                    }]
+                },
+
+                // ৩. শরীরের বিভিন্ন স্থানে অণুজীবের বিন্যাস (SVG)
+                {
+                    html: `<div class="w-full h-full bg-black flex items-center justify-center p-10">
+                <div class="w-1/2 h-full flex flex-col justify-center gap-4">
+                    <div id="s1" class="opacity-0 p-4 bg-zinc-900 border-l-4 border-blue-500 text-white font-bold">ত্বক: Staph. epidermidis</div>
+                    <div id="s2" class="opacity-0 p-4 bg-zinc-900 border-l-4 border-green-500 text-white font-bold">অন্ত্র: E. coli, Bacteroides</div>
+                    <div id="s3" class="opacity-0 p-4 bg-zinc-900 border-l-4 border-purple-500 text-white font-bold">গলা: Streptococci</div>
+                </div>
+                <div class="w-1/2 flex items-center justify-center">
+                    <svg viewBox="0 0 100 150" class="h-[80%] fill-none stroke-white stroke-1">
+                        <path d="M50,10 Q60,10 60,30 L60,120 Q60,140 50,140 T40,120 L40,30 Q40,10 50,10" />
+                        <circle cx="50" cy="20" r="8" />
+                    </svg>
+                </div>
+            </div>`,
+                    steps: [{
+                            narration: "শরীরের বিভিন্ন স্থানে আলাদা আলাদা অণুজীব থাকে। যেমন ত্বকে থাকে স্ট্যাফাইলোকক্কাস এপিডারমিডিস।",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#s1'
+                            }]
+                        },
+                        {
+                            narration: "আবার আমাদের অন্ত্রে থাকে ই-কোলাই এবং গলাতে থাকে স্ট্রেপ্টোকক্কাস প্রজাতি।",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#s2'
+                            }, {
+                                type: 'reveal',
+                                target: '#s3'
+                            }]
+                        }
+                    ]
+                },
+
+                // ৪. অন্ত্রের অণুজীবের ঘনত্ব (Chart.js)
+                {
+                    html: `<div class="w-full h-full bg-zinc-900 p-12 flex flex-col">
+                <h2 class="text-white ts-base font-bold mb-4">অন্ত্রে ব্যাকটেরিয়ার ঘনত্ব (log10)</h2>
+                <div class="flex-1"><canvas id="ch-gut"></canvas></div>
+            </div>`,
+                    script: `(ctx) => {
+                ctx.chart('#ch-gut', {
+                    type: 'bar',
+                    data: { labels: ['পাকস্থলী', 'ডিউডেনাম', 'ইলিয়াম', 'কোলন'], datasets: [{ data: [3, 4, 8, 12], backgroundColor: '#10b981' }] },
+                    options: { scales: { y: { beginAtZero: true, title: { display: true, text: 'ব্যাকটেরিয়া প্রতি গ্রাম', color: '#fff' } } } }
+                });
+            }`,
+                    steps: [{
+                        narration: "লক্ষ্য করো, কোলন বা মলাশয়ে ব্যাকটেরিয়ার ঘনত্ব সবথেকে বেশি থাকে, যা প্রতি গ্রামে প্রায় ১০ টু দ্য পাওয়ার ১২ পর্যন্ত হতে পারে।",
+                        actions: []
+                    }]
+                },
+
+                // --- বিভাগ ২: রোগসৃষ্টির প্রক্রিয়া ---
+
+                // ৫. টার্মিনোলজি: প্যাথোজিনিসিটি বনাম ভিরুলেন্স
+                {
+                    html: `<div class="w-full h-full bg-black p-20 flex flex-col justify-center">
+                <h2 class="text-primary ts-lg font-black italic mb-10">গুরুত্বপূর্ণ সংজ্ঞা</h2>
+                <div class="space-y-6">
+                    <div id="def1" class="opacity-0 ts-base text-white border-b border-white/10 pb-4"><b>Pathogenicity:</b> রোগ সৃষ্টি করার গুণগত ক্ষমতা।</div>
+                    <div id="def2" class="opacity-0 ts-base text-white border-b border-white/10 pb-4"><b>Virulence:</b> রোগের তীব্রতা মাপার পরিমাণগত একক।</div>
+                    <div id="def3" class="opacity-0 ts-base text-white"><b>Infection:</b> শরীরে প্যাথোজেনের প্রবেশ ও সংখ্যাবৃদ্ধি।</div>
+                </div>
+            </div>`,
+                    steps: [{
+                            narration: "পরীক্ষার জন্য এই সংজ্ঞাগুলো খুব গুরুত্বপূর্ণ। প্যাথোজিনিসিটি হলো রোগ সৃষ্টির ক্ষমতা।",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#def1'
+                            }]
+                        },
+                        {
+                            narration: "আর ভিরুলেন্স বলতে বোঝায় সেই রোগের তীব্রতা কতটা বেশি।",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#def2'
+                            }, {
+                                type: 'reveal',
+                                target: '#def3'
+                            }]
+                        }
+                    ]
+                },
+
+                // ৬. এক্সোটক্সিন বনাম এন্ডোটক্সিন
+                {
+                    html: `<div class="w-full h-full flex bg-[#050505]">
+                <div class="w-1/2 p-10 border-r border-white/10">
+                    <h3 class="text-blue-400 ts-base font-bold">Exotoxins</h3>
+                    <p class="text-gray-400 ts-sm mt-4">জীবন্ত ব্যাকটেরিয়া থেকে নিঃসৃত হয়। প্রধানত গ্রাম-পজিটিভ। অত্যন্ত বিষাক্ত।</p>
+                </div>
+                <div class="w-1/2 p-10">
+                    <h3 class="text-red-400 ts-base font-bold">Endotoxins (LPS)</h3>
+                    <p class="text-gray-400 ts-sm mt-4">ব্যাকটেরিয়ার কোষ প্রাচীরের অংশ। গ্রাম-নেগেটিভ। ব্যাকটেরিয়া মারা গেলে নির্গত হয়।</p>
+                </div>
+            </div>`,
+                    steps: [{
+                        narration: "টক্সিন দুই ধরণের হতে পারে। জীবন্ত ব্যাকটেরিয়া থেকে নির্গত হলে তা এক্সোটক্সিন, আর কোষ প্রাচীর থেকে এলে তা এন্ডোটক্সিন।",
+                        actions: []
+                    }]
+                },
+
+                // ৭. এন্ডোটক্সিন বা এল.পি.এস শক (Cascade)
+                {
+                    html: `<div class="w-full h-full bg-red-950/20 flex flex-col items-center justify-center p-10">
+                <h2 class="text-red-500 ts-lg font-black mb-10">এল.পি.এস শক প্রসেস</h2>
+                <div class="flex gap-8 items-center text-white">
+                    <div class="p-4 bg-red-600 rounded-lg">LPS নির্গমন</div>
+                    <div>→</div>
+                    <div class="p-4 bg-red-700 rounded-lg">সাইটোকাইন নিঃসরণ</div>
+                    <div>→</div>
+                    <div id="shock" class="opacity-0 p-8 bg-black border-4 border-red-500 text-red-500 font-black">SEPTIC SHOCK</div>
+                </div>
+            </div>`,
+                    steps: [{
+                            narration: "গ্রাম-নেগেটিভ ব্যাকটেরিয়া মারা গেলে এল.পি.এস নির্গত হয়, যা শরীরে তীব্র প্রতিক্রিয়া সৃষ্টি করে।",
+                            actions: []
+                        },
+                        {
+                            narration: "এর ফলে রক্তচাপ কমে যায় এবং রোগী সেপ্টিক শকে চলে যেতে পারে।",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#shock'
+                            }]
+                        }
+                    ]
+                },
+
+                // --- বিভাগ ৩: সংক্রমণ বিস্তার ---
+
+                // ৮. সংক্রমণের পথসমূহ
+                {
+                    html: `<div class="w-full h-full bg-zinc-900 p-12">
+                <h2 class="text-white ts-lg font-black mb-8">সংক্রমণের বিস্তার</h2>
+                <div class="grid grid-cols-3 gap-6">
+                    <div id="route1" class="opacity-0 aspect-square bg-black border border-white/10 flex flex-col items-center justify-center p-4">
+                        <i class="bi bi-people-fill text-4xl text-blue-500 mb-2"></i>
+                        <p class="text-xs">সরাসরি সংস্পর্শ</p>
+                    </div>
+                    <div id="route2" class="opacity-0 aspect-square bg-black border border-white/10 flex flex-col items-center justify-center p-4">
+                        <i class="bi bi-wind text-4xl text-green-500 mb-2"></i>
+                        <p class="text-xs">বাতাস বা ড্রপলেট</p>
+                    </div>
+                    <div id="route3" class="opacity-0 aspect-square bg-black border border-white/10 flex flex-col items-center justify-center p-4">
+                        <i class="bi bi-bug-fill text-4xl text-red-500 mb-2"></i>
+                        <p class="text-xs">ভেক্টর (মশা/মাছি)</p>
+                    </div>
+                </div>
+            </div>`,
+                    steps: [{
+                            narration: "সংক্রমণ বিভিন্নভাবে ছড়াতে পারে। সরাসরি স্পর্শের মাধ্যমে বা বাতাসের ড্রপলেটের মাধ্যমে রোগ বিস্তার লাভ করে।",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#route1'
+                            }]
+                        },
+                        {
+                            narration: "আবার মশা বা মাছির মতো ভেক্টরও রোগ ছড়াতে বড় ভূমিকা পালন করে।",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#route2'
+                            }, {
+                                type: 'reveal',
+                                target: '#route3'
+                            }]
+                        }
+                    ]
+                },
+
+                // ৯. ড্রপলেট বনাম অ্যারোসল (p5.js)
+                {
+                    html: `<div id="p5-air" class="w-full h-full bg-[#050505]"></div>
+                   <div class="absolute top-10 right-10 p-6 bg-black/80 border border-white/10 rounded-xl">
+                        <h4 class="text-white font-bold">ড্রপলেট ডায়নামিক্স</h4>
+                        <p class="text-gray-500 text-xs">ছোট কণা বাতাসে ভেসে থাকে।</p>
+                   </div>`,
+                    script: `(ctx) => {
+                new p5((p) => {
+                    let particles = [];
+                    p.setup = () => { p.createCanvas(ctx.root.offsetWidth, ctx.root.offsetHeight); };
+                    p.draw = () => {
+                        p.background(0, 50);
+                        if(p.frameCount % 2 === 0) particles.push({x: 50, y: p.height/2, vx: p.random(2, 8), vy: p.random(-1, 1), sz: p.random(1, 10)});
+                        particles.forEach((pt, i) => {
+                            p.fill(200); p.noStroke(); p.ellipse(pt.x, pt.y, pt.sz);
+                            pt.x += pt.vx; pt.y += pt.vy; pt.vy += (pt.sz * 0.05);
+                            if(pt.x > p.width || pt.y > p.height) particles.splice(i, 1);
+                        });
+                    };
+                }, ctx.root.querySelector('#p5-air'));
+            }`,
+                    steps: [{
+                        narration: "ভারী ড্রপলেটগুলো দ্রুত মাটিতে পড়ে যায়, কিন্তু ছোট অ্যারোসল কণা বাতাসে কয়েক ঘণ্টা ভেসে থাকতে পারে।",
+                        actions: []
+                    }]
+                },
+
+                // --- বিভাগ ৪: হাসপাতালে সংক্রমণ (Nosocomial) ---
+
+                // ১০. নসোকোমিয়াল ইনফেকশন: সংজ্ঞা
+                {
+                    html: `<div class="w-full h-full relative">
+                <img src="https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=2000" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-black/60 flex flex-col items-center justify-center p-10">
+                    <h2 class="text-white ts-xl font-black italic mb-4">NOSOCOMIAL</h2>
+                    <p class="text-blue-400 ts-base font-mono">ভর্তির ৪৮ ঘণ্টা পর অর্জিত সংক্রমণ।</p>
+                </div>
+            </div>`,
+                    backup_svg: `<svg viewBox="0 0 100 100" class="bg-red-900"><rect x="40" y="20" width="20" height="60" fill="white"/><rect x="20" y="40" width="60" height="20" fill="white"/></svg>`,
+                    steps: [{
+                        narration: "নসোকোমিয়াল ইনফেকশন হলো সেই সংক্রমণ যা একজন রোগী হাসপাতালে ভর্তির ৪৮ ঘণ্টা পর অর্জন করেন।",
+                        actions: []
+                    }]
+                },
+
+                // ১১. কেস স্টাডি: ক্লিবসিয়েলা (২০২৪)
+                {
+                    html: `<div class="w-full h-full bg-[#f8fafc] p-16 flex items-center justify-center">
+                <div class="max-w-4xl bg-white shadow-2xl p-12 border-t-[16px] border-blue-600">
+                    <p class="text-blue-600 font-bold tracking-widest text-sm mb-4">গবেষণা সংবাদ | ২০২৪</p>
+                    <h2 class="text-slate-900 ts-lg font-black leading-tight mb-6">ক্লিবসিয়েলা সংক্রমণের নতুন কারণ</h2>
+                    <p class="text-slate-600 ts-base">"গবেষকরা দেখেছেন কীভাবে ক্লিবসিয়েলা ব্যাকটেরিয়া হাসপাতালের পরিবেশে টিকে থাকার জন্য নতুন কৌশল অবলম্বন করছে।"</p>
+                </div>
+            </div>`,
+                    steps: [{
+                        narration: "২০২৪ সালের একটি গবেষণায় দেখা গেছে, ক্লিবসিয়েলা ব্যাকটেরিয়া হাসপাতালের চিকিৎসার সরঞ্জাম ব্যবহার করে দ্রুত ছড়িয়ে পড়ছে।",
+                        actions: []
+                    }]
+                },
+
+                // ১২. ক্যাথিটারে বায়োফিল্ম (p5.js)
+                {
+                    html: `<div id="p5-biofilm" class="w-full h-full bg-[#111]"></div>
+                   <div class="absolute bottom-10 left-10"><h3 class="text-white ts-lg font-bold">বায়োফিল্ম তৈরি</h3></div>`,
+                    script: `(ctx) => {
+                new p5((p) => {
+                    let cells = [];
+                    p.setup = () => { p.createCanvas(ctx.root.offsetWidth, ctx.root.offsetHeight); };
+                    p.draw = () => {
+                        p.background(10); p.stroke(255, 50); p.line(0, p.height/2, p.width, p.height/2);
+                        if(p.frameCount % 20 === 0) cells.push({x: p.random(p.width), y: p.height/2, r: 5});
+                        cells.forEach(c => {
+                            p.fill(16, 185, 129); p.ellipse(c.x, c.y, c.r);
+                            if(c.r < 40) c.r += 0.2;
+                        });
+                    };
+                }, ctx.root.querySelector('#p5-biofilm'));
+            }`,
+                    steps: [{
+                        narration: "অণুজীবরা ক্যাথিটারের গায়ে বায়োফিল্ম তৈরি করে, যা তাদের অ্যান্টিবায়োটিকের হাত থেকে রক্ষা করে।",
+                        actions: []
+                    }]
+                },
+
+                // --- বিভাগ ৫: ক্লিনিক্যাল স্যাম্পল হ্যান্ডলিং ---
+
+                // ১৩. স্যাম্পল সংগ্রহের মূলনীতি
+                {
+                    html: `<div class="w-full h-full bg-[#0d1117] p-12 flex flex-col justify-center">
+                <h2 class="text-primary ts-lg font-black mb-8">Clinical Sample Handling</h2>
+                <div class="grid grid-cols-2 gap-4 text-white">
+                    <div class="p-4 bg-zinc-900 border border-white/10 rounded-xl">১. অ্যাসেপটিক টেকনিক</div>
+                    <div class="p-4 bg-zinc-900 border border-white/10 rounded-xl">২. সঠিক স্থান থেকে সংগ্রহ</div>
+                    <div class="p-4 bg-zinc-900 border border-white/10 rounded-xl">৩. পর্যাপ্ত পরিমাণ</div>
+                    <div class="p-4 bg-zinc-900 border border-white/10 rounded-xl">৪. দ্রুত পরিবহন</div>
+                </div>
+            </div>`,
+                    steps: [{
+                        narration: "মাইক্রোবায়োলজির সোনালী নিয়ম হলো: রিপোর্টের মান নির্ভর করে স্যাম্পলের মানের ওপর।",
+                        actions: []
+                    }]
+                },
+
+                // ১৪. ব্লাড কালচার প্রোটোকল
+                {
+                    html: `<div class="w-full h-full bg-black flex p-10 gap-10">
+                <div class="w-1/2 flex flex-col justify-center">
+                    <h3 class="text-red-500 font-bold mb-4">ধাপে ধাপে</h3>
+                    <h2 class="text-white ts-lg font-black">Blood Culture</h2>
+                    <p class="text-gray-400 mt-4">অ্যান্টিবায়োটিক শুরু করার আগে স্যাম্পল সংগ্রহ করা উচিত। সাধারণত ১০ থেকে ২০ মিলি রক্ত প্রয়োজন।</p>
+                </div>
+                <div class="w-1/2">
+                    <img src="https://images.unsplash.com/photo-1579152276502-54243b85360f?q=80&w=2000" class="w-full h-full object-cover rounded-3xl">
+                </div>
+            </div>`,
+                    steps: [{
+                        narration: "ব্লাড কালচারের ক্ষেত্রে সঠিক সময় এবং অ্যাসেপটিক পদ্ধতি বজায় রাখা অত্যন্ত জরুরি।",
+                        actions: []
+                    }]
+                },
+
+                // ১৫. ট্রান্সপোর্ট মিডিয়া: ক্যারি-ব্লেয়ার ও স্টুয়ার্ট
+                {
+                    html: `<div class="w-full h-full bg-zinc-950 flex flex-col items-center justify-center p-20">
+                <div class="w-full max-w-2xl bg-zinc-900 border border-white/10 p-10 rounded-3xl">
+                    <h3 class="text-white ts-base font-bold mb-6">ট্রান্সপোর্ট মিডিয়া</h3>
+                    <ul class="space-y-4 text-blue-400 font-mono italic">
+                        <li>>> Cary-Blair: মলের স্যাম্পলের জন্য</li>
+                        <li>>> Amies: সোয়াব স্যাম্পলের জন্য</li>
+                        <li>>> Stuart's: সাধারণ ব্যবহারের জন্য</li>
+                    </ul>
+                </div>
+            </div>`,
+                    steps: [{
+                        narration: "যদি ল্যাব দূরে হয়, তবে প্যাথোজেনগুলোকে বাঁচিয়ে রাখার জন্য আমরা ট্রান্সপোর্ট মিডিয়া ব্যবহার করি।",
+                        actions: []
+                    }]
+                },
+
+                // --- বিভাগ ৬: বর্তমান চ্যালেঞ্জ ---
+
+                // ১৬. অ্যান্টিমাইক্রোবিয়াল রেজিস্ট্যান্স (AMR) ম্যাপ
+                {
+                    html: `<div id="map-amr" class="w-full h-full z-0"></div>
+                   <div class="absolute bottom-10 left-10 z-[500] bg-red-950 border border-red-500 p-6 rounded-xl">
+                        <h3 class="text-white font-bold">AMR হটস্পট</h3>
+                        <p class="text-white/70 text-xs">সারা বিশ্বে রেজিস্ট্যান্স বাড়ছে।</p>
+                   </div>`,
+                    script: `(ctx) => {
+                const map = ctx.map('#map-amr', {zoomControl:false}).setView([22.9868, 87.8550], 5);
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{y}/{x}{r}.png').addTo(map);
+                L.circleMarker([22.5726, 88.3639], {color: 'red', radius: 10}).addTo(map);
+            }`,
+                    steps: [{
+                        narration: "বিশেষজ্ঞরা সতর্ক করেছেন যে ড্রাগ রেজিস্ট্যান্স এখন একটি বড় হুমকি। সঠিক স্যাম্পল হ্যান্ডলিং এর বিরুদ্ধে লড়াইয়ের প্রথম ধাপ।",
+                        actions: []
+                    }]
+                },
+
+                // ১৭. সারসংক্ষেপ: সংক্রমণের চেইন
+                {
+                    html: `<div class="w-full h-full bg-black flex flex-col items-center justify-center p-10 text-center text-white">
+                <h1 class="ts-lg font-black mb-10">ইউনিট-১ সারসংক্ষেপ</h1>
+                <div class="flex gap-4">
+                    <div class="p-6 bg-zinc-800 rounded-lg">অণুজীব শনাক্তকরণ</div>
+                    <div class="p-6 bg-zinc-800 rounded-lg">মিথস্ক্রিয়া বিশ্লেষণ</div>
+                    <div class="p-6 bg-zinc-800 rounded-lg">প্রোটোকল পালন</div>
+                </div>
+            </div>`,
+                    steps: [{
+                        narration: "আমরা আজ আলোচনা করলাম শরীরের নিজস্ব অণুজীব এবং প্যাথোজেনের সাথে লড়াইয়ের বিভিন্ন দিক।",
+                        actions: []
+                    }]
+                },
+
+                // ১৮. পরীক্ষার প্রস্তুতি
+                {
+                    html: `<div class="w-full h-full bg-zinc-900 p-16 flex flex-col justify-center text-white">
+                <h2 class="text-primary ts-base font-bold mb-6">পরীক্ষার জন্য গুরুত্বপূর্ণ প্রশ্ন</h2>
+                <ul class="space-y-4 ts-base">
+                    <li>১. সিমবায়োসিস এবং কমেনসালিজম কী?</li>
+                    <li>২. এক্সোটক্সিন ও এন্ডোটক্সিনের পার্থক্য লেখ।</li>
+                    <li>৩. স্যাম্পল সংগ্রহের ৪টি মূলনীতি কী কী?</li>
+                    <li>৪. এল.পি.এস সেপ্টিক শক কীভাবে তৈরি করে?</li>
+                </ul>
+            </div>`,
+                    steps: [{
+                        narration: "এই চারটি প্রশ্ন পরীক্ষার জন্য খুব ভালো করে তৈরি করবে। এগুলো প্রায়ই পেশাদার পরীক্ষায় আসে।",
+                        actions: []
+                    }]
+                },
+
+                // ১৯. অনুপ্রেরণামূলক উক্তি
+                {
+                    html: `<div class="w-full h-full bg-black flex items-center justify-center p-20 text-center">
+                <p class="text-gray-400 ts-lg font-serif italic">"অদৃশ্য অণুজীবের জগতকে বোঝার মাধ্যমেই আমরা অদৃশ্য শত্রুকে জয় করতে পারি।"</p>
+            </div>`,
+                    steps: [{
+                        narration: "মনে রেখো, সবথেকে বড় শত্রু তারাই যাদের আমরা খালি চোখে দেখতে পাই না।",
+                        actions: []
+                    }]
+                },
+
+                // ২০. লেকচারের সমাপ্তি
+                {
+                    html: `<div class="w-full h-full bg-black flex flex-col items-center justify-center p-10">
+                <h1 id="end" class="opacity-0 ts-xl font-black text-white italic tracking-tighter transition-all duration-1000">LECTURE END</h1>
+                <div class="w-24 h-1 bg-primary my-6"></div>
+                <p class="text-gray-500 font-mono text-xs uppercase tracking-widest">Medical Microbiology Series</p>
+            </div>`,
+                    steps: [{
+                        narration: "আজকের লেকচার এখানেই শেষ। ধন্যবাদ মনোযোগ দিয়ে শোনার জন্য।",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#end'
+                        }]
+                    }]
+                }
+            ]
+        };
+        window.onload = Engine.init;
+    </script>
+</body>
+
+</html>
