@@ -1,0 +1,1540 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Auto-Video</title>
+    <script src="https://js.puter.com/v2/"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-venn@4.3.1/build/index.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist@2.27.0/plotly.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Inter:wght@300;400;600;800&family=Lato:wght@300;400;700&family=Playfair+Display:wght@700&family=Roboto+Mono:wght@400;700&family=Architects+Daughter&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #050505;
+            --text-color: #ffffff;
+            --primary: #6366f1;
+            --accent: #06b6d4;
+            --font-head: 'Inter', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            --font-code: 'Roboto Mono', monospace;
+            --font-quote: 'Playfair Display', serif;
+            --font-hand: 'Architects Daughter', cursive;
+            --glass: rgba(10, 10, 12, 0.9);
+            --border: rgba(255, 255, 255, 0.08);
+            --radius: 12px;
+            --easing: cubic-bezier(0.2, 0.8, 0.2, 1);
+            --bar-height: 55px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            color: var(--text-color);
+            font-family: var(--font-body);
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .stage-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: var(--bar-height);
+            background: #000;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .video-stage {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+            background: var(--bg-color);
+        }
+
+        .stage-bg {
+            position: absolute;
+            inset: -50px;
+            z-index: 0;
+            background-size: cover;
+            background-position: center;
+            filter: blur(20px) brightness(0.3);
+            opacity: 1;
+            transition: background-image 1s ease-in-out;
+            animation: slowPan 60s infinite alternate linear;
+        }
+
+        .stage-overlay {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at center, transparent 0%, #000 120%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .scene-layer {
+            position: absolute;
+            inset: 0;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transform: scale(1.02);
+            filter: blur(8px);
+            transition: opacity 0.6s var(--easing), transform 0.6s var(--easing), filter 0.6s var(--easing);
+            padding: 4vw;
+        }
+
+        .scene-layer.active {
+            opacity: 1;
+            transform: scale(1);
+            filter: blur(0);
+        }
+
+        .ui-layer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: var(--bar-height);
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            z-index: 1000;
+            box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .progress-line-container {
+            position: absolute;
+            top: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+
+        .progress-line {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            width: 0%;
+            transition: width 0.3s linear;
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            color: #94a3b8;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: #4f46e5;
+            box-shadow: 0 0 25px rgba(99, 102, 241, 0.5);
+        }
+
+        .dropup-container {
+            position: relative;
+        }
+
+        .dropup-menu {
+            position: absolute;
+            bottom: 50px;
+            left: 0;
+            width: 220px;
+            background: #0f172a;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 5px;
+            display: none;
+            flex-direction: column;
+            gap: 2px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            animation: slideUp 0.2s var(--easing);
+        }
+
+        .dropup-menu.show {
+            display: flex;
+        }
+
+        .menu-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            color: #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            transition: 0.2s;
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 5000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .modal.open {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-box {
+            width: 500px;
+            max-width: 90%;
+            background: #0f172a;
+            border: 1px solid var(--border);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            transform: translateY(20px);
+            transition: transform 0.3s var(--easing);
+        }
+
+        .modal.open .modal-box {
+            transform: translateY(0);
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: #fff;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-family: inherit;
+            font-size: 0.95rem;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--primary);
+        }
+
+        #toast-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 6000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(10px);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 50px;
+            animation: slideDown 0.4s var(--easing);
+            border: 1px solid var(--border);
+            font-size: 0.9rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .comp-title {
+            text-align: center;
+        }
+
+        .comp-title h1 {
+            font-size: 5vw;
+            font-weight: 900;
+            margin-bottom: 1.5vh;
+            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: -0.02em;
+            filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.1));
+        }
+
+        .comp-title h2 {
+            font-size: 2vw;
+            font-weight: 300;
+            color: var(--accent);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            opacity: 0.9;
+        }
+
+        .comp-bullets {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5vh;
+        }
+
+        .bullet-item {
+            font-size: 2vw;
+            padding: 2vh 2.5vw;
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 4px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0 12px 12px 0;
+            transition: all 0.5s var(--easing);
+            opacity: 0.4;
+            transform: translateX(0);
+        }
+
+        .bullet-item.active {
+            opacity: 1;
+            transform: translateX(20px);
+            border-left-color: var(--accent);
+            background: linear-gradient(90deg, rgba(99, 102, 241, 0.1), transparent);
+            color: #fff;
+            text-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .comp-img-layout {
+            display: flex;
+            width: 100%;
+            height: 80%;
+            gap: 4vw;
+            align-items: center;
+        }
+
+        .img-frame {
+            flex: 1.3;
+            height: 100%;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            background: #000;
+        }
+
+        .img-frame img,
+        .img-frame video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+        }
+
+        .img-frame img.loaded,
+        .img-frame video {
+            opacity: 1;
+        }
+
+        .img-text {
+            flex: 0.7;
+            opacity: 0;
+            animation: fadeUp 0.8s forwards 0.3s;
+        }
+
+        .img-text h2 {
+            font-size: 3.5vw;
+            color: var(--primary);
+            margin-bottom: 2vh;
+            font-weight: 800;
+            line-height: 1.1;
+        }
+
+        .img-text p {
+            font-size: 1.4vw;
+            line-height: 1.6;
+            color: #cbd5e1;
+        }
+
+        .comp-timeline {
+            width: 100%;
+            overflow-x: auto;
+            padding: 40px 0;
+            scroll-behavior: smooth;
+        }
+
+        .comp-timeline::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .comp-timeline::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 2px;
+        }
+
+        .tl-track {
+            display: flex;
+            gap: 60px;
+            padding: 0 4vw;
+            min-width: max-content;
+            position: relative;
+            margin-top: 40px;
+        }
+
+        .tl-track::before {
+            content: '';
+            position: absolute;
+            left: 4vw;
+            right: 4vw;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: -1;
+        }
+
+        .tl-item {
+            min-width: 300px;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            transition: 0.5s var(--easing);
+            opacity: 0.5;
+            transform: scale(0.9);
+        }
+
+        .tl-item.active {
+            opacity: 1;
+            border-color: var(--accent);
+            transform: scale(1.05);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            z-index: 2;
+        }
+
+        .tl-year {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .comp-table {
+            width: 100%;
+            max-width: 1100px;
+            border-collapse: separate;
+            border-spacing: 0 10px;
+        }
+
+        .comp-table th {
+            color: var(--accent);
+            text-align: left;
+            padding: 20px;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .comp-table td {
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            font-size: 1.2rem;
+            border-radius: 0;
+        }
+
+        .comp-table tr td:first-child {
+            border-radius: 8px 0 0 8px;
+        }
+
+        .comp-table tr td:last-child {
+            border-radius: 0 8px 8px 0;
+        }
+
+        .comp-table tr {
+            transition: 0.3s;
+        }
+
+        .comp-table tr.active td {
+            background: rgba(99, 102, 241, 0.15);
+            color: #fff;
+            transform: scale(1.02);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .comp-split {
+            display: flex;
+            width: 100%;
+            height: 75%;
+            gap: 4vw;
+        }
+
+        .split-col {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 3vw;
+            display: flex;
+            flex-direction: column;
+            transition: 0.5s;
+            opacity: 0.5;
+            transform: translateY(20px);
+        }
+
+        .split-col.active {
+            opacity: 1;
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(0);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent);
+        }
+
+        .split-head {
+            font-size: 2vw;
+            font-weight: 700;
+            margin-bottom: 3vh;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .comp-code {
+            width: 90%;
+            max-width: 900px;
+            background: #0d1117;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            font-family: var(--font-code);
+        }
+
+        .comp-quote {
+            text-align: center;
+            max-width: 85%;
+        }
+
+        .comp-quote h1 {
+            font-family: var(--font-quote);
+            font-size: 4.5vw;
+            line-height: 1.2;
+            color: #e2e8f0;
+            text-shadow: 0 5px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .comp-quote h3 {
+            margin-top: 3vh;
+            color: var(--primary);
+            font-size: 1.5vw;
+            font-weight: 400;
+            letter-spacing: 2px;
+        }
+
+        .comp-chart-wrap {
+            width: 95%;
+            max-width: 1200px;
+            height: 75vh;
+            padding: 20px;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chart-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 15px;
+            background: var(--primary);
+            padding: 5px 15px;
+            border-radius: 6px;
+            align-self: flex-start;
+        }
+
+        .quiz-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            width: 100%;
+            max-width: 900px;
+            margin-top: 40px;
+        }
+
+        .quiz-btn {
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            color: #cbd5e1;
+            font-size: 1.3rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 12px;
+            transition: 0.2s;
+        }
+
+        .quiz-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary);
+            color: #fff;
+            transform: translateY(-3px);
+        }
+
+        .quiz-btn.correct {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: #10b981;
+            color: #10b981;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+        }
+
+        .quiz-btn.wrong {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: #ef4444;
+            opacity: 0.5;
+        }
+
+        .comp-concept {
+            width: 90%;
+            height: 85%;
+            background: #fdfdfd;
+            border-radius: 8px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #111;
+            font-family: var(--font-hand);
+        }
+
+        .wb-grid {
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(#ccc 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.5;
+        }
+
+        .wb-content {
+            z-index: 2;
+            text-align: center;
+            opacity: 0;
+            animation: fadeIn 1s forwards;
+            position: absolute;
+            bottom: 50px;
+            width: 100%;
+            font-size: 2rem;
+        }
+
+        .wb-sketch {
+            stroke-dasharray: 2000;
+            stroke-dashoffset: 2000;
+            animation: drawStroke 4s ease forwards;
+            filter: drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.1));
+        }
+
+        @keyframes slowPan {
+            0% {
+                transform: scale(1);
+            }
+
+            100% {
+                transform: scale(1.1);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes drawStroke {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="stage-wrapper">
+        <audio id="bg-music" loop></audio>
+        <div class="video-stage">
+            <div id="stage-bg" class="stage-bg"></div>
+            <div class="stage-overlay"></div>
+            <div id="scene-layer" class="scene-layer"></div>
+        </div>
+    </div>
+    <div class="ui-layer">
+        <div class="progress-line-container">
+            <div id="progress-line" class="progress-line"></div>
+        </div>
+        <div class="control-group">
+            <div class="dropup-container">
+                <button class="btn" onclick="app.toggleMenu()"><i class="bi bi-list"></i></button>
+                <div class="dropup-menu" id="main-menu">
+                    <div class="menu-item" onclick="app.openModal('ai')"><i class="bi bi-robot"></i> AI Architect</div>
+                    <div class="menu-item" onclick="app.save()"><i class="bi bi-download"></i> Save Project</div>
+                    <label class="menu-item"><i class="bi bi-folder2-open"></i> Load JSON <input type="file" hidden accept=".json" onchange="app.load(this)"></label>
+                    <label class="menu-item"><i class="bi bi-music-note-beamed"></i> Upload Music <input type="file" hidden accept="audio/*" onchange="app.uploadMusic(this)"></label>
+                </div>
+            </div>
+        </div>
+        <div class="control-group">
+            <button class="btn" onclick="app.prev()"><i class="bi bi-chevron-left"></i></button>
+            <button class="btn btn-primary" id="play-btn" onclick="app.togglePlay()"><i class="bi bi-play-fill" style="font-size:1.2rem;"></i></button>
+            <button class="btn" onclick="app.next()"><i class="bi bi-chevron-right"></i></button>
+        </div>
+        <div class="control-group">
+            <button class="btn" onclick="app.toggleMute()"><i class="bi bi-volume-up" id="mute-icon"></i></button>
+            <button class="btn" onclick="document.body.requestFullscreen()"><i class="bi bi-arrows-fullscreen"></i></button>
+        </div>
+    </div>
+    <div id="modal-ai" class="modal">
+        <div class="modal-box">
+            <h2 style="color:var(--primary); margin-bottom:15px; font-weight:800;">AI ARCHITECT</h2>
+            <textarea id="ai-prompt" placeholder="Topic: History of Space Exploration..." style="height:100px; resize:none;"></textarea>
+            <select id="ai-lang-select" style="margin-bottom:20px;"></select>
+            <div id="ai-loader" style="display:none; text-align:center; color:var(--accent); margin-bottom:15px;">Generating Masterpiece...</div>
+            <div style="display:flex; gap:10px;">
+                <button class="btn btn-primary" style="flex:1; width:auto;" onclick="app.generateAI()">Generate</button>
+                <button class="btn" style="flex:1; width:auto;" onclick="document.getElementById('modal-ai').classList.remove('open')">Close</button>
+            </div>
+        </div>
+    </div>
+    <div id="toast-box"></div>
+    <script>
+        const DemoData = {
+            meta: {
+                title: "The Computation Odyssey",
+                audio: {
+                    src: "https://res.cloudinary.com/dmttn34te/video/upload/v1759780548/study-music-181044_jbuwpq.mp3",
+                    volume: 0.3
+                },
+                design: {
+                    colors: {
+                        primary: "#6366f1",
+                        accent: "#06b6d4"
+                    },
+                    font: "'Inter', sans-serif"
+                },
+                lang: "en-US"
+            },
+            scenes: [{
+                    type: "title",
+                    narration: "Welcome to the Computation Odyssey. A journey through time, logic, and electricity.",
+                    content: {
+                        title: "COMPUTATION",
+                        subtitle: "From Abacus to Artificial Intelligence",
+                        bg: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Blue_matrix.jpg/1280px-Blue_matrix.jpg"
+                    }
+                },
+                {
+                    type: "bullets",
+                    narration: "Our story is defined by four revolutionary leaps in capability.",
+                    steps: [{
+                            index: 0,
+                            narration: "First, the Analog Era. Mechanical gears mimicking the mind."
+                        },
+                        {
+                            index: 1,
+                            narration: "Second, the Digital Era. The binary language of ones and zeros."
+                        },
+                        {
+                            index: 2,
+                            narration: "Third, the Connected Era. When computers learned to talk to each other."
+                        },
+                        {
+                            index: 3,
+                            narration: "Fourth, the Intelligent Era. Systems that can generate new knowledge."
+                        }
+                    ],
+                    content: {
+                        title: "The 4 Revolutions",
+                        items: ["Analog Mechanics", "Digital Logic", "Global Connection", "Generative Intelligence"]
+                    }
+                },
+                {
+                    type: "image",
+                    narration: "Long before silicon, Charles Babbage designed the Analytical Engine, a mechanical monster of brass and steam.",
+                    content: {
+                        title: "The Brass Brain",
+                        text: "Babbage's Analytical Engine (Proposed 1837)",
+                        src: "https://upload.wikimedia.org/wikipedia/commons/a/ac/Analytical_Engine_%282.259691050%29.jpg"
+                    }
+                },
+                {
+                    type: "concept",
+                    narration: "John von Neumann later conceptualized the architecture that powers every modern device today.",
+                    content: {
+                        title: "Von Neumann Architecture",
+                        svgPath: "M50,50 L250,50 L250,150 L50,150 Z M150,150 L150,250 M100,250 L200,250 L200,350 L100,350 Z",
+                        label: "Central Processing Unit & Memory"
+                    }
+                },
+                {
+                    type: "timeline",
+                    narration: "The timeline of progress accelerated with the invention of the integrated circuit.",
+                    steps: [{
+                            index: 0,
+                            narration: "1947. The transistor was invented at Bell Labs, changing physics forever."
+                        },
+                        {
+                            index: 1,
+                            narration: "1969. ARPANET sent its first message, birthing the internet."
+                        },
+                        {
+                            index: 2,
+                            narration: "1991. Tim Berners-Lee released the World Wide Web to the public."
+                        },
+                        {
+                            index: 3,
+                            narration: "2007. The smartphone put a supercomputer in every pocket."
+                        },
+                        {
+                            index: 4,
+                            narration: "2023. Generative AI passed the Turing Test for many observers."
+                        }
+                    ],
+                    content: {
+                        title: "Milestones",
+                        items: [{
+                                year: "1947",
+                                text: "Transistor"
+                            }, {
+                                year: "1969",
+                                text: "ARPANET"
+                            }, {
+                                year: "1991",
+                                text: "WWW"
+                            },
+                            {
+                                year: "2007",
+                                text: "Smartphone"
+                            }, {
+                                year: "2023",
+                                text: "Gen AI"
+                            }
+                        ]
+                    }
+                },
+                {
+                    type: "chart",
+                    narration: "Moore's Law predicted the exponential growth of computing power.",
+                    steps: [{
+                        index: 0,
+                        narration: "Observe the vertical ascent of transistor counts on a single chip."
+                    }],
+                    content: {
+                        title: "Transistors per Chip (Log Scale)",
+                        type: "line",
+                        data: {
+                            labels: ["1971", "1980", "1990", "2000", "2010", "2020"],
+                            datasets: [{
+                                label: "Transistors",
+                                data: [2300, 29000, 1200000, 42000000, 2300000000, 50000000000],
+                                borderColor: "#facc15",
+                                backgroundColor: "rgba(250, 204, 21, 0.1)",
+                                fill: true
+                            }]
+                        }
+                    }
+                },
+                {
+                    type: "comparison",
+                    narration: "We transitioned from monolithic mainframes to agile microservices.",
+                    steps: [{
+                            index: 0,
+                            narration: "The Monolith was a single, giant block of code. Hard to move, hard to break."
+                        },
+                        {
+                            index: 1,
+                            narration: "Microservices break the application into tiny, independent pieces that scale instantly."
+                        }
+                    ],
+                    content: {
+                        leftHead: "Monolith",
+                        leftBody: ["Single Codebase", "Slow Deployment", "Single Failure Point"],
+                        rightHead: "Microservices",
+                        rightBody: ["Distributed", "Rapid CI/CD", "Fault Tolerant"]
+                    }
+                },
+                {
+                    type: "table",
+                    narration: "Let's compare the specifications of computers across decades.",
+                    steps: [{
+                            index: 0,
+                            narration: "The guidance computer for Apollo 11 ran at just 2 Megahertz."
+                        },
+                        {
+                            index: 2,
+                            narration: "Modern gaming PCs are over 100,000 times faster."
+                        }
+                    ],
+                    content: {
+                        title: "Specs Over Time",
+                        headers: ["System", "Year", "Clock Speed", "RAM"],
+                        rows: [
+                            ["Apollo 11 AGC", "1969", "0.043 MHz", "4 KB"],
+                            ["Cray-2 Super", "1985", "244 MHz", "256 MB"],
+                            ["RTX 4090 PC", "2024", "5500 MHz", "64 GB"]
+                        ]
+                    }
+                },
+                {
+                    type: "chart",
+                    narration: "Which programming languages dominate the development landscape today?",
+                    steps: [{
+                        index: 0,
+                        narration: "Python leads the pack due to the AI boom."
+                    }],
+                    content: {
+                        title: "Language Popularity 2024",
+                        type: "bar",
+                        data: {
+                            labels: ["Python", "JavaScript", "Java", "C++", "C#"],
+                            datasets: [{
+                                label: "Usage %",
+                                data: [48, 35, 25, 20, 15],
+                                backgroundColor: ["#3b82f6", "#facc15", "#ef4444", "#6366f1", "#10b981"]
+                            }]
+                        }
+                    }
+                },
+                {
+                    type: "chart",
+                    narration: "Operating System market share shows a clear duopoly in mobile.",
+                    content: {
+                        title: "Mobile OS Share",
+                        type: "doughnut",
+                        data: {
+                            labels: ["Android", "iOS", "Others"],
+                            datasets: [{
+                                data: [70, 29, 1],
+                                backgroundColor: ["#10b981", "#0ea5e9", "#64748b"]
+                            }]
+                        }
+                    }
+                },
+                {
+                    type: "chart",
+                    narration: "Modern AI models are evaluated on multiple cognitive dimensions.",
+                    content: {
+                        title: "AI Capabilities",
+                        type: "radar",
+                        data: {
+                            labels: ["Reasoning", "Coding", "Creativity", "Memory", "Speed"],
+                            datasets: [{
+                                label: "Model A",
+                                data: [95, 90, 85, 80, 70],
+                                borderColor: "#f43f5e"
+                            }, {
+                                label: "Model B",
+                                data: [60, 50, 40, 30, 90],
+                                borderColor: "#64748b"
+                            }]
+                        }
+                    }
+                },
+                {
+                    type: "chart",
+                    narration: "Global technology adoption rates vary by region.",
+                    content: {
+                        title: "5G Adoption",
+                        type: "polarArea",
+                        data: {
+                            labels: ["Asia", "N. America", "Europe", "Africa"],
+                            datasets: [{
+                                data: [85, 75, 65, 30],
+                                backgroundColor: ["#ef4444", "#3b82f6", "#facc15", "#10b981"]
+                            }]
+                        }
+                    }
+                },
+                {
+                    type: "code",
+                    narration: "At the lowest level, computers only understand binary. But we write in high-level tongues.",
+                    content: {
+                        title: "Evolution of Code",
+                        lang: "python",
+                        code: "# Assembly (Old)\nMOV AX, 1\nADD AX, 2\n\n# Python (New)\ndef calculate(a, b):\n    return a + b\n\nprint(calculate(1, 2))"
+                    }
+                },
+                {
+                    type: "tree",
+                    narration: "Information is structured hierarchically, like the Document Object Model of this very page.",
+                    content: {
+                        title: "DOM Structure",
+                        root: {
+                            name: "Window",
+                            children: [{
+                                name: "Document",
+                                children: [{
+                                    name: "HTML",
+                                    children: [{
+                                        name: "Head"
+                                    }, {
+                                        name: "Body"
+                                    }]
+                                }]
+                            }, {
+                                name: "Console"
+                            }]
+                        }
+                    }
+                },
+                {
+                    type: "quiz",
+                    narration: "A quick test of your knowledge regarding the father of theoretical computer science.",
+                    content: {
+                        question: "Who cracked the Enigma code?",
+                        options: ["Steve Jobs", "Alan Turing", "Bill Gates"],
+                        correct: 1
+                    }
+                },
+                {
+                    type: "p5",
+                    narration: "We can use math to generate art. Here is a Perlin noise flow field.",
+                    content: {
+                        code: "p.setup=function(){p.createCanvas(p.windowWidth,p.windowHeight);p.noFill();p.background(0);};p.draw=function(){p.stroke(p.map(p.sin(p.frameCount*0.01),-1,1,100,255),100,255,50);p.beginShape();for(let x=0;x<p.width;x+=50){let y=p.noise(x*0.01,p.frameCount*0.01)*p.height;p.vertex(x,y);}p.endShape();}"
+                    }
+                },
+                {
+                    type: "3d",
+                    narration: "And we can visualize high-dimensional data clusters in 3D space.",
+                    content: {
+                        data: {
+                            type: "scatter3d",
+                            x: [1, 2, 3, 4, 5, 6],
+                            y: [6, 5, 4, 3, 2, 1],
+                            z: [1, 2, 1, 2, 1, 2],
+                            mode: 'markers',
+                            marker: {
+                                size: 12,
+                                color: '#facc15',
+                                opacity: 0.8
+                            }
+                        }
+                    }
+                },
+                {
+                    type: "quote",
+                    narration: "As Arthur C. Clarke famously observed about the nature of progress.",
+                    content: {
+                        text: "Any sufficiently advanced technology is indistinguishable from magic.",
+                        author: "Arthur C. Clarke"
+                    }
+                },
+                {
+                    type: "video",
+                    narration: "The boundary between the physical and digital world is dissolving.",
+                    content: {
+                        title: "Digital Convergence",
+                        src: "https://media.w3.org/2010/05/sintel/trailer.mp4"
+                    }
+                },
+                {
+                    type: "end",
+                    narration: "Thank you for experiencing the Auto-Video presentation engine.",
+                    content: {
+                        title: "FIN",
+                        subtitle: "End of Line"
+                    }
+                }
+            ]
+        };
+        const app = {
+            data: null,
+            index: -1,
+            step: -1,
+            playing: false,
+            tts: window.speechSynthesis,
+            voice: null,
+            chart: null,
+            init() {
+                this.loadData(DemoData);
+                if (this.tts.onvoiceschanged !== undefined) this.tts.onvoiceschanged = () => this.populateVoices();
+                setTimeout(() => this.populateVoices(), 500);
+                document.getElementById('bg-music').volume = 0.3;
+            },
+            populateVoices() {
+                const vs = this.tts.getVoices();
+                if (!vs.length) return;
+                const sel = document.getElementById('ai-lang-select');
+                sel.innerHTML = '';
+                [...new Set(vs.map(v => v.lang))].forEach(l => {
+                    const o = document.createElement('option');
+                    o.value = l;
+                    o.innerText = l;
+                    if (l.includes('en-US')) o.selected = true;
+                    sel.appendChild(o);
+                });
+                if (this.data.meta.lang) this.voice = vs.find(v => v.lang === this.data.meta.lang) || vs[0];
+            },
+            loadData(j) {
+                this.data = j;
+                this.index = -1;
+                this.applyTheme();
+                this.render(0);
+            },
+            applyTheme() {
+                const c = this.data.meta.design.colors;
+                const r = document.documentElement.style;
+                if (c.primary) r.setProperty('--primary', c.primary);
+                if (c.accent) r.setProperty('--accent', c.accent);
+                if (this.data.meta.design.font) r.setProperty('--font-body', this.data.meta.design.font);
+            },
+            render(idx, step = -1) {
+                if (idx < 0 || idx >= this.data.scenes.length) {
+                    this.playing = false;
+                    this.updateUI();
+                    return;
+                }
+                const isNewScene = (this.index !== idx);
+                this.index = idx;
+                this.step = step;
+                const scene = this.data.scenes[idx];
+                const layer = document.getElementById('scene-layer');
+                const bg = document.getElementById('stage-bg');
+                const pct = ((idx) / (this.data.scenes.length - 1)) * 100;
+                document.getElementById('progress-line').style.width = `${pct}%`;
+                if (isNewScene) {
+                    this.stopSpeech();
+                    if (this.chart) {
+                        this.chart.destroy();
+                        this.chart = null;
+                    }
+                    layer.classList.remove('active');
+                    const bgUrl = scene.content.bg || `https://image.pollinations.ai/prompt/abstract%20tech%20background%20${encodeURIComponent(scene.type)}%20dark%20blue%20cinematic`;
+                    const img = new Image();
+                    img.onload = () => {
+                        bg.style.backgroundImage = `url('${bgUrl}')`;
+                    };
+                    img.onerror = () => {
+                        bg.style.backgroundImage = `linear-gradient(45deg, #050505, #1a1a1a)`;
+                    };
+                    img.src = bgUrl;
+                    if (idx === 0 || !bg.style.backgroundImage) bg.style.backgroundImage = `url('${bgUrl}')`;
+                    setTimeout(() => {
+                        layer.innerHTML = '';
+                        const R = Renderers[scene.type] || Renderers.unknown;
+                        try {
+                            R(layer, scene.content, step);
+                        } catch (e) {
+                            console.error(e);
+                        }
+                        if (scene.type === 'code') Prism.highlightAll();
+                        layer.classList.add('active');
+                        this.narrate(scene);
+                    }, 600);
+                } else {
+                    this.stopSpeech();
+                    const R = Renderers[scene.type];
+                    if (R) R(layer, scene.content, step);
+                    this.narrate(scene);
+                }
+                this.updateUI();
+            },
+            narrate(s) {
+                if (!this.playing) return;
+                let txt = s.narration;
+                if (this.step > -1 && s.steps) {
+                    const st = s.steps.find(x => x.index === this.step);
+                    if (st) txt = st.narration;
+                }
+                if (txt) {
+                    const u = new SpeechSynthesisUtterance(txt);
+                    if (this.voice) u.voice = this.voice;
+                    u.onend = () => setTimeout(() => this.autoNext(), 500);
+                    this.tts.speak(u);
+                } else setTimeout(() => this.autoNext(), 1500);
+            },
+            autoNext() {
+                if (!this.playing) return;
+                const s = this.data.scenes[this.index];
+                const max = s.steps ? Math.max(...s.steps.map(x => x.index)) : -1;
+                if (s.steps && this.step < max) {
+                    const ns = s.steps.filter(x => x.index > this.step).sort((a, b) => a.index - b.index);
+                    if (ns.length) this.render(this.index, ns[0].index);
+                    else this.render(this.index + 1, -1);
+                } else this.render(this.index + 1, -1);
+            },
+            togglePlay() {
+                this.playing = !this.playing;
+                this.updateUI();
+                const a = document.getElementById('bg-music');
+                if (this.playing) {
+                    a.play().catch(() => {});
+                    this.narrate(this.data.scenes[this.index]);
+                } else {
+                    a.pause();
+                    this.stopSpeech();
+                }
+            },
+            next() {
+                this.render(this.index + 1, -1);
+            },
+            prev() {
+                this.render(this.index - 1, -1);
+            },
+            stopSpeech() {
+                this.tts.cancel();
+            },
+            toggleMenu() {
+                const m = document.getElementById('main-menu');
+                m.classList.toggle('show');
+                if (m.classList.contains('show')) setTimeout(() => document.addEventListener('click', function c(e) {
+                    if (!e.target.closest('.dropup-container')) {
+                        m.classList.remove('show');
+                        document.removeEventListener('click', c);
+                    }
+                }, 0));
+            },
+            updateUI() {
+                document.getElementById('play-btn').innerHTML = this.playing ? '<i class="bi bi-pause-fill" style="font-size:1.2rem;"></i>' : '<i class="bi bi-play-fill" style="font-size:1.2rem;"></i>';
+            },
+            openModal(id) {
+                document.getElementById('modal-' + id).classList.add('open');
+            },
+            async generateAI() {
+                const p = document.getElementById('ai-prompt').value;
+                const l = document.getElementById('ai-lang-select').value;
+                const ld = document.getElementById('ai-loader');
+                if (!p) return this.toast("Please enter a topic");
+                ld.style.display = 'block';
+                const sys = `Role: Auto-Video Architect. Task: Create JSON presentation. Topic: "${p}". Language: "${l}". Structure: {meta:{...}, scenes:[...]}. Min 12 scenes. Types: title, bullets, image, concept (whiteboard sketch), timeline, comparison, table, chart (various types), code, tree, quiz, p5, 3d, video, quote, end. MUST provide 'narration' for every scene and 'steps' (granular narration) for complex scenes. NO placeholders. Output ONLY valid JSON.`;
+                try {
+                    const res = await puter.ai.chat(sys);
+                    const clean = res.message.content.replace(/```json|```/g, '').trim();
+                    const j = JSON.parse(clean);
+                    this.loadData({
+                        ...this.data,
+                        scenes: j.scenes || j
+                    });
+                    document.getElementById('modal-ai').classList.remove('open');
+                    this.toast("Generated!");
+                } catch (e) {
+                    console.error(e);
+                    this.toast("Error generating");
+                } finally {
+                    ld.style.display = 'none';
+                }
+            },
+            save() {
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(new Blob([JSON.stringify(this.data)], {
+                    type: 'application/json'
+                }));
+                a.download = 'project.json';
+                a.click();
+            },
+            load(i) {
+                const r = new FileReader();
+                r.onload = e => this.loadData(JSON.parse(e.target.result));
+                r.readAsText(i.files[0]);
+            },
+            uploadMusic(i) {
+                const f = i.files[0];
+                if (f) {
+                    document.getElementById('bg-music').src = URL.createObjectURL(f);
+                    this.toast('Music Updated');
+                }
+            },
+            toggleMute() {
+                const m = document.getElementById('bg-music');
+                m.muted = !m.muted;
+                document.getElementById('mute-icon').className = m.muted ? 'bi bi-volume-mute' : 'bi bi-volume-up';
+            },
+            toast(m) {
+                const b = document.getElementById('toast-box'),
+                    d = document.createElement('div');
+                d.className = 'toast';
+                d.innerText = m;
+                b.appendChild(d);
+                setTimeout(() => d.remove(), 3000);
+            }
+        };
+        const Renderers = {
+            unknown: (el) => el.innerHTML = `<h2>Unknown Type</h2>`,
+            title: (el, c) => el.innerHTML = `<div class="comp-title"><h1>${c.title}</h1><h2>${c.subtitle}</h2></div>`,
+            bullets: (el, c, step) => {
+                let idx = -1;
+                if (step > -1 && app.data.scenes[app.index].steps) {
+                    const s = app.data.scenes[app.index].steps.find(x => x.index === step);
+                    if (s) idx = s.index;
+                }
+                if (el.querySelector('.comp-bullets')) {
+                    el.querySelectorAll('.bullet-item').forEach((li, i) => {
+                        li.className = (idx === i) ? 'bullet-item active' : (step > -1 ? 'bullet-item' : 'bullet-item active');
+                        if (step > -1 && idx !== i) li.style.opacity = 0.3;
+                    });
+                    return;
+                }
+                el.innerHTML = `<h2 style="font-size:2.5vw; color:var(--primary); margin-bottom:30px;">${c.title}</h2><div class="comp-bullets">${c.items.map(i=>`<div class="bullet-item">${i}</div>`).join('')}</div>`;
+            },
+            concept: (el, c) => {
+                el.innerHTML = `<div class="comp-concept"><div class="wb-grid"></div><svg width="300" height="400" viewBox="0 0 300 400" style="position:absolute; inset:0; margin:auto; width:100%; height:100%; overflow:visible;"><path d="${c.svgPath}" fill="none" stroke="#222" stroke-width="4" stroke-linecap="round" class="wb-sketch"></path></svg><h2 class="wb-content" style="color:#222; font-weight:800;">${c.label}</h2></div>`;
+            },
+            image: (el, c) => el.innerHTML = `<div class="comp-img-layout"><div class="img-frame"><img src="${c.src}" onload="this.classList.add('loaded')"></div><div class="img-text"><h2>${c.title}</h2><p>${c.text}</p></div></div>`,
+            timeline: (el, c, step) => {
+                let idx = -1;
+                if (step > -1 && app.data.scenes[app.index].steps) {
+                    const s = app.data.scenes[app.index].steps.find(x => x.index === step);
+                    if (s) idx = s.index;
+                }
+                if (el.querySelector('.tl-track')) {
+                    el.querySelectorAll('.tl-item').forEach((it, i) => {
+                        it.className = (idx === i) ? 'tl-item active' : 'tl-item';
+                        if (idx === i) it.scrollIntoView({
+                            behavior: "smooth",
+                            inline: "center"
+                        });
+                    });
+                    return;
+                }
+                el.innerHTML = `<div style="width:100%;"><h2 style="font-size:2.5vw; color:var(--primary); padding-left:4vw;">${c.title}</h2><div class="comp-timeline"><div class="tl-track">${c.items.map(i=>`<div class="tl-item"><div class="tl-year">${i.year}</div><p>${i.text}</p></div>`).join('')}</div></div></div>`;
+            },
+            comparison: (el, c, step) => {
+                let idx = -1;
+                if (step > -1 && app.data.scenes[app.index].steps) {
+                    const s = app.data.scenes[app.index].steps.find(x => x.index === step);
+                    if (s) idx = s.index;
+                }
+                if (el.querySelector('.comp-split')) {
+                    el.querySelectorAll('.split-col').forEach((col, i) => {
+                        col.className = (idx === i) ? 'split-col active' : 'split-col';
+                        if (step > -1 && idx !== i) col.style.opacity = 0.3;
+                    });
+                    return;
+                }
+                el.innerHTML = `<div class="comp-split"><div class="split-col"><div class="split-head">${c.leftHead}</div>${c.leftBody.map(i=>`<div>• ${i}</div>`).join('')}</div><div class="split-col"><div class="split-head" style="color:var(--accent)">${c.rightHead}</div>${c.rightBody.map(i=>`<div>• ${i}</div>`).join('')}</div></div>`;
+            },
+            chart: (el, c, step) => {
+                let idx = -1;
+                if (step > -1 && app.data.scenes[app.index].steps) {
+                    const s = app.data.scenes[app.index].steps.find(x => x.index === step);
+                    if (s) idx = s.index;
+                }
+                if (app.chart) {
+                    const ds = app.chart.data.datasets[0];
+                    const bg = ds.data.map((_, i) => (idx === -1 || idx === i) ? (Array.isArray(c.data.datasets[0].backgroundColor) ? c.data.datasets[0].backgroundColor[i] : app.data.meta.design.colors.primary) : 'rgba(255,255,255,0.1)');
+                    app.chart.data.datasets[0].backgroundColor = bg;
+                    app.chart.update('none');
+                    return;
+                }
+                el.innerHTML = `<div class="comp-chart-wrap"><div class="chart-title">${c.title}</div><canvas id="chart-cvs"></canvas></div>`;
+                const ctx = document.getElementById('chart-cvs').getContext('2d');
+                const cfg = {
+                    type: c.type,
+                    data: c.data,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: 'white'
+                                }
+                            }
+                        },
+                        scales: (c.type.includes('bar') || c.type.includes('line')) ? {
+                            x: {
+                                ticks: {
+                                    color: '#ccc'
+                                },
+                                grid: {
+                                    color: '#333'
+                                }
+                            },
+                            y: {
+                                ticks: {
+                                    color: '#ccc'
+                                },
+                                grid: {
+                                    color: '#333'
+                                }
+                            }
+                        } : {}
+                    }
+                };
+                app.chart = new Chart(ctx, cfg);
+            },
+            table: (el, c, step) => {
+                let idx = -1;
+                if (step > -1 && app.data.scenes[app.index].steps) {
+                    const s = app.data.scenes[app.index].steps.find(x => x.index === step);
+                    if (s) idx = s.index;
+                }
+                if (el.querySelector('table')) {
+                    el.querySelectorAll('tbody tr').forEach((tr, i) => {
+                        tr.className = (idx === i) ? 'active' : '';
+                        if (step > -1 && idx !== i) tr.style.opacity = 0.4;
+                        else tr.style.opacity = 1;
+                    });
+                    return;
+                }
+                el.innerHTML = `<h2 style="margin-bottom:20px; color:var(--primary); font-size:2vw;">${c.title}</h2><table class="comp-table"><thead><tr>${c.headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${c.rows.map(r=>`<tr>${r.map(d=>`<td>${d}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+            },
+            code: (el, c) => el.innerHTML = `<div class="comp-code"><h2 style="color:var(--primary); margin-bottom:10px;">${c.title}</h2><pre><code class="language-${c.lang}">${c.code}</code></pre></div>`,
+            tree: (el, c) => {
+                const build = (n) => {
+                    if (!n) return '';
+                    let h = `<div class="tree-node"><div class="node-content">${n.name}</div>`;
+                    if (n.children) h += `<div class="node-children">${n.children.map(x=>`<div class="child-wrapper">${build(x)}</div>`).join('')}</div>`;
+                    return h + `</div>`;
+                };
+                if (!document.getElementById('tree-style')) {
+                    const s = document.createElement('style');
+                    s.id = 'tree-style';
+                    s.innerHTML = `.tree-container{display:flex;justify-content:center;}.tree-node{display:flex;flex-direction:column;align-items:center;margin:0 10px;}.node-content{padding:10px 20px;background:rgba(255,255,255,0.1);border:1px solid var(--primary);border-radius:8px;color:#fff;margin-bottom:20px;position:relative;}.node-children{display:flex;position:relative;}.node-children::before{content:'';position:absolute;top:-20px;left:50%;width:1px;height:20px;background:#fff;}.child-wrapper{position:relative;display:flex;justify-content:center;}.child-wrapper::before{content:'';position:absolute;top:-20px;left:50%;width:1px;height:20px;background:#fff;}.node-children>.child-wrapper:not(:first-child)::after{content:'';position:absolute;top:-20px;left:-50%;width:100%;height:1px;background:#fff;}.node-children>.child-wrapper:first-child::after{content:'';position:absolute;top:-20px;right:-50%;width:50%;height:1px;background:#fff;}.node-children>.child-wrapper:last-child::after{content:'';position:absolute;top:-20px;left:0;width:50%;height:1px;background:#fff;}`;
+                    document.head.appendChild(s);
+                }
+                el.innerHTML = `<h2 style="font-size:2.5vw; color:var(--primary); margin-bottom:30px;">${c.title}</h2><div class="tree-container">${build(c.root)}</div>`;
+            },
+            quiz: (el, c) => {
+                el.innerHTML = `<div style="text-align:center;"><h2>${c.question}</h2><div class="quiz-grid">${c.options.map((o,i)=>`<button class="quiz-btn" onclick="chkQuiz(this,${i},${c.correct})">${o}</button>`).join('')}</div></div>`;
+                window.chkQuiz = (b, i, k) => {
+                    Array.from(b.parentElement.children).forEach(x => x.disabled = true);
+                    if (i === k) {
+                        b.classList.add('correct');
+                        app.toast('Correct!');
+                    } else {
+                        b.classList.add('wrong');
+                        b.parentElement.children[k].classList.add('correct');
+                        app.toast('Incorrect!');
+                    }
+                };
+            },
+            p5: (el, c) => {
+                el.innerHTML = `<div id="p5-box" style="width:100%; height:100%"></div>`;
+                new p5(new Function('p', c.code), 'p5-box');
+            },
+            "3d": (el, c) => {
+                el.innerHTML = `<div id="3d-box" style="width:90%; height:80%"></div>`;
+                Plotly.newPlot('3d-box', [c.data], {
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    scene: {
+                        xaxis: {
+                            color: '#fff'
+                        },
+                        yaxis: {
+                            color: '#fff'
+                        },
+                        zaxis: {
+                            color: '#fff'
+                        }
+                    }
+                }, {
+                    displayModeBar: false
+                });
+            },
+            quote: (el, c) => el.innerHTML = `<div class="comp-quote"><h1>"${c.text}"</h1><h3>— ${c.author}</h3></div>`,
+            video: (el, c) => el.innerHTML = `<div style="width:85%; height:75%; border:1px solid var(--border); border-radius:16px; overflow:hidden; box-shadow:0 30px 80px rgba(0,0,0,0.8);"><video src="${c.src}" autoplay loop muted style="width:100%; height:100%; object-fit:cover;"></video></div><h2 style="margin-top:20px; letter-spacing:2px;">${c.title}</h2>`,
+            end: (el, c) => Renderers.title(el, c)
+        };
+        window.onload = () => app.init();
+    </script>
+</body>
+
+</html>
