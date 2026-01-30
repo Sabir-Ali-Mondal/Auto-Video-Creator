@@ -70,3 +70,5 @@ Libraries: GSAP, Anime.js, Motion One, SVG, D3.js, SVG.js, Snap.svg, Rough.js, C
 Performance Target: Mobile-friendly, 30fps  
 Scene Design: Each scene supports narration-driven highlighting, pointing, zooming, scrolling, and clean exits  
 AI Compatibility: Each scene is a modular block with internal narrative sub-steps
+
+### You can use these scenes independently, combine multiple scenes, or invent new scene variations as per requirement.
