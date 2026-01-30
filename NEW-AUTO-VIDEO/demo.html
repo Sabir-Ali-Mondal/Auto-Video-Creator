@@ -1,0 +1,1260 @@
+
+<!-- 
+    AUTO-VIDEO v3.1 | THE OMNI-ENGINE FINAL
+    - Multi-Language Auto-Detect AI
+    - 4-Stage Zero-Fail Asset System
+    - Smart Background Preloader
+    - 60-Scene Omni-Demo Included
+-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Auto-Video Elite</title>
+
+    <!-- LIBRARIES -->
+    <script src="https://js.puter.com/v2/"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- FONTS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #6366f1;
+            --glass: rgba(10, 10, 12, 0.9);
+            --border: rgba(255, 255, 255, 0.12);
+            --ease: cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        body {
+            background-color: #000;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            color: white;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* STAGE */
+        #stage-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+            position: relative;
+        }
+
+        #stage-content {
+            background: #000;
+            position: relative;
+            aspect-ratio: 16/9;
+            width: 100%;
+            max-width: calc((100vh - 100px) * (16/9));
+            box-shadow: 0 0 0 1px #333, 0 50px 100px -20px rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+            container-type: size;
+            transition: aspect-ratio 0.5s var(--ease);
+        }
+
+        #stage-content.portrait {
+            aspect-ratio: 9/16;
+            max-width: none;
+            height: 95vh;
+            width: auto;
+        }
+
+        /* TEXT UTILS */
+        .ts-sm {
+            font-size: 2cqw;
+        }
+
+        .ts-base {
+            font-size: 3.5cqw;
+        }
+
+        .ts-lg {
+            font-size: 6cqw;
+        }
+
+        .ts-xl {
+            font-size: 10cqw;
+            line-height: 0.9;
+        }
+
+        .ts-huge {
+            font-size: 15cqw;
+            line-height: 0.8;
+            letter-spacing: -0.05em;
+        }
+
+        /* FALLBACK BACKGROUNDS */
+        .bg-fallback-tech {
+            background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 4cqw 4cqw;
+        }
+
+        /* UI DOCK */
+        .ui-layer {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: auto;
+            min-width: 300px;
+            height: 70px;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 35px;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 0 1.5rem;
+            z-index: 2000;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+        }
+
+        .btn-ui {
+            background: rgba(255, 255, 255, 0.05);
+            color: #94a3b8;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: 0.2s;
+            position: relative;
+        }
+
+        .btn-ui:hover {
+            background: white;
+            color: black;
+            transform: translateY(-2px);
+        }
+
+        .btn-ui.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-play {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: white;
+            color: black;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+
+        .btn-play:hover {
+            background: #e0e7ff;
+            color: var(--primary);
+            transform: scale(1.1);
+        }
+
+        /* SYSTEM MENU */
+        #system-menu {
+            position: absolute;
+            bottom: 90px;
+            left: 0;
+            background: #09090b;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            width: 260px;
+            padding: 8px;
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+            transform-origin: bottom left;
+            animation: menuPop 0.2s var(--ease);
+        }
+
+        #system-menu.open {
+            display: flex;
+        }
+
+        @keyframes menuPop {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: #e2e8f0;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .menu-item i {
+            font-size: 1.1rem;
+            opacity: 0.7;
+        }
+
+        /* MODALS */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 5000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal-box {
+            width: 800px;
+            max-width: 90%;
+            background: #09090b;
+            border: 1px solid #27272a;
+            border-radius: 24px;
+            padding: 32px;
+        }
+
+        .slide-layer {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.8s var(--ease);
+            z-index: 1;
+        }
+
+        .slide-layer.active {
+            opacity: 1;
+            pointer-events: auto;
+            z-index: 10;
+        }
+
+        .marker-swipe {
+            background: linear-gradient(120deg, transparent 50%, var(--primary) 50%);
+            background-size: 250%;
+            background-position: 0%;
+            transition: background-position 0.5s ease-out;
+            padding: 0 4px;
+        }
+
+        .marker-swipe.active {
+            background-position: 100%;
+            color: white;
+        }
+    </style>
+<link rel="stylesheet" href="index.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" >
+<meta name="robots" content="none,noarchive"/>
+</head>
+
+<body>
+    <div id="stage-container">
+        <div id="stage-content"></div>
+    </div>
+
+    <!-- MAIN DOCK -->
+    <div class="ui-layer">
+        <div class="relative">
+            <button class="btn-ui" onclick="Engine.ui.toggleMenu()" id="menu-btn"><i class="bi bi-grid-fill"></i></button>
+            <div id="system-menu">
+                <div class="menu-item" onclick="Engine.ui.openModal('ai')">
+                    <i class="bi bi-robot text-purple-400"></i> AI Architect
+                </div>
+                <div class="menu-item" onclick="Engine.ui.openModal('settings')">
+                    <i class="bi bi-sliders text-blue-400"></i> Studio Settings
+                </div>
+                <div class="menu-item" onclick="Engine.ui.openModal('import')">
+                    <i class="bi bi-code-slash text-green-400"></i> Code Editor
+                </div>
+                <div class="h-[1px] bg-white/10 my-1"></div>
+                <div class="menu-item" onclick="Engine.ui.toggleRatio()">
+                    <i class="bi bi-phone"></i> Toggle Portrait
+                </div>
+            </div>
+        </div>
+
+        <button class="btn-ui hide-mobile" onclick="Engine.prev()"><i class="bi bi-skip-start-fill"></i></button>
+        <button class="btn-play" id="play-btn" onclick="Engine.togglePlay()"><i class="bi bi-play-fill"></i></button>
+        <button class="btn-ui hide-mobile" onclick="Engine.next()"><i class="bi bi-skip-end-fill"></i></button>
+        <button class="btn-ui" onclick="Engine.ui.toggleFullscreen()"><i class="bi bi-arrows-fullscreen"></i></button>
+    </div>
+
+    <!-- AI MODAL -->
+    <div id="modal-ai" class="modal-overlay">
+        <div class="modal-box">
+            <h2 class="text-3xl font-black text-white italic mb-2">AI ARCHITECT <span class="bg-primary/20 text-primary text-xs px-2 py-1 rounded not-italic ml-2">v3.1</span></h2>
+            <textarea id="ai-prompt" class="w-full bg-black/50 border border-white/10 rounded-xl p-4 text-white focus:border-primary outline-none h-32 mb-6" placeholder="Describe the video topic..."></textarea>
+
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                    <label class="text-xs text-gray-500 font-bold mb-2 block">NARRATION LANGUAGE (AUTO)</label>
+                    <select id="ai-lang" class="w-full bg-black border border-white/10 rounded-lg p-3 text-sm text-white"></select>
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500 font-bold mb-2 block">VISUAL STYLE</label>
+                    <select id="ai-style" class="w-full bg-black border border-white/10 rounded-lg p-3 text-sm text-white">
+                        <option value="cinematic">Cinematic Documentary</option>
+                        <option value="tech">High-Tech / Cyberpunk</option>
+                        <option value="paper">Minimal / Journalistic</option>
+                        <option value="retro">Retro / VHS Style</option>
+                    </select>
+                </div>
+            </div>
+
+            <button id="gen-btn" onclick="Engine.ai.generate()" class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl tracking-widest transition-all">GENERATE PROJECT</button>
+            <button onclick="Engine.ui.closeModal()" class="w-full mt-4 text-gray-500 hover:text-white py-2 text-xs">CANCEL</button>
+        </div>
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div id="modal-settings" class="modal-overlay">
+        <div class="modal-box">
+            <h2 class="text-2xl font-bold text-white mb-6">Studio Settings</h2>
+            <div class="mb-6">
+                <label class="text-xs text-gray-400 block mb-1">NARRATOR VOICE</label>
+                <select id="voice-select" class="w-full bg-black border border-white/10 rounded p-2 text-white text-sm" onchange="Engine.audio.setVoice(this.value)"></select>
+            </div>
+            <div class="mb-6">
+                <label class="text-xs text-gray-400 block mb-1">BACKGROUND MUSIC</label>
+                <select id="music-select" class="w-full bg-black border border-white/10 rounded p-2 text-white text-sm" onchange="Engine.audio.setTrack(this.value)">
+                    <option value="https://res.cloudinary.com/dmttn34te/video/upload/v1763064765/study-music-181044_jbuwpq.mp3">Cinematic Ambient</option>
+                    <option value="upload">Upload Custom...</option>
+                </select>
+                <input type="file" id="music-upload" hidden accept="audio/*" onchange="Engine.audio.handleUpload(this)">
+            </div>
+            <button onclick="Engine.ui.closeModal()" class="bg-white/10 w-full py-3 rounded-lg text-white font-bold">DONE</button>
+        </div>
+    </div>
+
+    <!-- CODE MODAL -->
+    <div id="modal-import" class="modal-overlay">
+        <div class="modal-box w-[900px]">
+            <h2 class="text-xl font-bold text-white mb-4">Project JSON Editor</h2>
+            <textarea id="json-editor" class="w-full h-[400px] bg-[#0d1117] text-green-400 font-mono text-xs p-4 rounded-lg border border-white/10 outline-none resize-none"></textarea>
+            <div class="mt-4 flex gap-3">
+                <button onclick="Engine.io.apply()" class="flex-1 bg-green-600 text-white font-bold py-3 rounded-lg">APPLY</button>
+                <button onclick="Engine.ui.closeModal()" class="px-6 py-3 text-gray-400 hover:text-white">CLOSE</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const Engine = {
+            data: null,
+            state: {
+                scene: 0,
+                step: 0,
+                paused: true,
+                voice: null
+            },
+            audioEl: new Audio(),
+            tts: window.speechSynthesis,
+
+            init: () => {
+                Engine.audioEl.loop = true;
+                Engine.audioEl.volume = 0.3;
+
+                // --- SYSTEM INITIALIZATION ---
+                const systemInit = () => {
+                    const voices = Engine.tts.getVoices();
+
+                    // 1. Settings Voice Dropdown
+                    const settingsSel = document.getElementById('voice-select');
+                    settingsSel.innerHTML = voices.map((v, i) => `<option value="${i}">${v.name} (${v.lang})</option>`).join('');
+
+                    // 2. AI Language Dropdown (Auto-Detect)
+                    const aiSel = document.getElementById('ai-lang');
+                    aiSel.innerHTML = '';
+                    const uniqueLangs = [...new Set(voices.map(v => v.lang))].sort();
+
+                    uniqueLangs.forEach(langCode => {
+                        const opt = document.createElement('option');
+                        opt.value = langCode;
+                        try {
+                            const readable = new Intl.DisplayNames([navigator.language], {
+                                type: 'language'
+                            }).of(langCode);
+                            opt.text = `${readable} (${langCode})`;
+                        } catch (e) {
+                            opt.text = langCode;
+                        }
+                        aiSel.appendChild(opt);
+                    });
+
+                    // 3. Set Defaults
+                    const defaultVoiceIdx = voices.findIndex(v => v.lang.startsWith('en'));
+                    Engine.state.voice = voices[defaultVoiceIdx > -1 ? defaultVoiceIdx : 0];
+                    settingsSel.value = defaultVoiceIdx > -1 ? defaultVoiceIdx : 0;
+
+                    const enLang = uniqueLangs.find(l => l.startsWith('en'));
+                    if (enLang) aiSel.value = enLang;
+                };
+
+                if (Engine.tts.getVoices().length > 0) systemInit();
+                else Engine.tts.onvoiceschanged = systemInit;
+
+                // Load Omni Demo
+                Engine.load(DEMO_DATA);
+            },
+
+            load: (json) => {
+                Engine.data = json;
+                Engine.state.scene = 0;
+                Engine.state.step = 0;
+                Engine.state.paused = true;
+                if (json.meta.audio) Engine.audioEl.src = json.meta.audio;
+                Engine.render(0);
+                Engine.loader.preload(1);
+                Engine.ui.update();
+            },
+
+            gfx: {
+                handleError: (img) => {
+                    const sceneIdx = parseInt(img.dataset.sceneIndex || 0);
+                    const attempt = parseInt(img.dataset.failCount || 0) + 1;
+                    img.dataset.failCount = attempt;
+
+                    // Stage 2: Backup SVG
+                    if (attempt === 1) {
+                        const scene = Engine.data.scenes[sceneIdx];
+                        if (scene.backup_svg) {
+                            const div = document.createElement('div');
+                            div.innerHTML = scene.backup_svg;
+                            div.className = "w-full h-full flex items-center justify-center bg-gray-900";
+                            img.replaceWith(div);
+                            return;
+                        }
+                    }
+                    // Stage 3: Random Fallback
+                    if (attempt <= 2) {
+                        img.src = `https://picsum.photos/seed/${sceneIdx}_abstract/1920/1080?grayscale&blur=2`;
+                        return;
+                    }
+                    // Stage 4: CSS Pattern
+                    img.style.display = 'none';
+                    img.parentElement.classList.add('bg-fallback-tech', 'bg-gray-900');
+                }
+            },
+
+            loader: {
+                preload: (nextIdx) => {
+                    for (let i = nextIdx; i < nextIdx + 2; i++) {
+                        if (Engine.data && Engine.data.scenes[i]) {
+                            const parser = new DOMParser();
+                            const doc = parser.parseFromString(Engine.data.scenes[i].html, 'text/html');
+                            doc.querySelectorAll('img').forEach(img => {
+                                const i = new Image();
+                                i.src = img.src;
+                            });
+                        }
+                    }
+                }
+            },
+
+            render: (idx) => {
+                if (!Engine.data.scenes[idx]) return;
+                const stage = document.getElementById('stage-content');
+                const scene = Engine.data.scenes[idx];
+
+                const layer = document.createElement('div');
+                layer.className = 'slide-layer bg-black';
+
+                // Inject HTML with Error Handler hook
+                let processedHTML = scene.html.replace(/<img /g, `<img data-scene-index="${idx}" onerror="Engine.gfx.handleError(this)" `);
+                layer.innerHTML = processedHTML;
+
+                stage.appendChild(layer);
+
+                if (scene.script) {
+                    setTimeout(() => {
+                        try {
+                            const fn = new Function('return ' + scene.script)();
+                            Engine.state.activeScript = fn({
+                                root: layer,
+                                chart: (id, cfg) => new Chart(layer.querySelector(id), cfg),
+                                map: (id, cfg) => L.map(layer.querySelector(id), cfg),
+                                p5: (sketch, id) => new p5(sketch, layer.querySelector(id)),
+                                window: window
+                            });
+                        } catch (e) {
+                            console.log(e);
+                        }
+                    }, 50);
+                }
+
+                requestAnimationFrame(() => {
+                    layer.classList.add('active');
+                    const old = stage.querySelectorAll('.slide-layer:not(:last-child)');
+                    old.forEach(l => {
+                        l.classList.remove('active');
+                        setTimeout(() => l.remove(), 800);
+                    });
+                });
+            },
+
+            playStep: () => {
+                if (Engine.state.paused) return;
+                const scene = Engine.data.scenes[Engine.state.scene];
+                const step = scene.steps[Engine.state.step];
+
+                if (step.actions) {
+                    step.actions.forEach(a => {
+                        const el = document.querySelector(a.target);
+                        if (el && a.type === 'reveal') el.classList.remove('opacity-0', 'translate-y-4', 'scale-90');
+                        if (el && a.type === 'highlight') el.classList.add('active');
+                        if (a.type === 'custom' && a.fn) a.fn();
+                        if (a.type === 'chart-update' && Engine.state.activeScript?.updateChart) Engine.state.activeScript.updateChart(a.value);
+                    });
+                }
+
+                Engine.tts.cancel();
+                const u = new SpeechSynthesisUtterance(step.narration);
+                u.voice = Engine.state.voice;
+                u.onend = () => {
+                    if (!Engine.state.paused) setTimeout(Engine.nextStep, 500);
+                };
+                Engine.tts.speak(u);
+            },
+
+            nextStep: () => {
+                if (Engine.state.paused) return;
+                const scene = Engine.data.scenes[Engine.state.scene];
+                if (Engine.state.step < scene.steps.length - 1) {
+                    Engine.state.step++;
+                    Engine.playStep();
+                } else if (Engine.state.scene < Engine.data.scenes.length - 1) {
+                    Engine.state.scene++;
+                    Engine.state.step = 0;
+                    Engine.render(Engine.state.scene);
+                    Engine.loader.preload(Engine.state.scene + 1);
+                    setTimeout(Engine.playStep, 1000);
+                } else {
+                    Engine.togglePlay();
+                }
+            },
+
+            togglePlay: () => {
+                Engine.state.paused = !Engine.state.paused;
+                const btn = document.getElementById('play-btn');
+                if (!Engine.state.paused) {
+                    btn.innerHTML = '<i class="bi bi-pause-fill"></i>';
+                    Engine.audioEl.play().catch(() => {});
+                    Engine.playStep();
+                } else {
+                    btn.innerHTML = '<i class="bi bi-play-fill"></i>';
+                    Engine.audioEl.pause();
+                    Engine.tts.cancel();
+                }
+            },
+
+            prev: () => {
+                if (Engine.state.scene > 0) {
+                    Engine.state.paused = true;
+                    Engine.state.scene--;
+                    Engine.state.step = 0;
+                    Engine.render(Engine.state.scene);
+                    Engine.ui.update();
+                }
+            },
+            next: () => {
+                if (Engine.state.scene < Engine.data.scenes.length - 1) {
+                    Engine.state.paused = true;
+                    Engine.state.scene++;
+                    Engine.state.step = 0;
+                    Engine.render(Engine.state.scene);
+                    Engine.loader.preload(Engine.state.scene + 1);
+                    Engine.ui.update();
+                }
+            },
+
+            ai: {
+                generate: async () => {
+                    const prompt = document.getElementById('ai-prompt').value;
+                    const langCode = document.getElementById('ai-lang').value;
+                    const style = document.getElementById('ai-style').value;
+                    const btn = document.getElementById('gen-btn');
+
+                    if (!prompt) return;
+                    btn.disabled = true;
+                    btn.innerText = "ARCHITECTING...";
+
+                    // Auto-Switch Voice to Match Language Selection
+                    const voices = Engine.tts.getVoices();
+                    const matchingVoice = voices.find(v => v.lang === langCode) || voices.find(v => v.lang.startsWith(langCode.split('-')[0]));
+                    if (matchingVoice) {
+                        Engine.state.voice = matchingVoice;
+                        const settingsSel = document.getElementById('voice-select');
+                        const idx = voices.indexOf(matchingVoice);
+                        if (idx > -1) settingsSel.value = idx;
+                    }
+
+                    const sys = `
+                        # ROLE: Elite Video Architect (v3.1)
+                        # TASK: Generate JSON for video topic: "${prompt}".
+                        # SETTINGS: Language=${langCode}, Style=${style}.
+                        # RULES:
+                        1. Structure: { meta: {...}, scenes: [ { type, html, backup_svg, script, steps: [...] } ] }.
+                        2. "html": Use Tailwind. Use <img src="UNSPLASH_URL">.
+                        3. "backup_svg": Provide an abstract <svg> string as backup for every image.
+                        4. "steps": Narrations MUST be in language code: ${langCode}.
+                        5. Output raw JSON only.
+                    `;
+
+                    try {
+                        const res = await puter.ai.chat(sys);
+                        const clean = res.message.content.replace(/```json|```/g, '').trim();
+                        Engine.load(JSON.parse(clean));
+                        Engine.ui.closeModal();
+                    } catch (e) {
+                        alert("AI Error");
+                    } finally {
+                        btn.disabled = false;
+                        btn.innerText = "GENERATE PROJECT";
+                    }
+                }
+            },
+
+            audio: {
+                setVoice: (idx) => Engine.state.voice = Engine.tts.getVoices()[idx],
+                setTrack: (url) => {
+                    if (url === 'upload') document.getElementById('music-upload').click();
+                    else Engine.audioEl.src = url;
+                },
+                handleUpload: (input) => {
+                    if (input.files[0]) Engine.audioEl.src = URL.createObjectURL(input.files[0]);
+                }
+            },
+
+            io: {
+                apply: () => {
+                    try {
+                        Engine.load(JSON.parse(document.getElementById('json-editor').value));
+                        Engine.ui.closeModal();
+                    } catch (e) {
+                        alert("Invalid JSON");
+                    }
+                }
+            },
+
+            ui: {
+                toggleMenu: () => {
+                    document.getElementById('system-menu').classList.toggle('open');
+                    document.getElementById('menu-btn').classList.toggle('active');
+                },
+                openModal: (id) => {
+                    document.getElementById('system-menu').classList.remove('open');
+                    document.getElementById('modal-' + id).classList.add('open');
+                    if (id === 'import') document.getElementById('json-editor').value = JSON.stringify(Engine.data, null, 2);
+                },
+                closeModal: () => document.querySelectorAll('.modal-overlay').forEach(e => e.classList.remove('open')),
+                toggleRatio: () => document.getElementById('stage-content').classList.toggle('portrait'),
+                toggleFullscreen: () => document.fullscreenElement ? document.exitFullscreen() : document.body.requestFullscreen(),
+                update: () => {
+                    document.getElementById('play-btn').innerHTML = Engine.state.paused ? '<i class="bi bi-play-fill"></i>' : '<i class="bi bi-pause-fill"></i>';
+                }
+            }
+        };
+
+        // --- OMNI-DEMO DATA (60 SCENES) ---
+        const DEMO_DATA = {
+            meta: {
+                title: "The Architects of Reality",
+                audio: "https://res.cloudinary.com/dmttn34te/video/upload/v1763064765/study-music-181044_jbuwpq.mp3",
+                lang: "en-US"
+            },
+            scenes: [{
+                    html: `<div class="w-full h-full relative bg-black overflow-hidden flex flex-col items-center justify-center">
+                        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_#222_0%,_#000_100%)]"></div>
+                        <div class="z-10 text-center mix-blend-screen">
+                            <h1 id="t1" class="opacity-0 translate-y-4 ts-huge font-black tracking-tighter text-white mb-4 transition-all duration-1000">ARCHITECTS</h1>
+                            <div id="line1" class="w-0 h-2 bg-primary mx-auto transition-all duration-[1.5s]"></div>
+                            <h2 id="t2" class="opacity-0 translate-y-4 ts-xl font-thin tracking-[0.5em] text-gray-400 mt-4 transition-all duration-1000">OF REALITY</h2>
+                        </div>
+                    </div>`,
+                    steps: [{
+                            narration: "The universe is not written in words.",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#t1'
+                            }]
+                        },
+                        {
+                            narration: "It is written in mathematics.",
+                            actions: [{
+                                type: 'reveal',
+                                target: '#t2'
+                            }, {
+                                type: 'custom',
+                                fn: () => document.getElementById('line1').style.width = '200px'
+                            }]
+                        }
+                    ]
+                },
+                {
+                    html: `<div class="w-full h-full relative">
+                        <img src="https://images.unsplash.com/photo-1543722530-d2c3201371e7?q=80&w=2674" class="w-full h-full object-cover animate-[pulse_10s_infinite]">
+                        <div class="absolute inset-0 flex items-center justify-center"><h1 class="ts-xl font-black text-white/90 mix-blend-overlay">CHAOS & ORDER</h1></div>
+                    </div>`,
+                    backup_svg: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="w-full h-full bg-black"><path d="M0 0 L200 200 M200 0 L0 200" stroke="#333" stroke-width="0.5"/><circle cx="100" cy="100" r="50" stroke="#6366f1" fill="none" stroke-width="2"/></svg>`,
+                    steps: [{
+                        narration: "From the chaos of the cosmos, order emerges.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div id="p5-fibo" class="w-full h-full bg-[#050505]"></div>`,
+                    script: `(ctx) => {
+                        new p5((p) => {
+                            let angle = 0;
+                            p.setup = () => { p.createCanvas(ctx.root.offsetWidth, ctx.root.offsetHeight); p.angleMode(p.DEGREES); p.colorMode(p.HSB); };
+                            p.draw = () => {
+                                p.background(0, 0.1); p.translate(p.width / 2, p.height / 2); p.rotate(angle);
+                                for (let i = 0; i < 200; i++) {
+                                    let r = 2 * i; let a = i * 137.5; let x = r * p.cos(a); let y = r * p.sin(a);
+                                    p.fill((i + angle) % 360, 80, 100); p.noStroke(); p.ellipse(x, y, 4, 4);
+                                }
+                                angle += 0.5;
+                            };
+                        }, ctx.root.querySelector('#p5-fibo'));
+                    }`,
+                    steps: [{
+                        narration: "The golden ratio. The fingerprint of nature found in flowers and galaxies alike.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-zinc-900 flex items-center justify-center p-20">
+                        <div class="border-l-8 border-white pl-12">
+                            <p class="ts-lg font-serif italic text-white leading-tight">"All is <span id="m4" class="marker-swipe">number</span>."</p>
+                            <p class="text-gray-500 mt-8 font-mono uppercase tracking-widest">— Pythagoras</p>
+                        </div>
+                    </div>`,
+                    steps: [{
+                        narration: "Pythagoras believed that numbers were the ultimate reality.",
+                        actions: [{
+                            type: 'highlight',
+                            target: '#m4'
+                        }]
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-black p-12 flex flex-col"><h2 class="text-white ts-base font-bold mb-4">Exponential Growth</h2><div class="flex-1 relative"><canvas id="ch5"></canvas></div></div>`,
+                    script: `(ctx) => {
+                        ctx.chart('#ch5', {
+                            type: 'line',
+                            data: { labels: [1,2,3,4,5,6,7,8], datasets: [{ data: [2,4,8,16,32,64,128,256], borderColor: '#6366f1', borderWidth: 4, tension: 0.4, fill: true, backgroundColor: 'rgba(99,102,241,0.2)' }] },
+                            options: { scales: { y: { grid: { color: '#333' } }, x: { grid: { display: false } } }, plugins: { legend: { display: false } } }
+                        });
+                    }`,
+                    steps: [{
+                        narration: "Mathematics reveals the terrifying power of exponents.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-blue-950 flex items-center justify-center">
+                        <svg viewBox="0 0 400 400" class="w-[60cqw] h-[60cqw] stroke-white fill-none stroke-2">
+                            <polygon points="200,50 350,350 50,350" stroke-dasharray="1000" stroke-dashoffset="1000"><animate attributeName="stroke-dashoffset" to="0" dur="2s" fill="freeze" /></polygon>
+                            <circle cx="200" cy="230" r="100" stroke-opacity="0"><animate attributeName="stroke-opacity" to="1" begin="2s" dur="1s" fill="freeze" /></circle>
+                        </svg>
+                    </div>`,
+                    steps: [{
+                        narration: "Geometry defines the shape of space itself.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div id="map7" class="w-full h-full z-0 relative"><div class="absolute bottom-10 left-10 z-[500] bg-black/80 p-6 rounded-xl border border-white/20"><h3 class="text-white font-bold">Athens, Greece</h3></div></div>`,
+                    script: `(ctx) => {
+                        const map = ctx.map('#map7', {zoomControl:false}).setView([37.9838, 23.7275], 6);
+                        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{y}/{x}{r}.png').addTo(map);
+                    }`,
+                    steps: [{
+                        narration: "It started here, where philosophers first applied logic to the world.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-[#0d1117] p-10 flex items-center"><pre class="w-full"><code class="language-javascript ts-sm" id="code8">function calculateReality(universe) {\n  if (universe.hasLogic()) {\n    return universe.evolve();\n  }\n}</code></pre></div>`,
+                    script: `(ctx) => Prism.highlightElement(ctx.root.querySelector('#code8'))`,
+                    steps: [{
+                        narration: "Logic is the algorithm that runs existence.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-white flex items-center justify-center"><h1 class="text-black ts-huge font-serif italic">e<sup>iπ</sup> + 1 = 0</h1></div>`,
+                    steps: [{
+                        narration: "Euler's identity. The most beautiful equation in mathematics.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-black flex items-center justify-center"><h1 class="opacity-0 translate-y-4 ts-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-1000">PHYSICS</h1></div>`,
+                    steps: [{
+                        narration: "But math is just the language. Physics is the story.",
+                        actions: [{
+                            type: 'reveal',
+                            target: 'h1'
+                        }]
+                    }]
+                },
+                // --- PHYSICS ---
+                {
+                    html: `<div class="w-full h-full relative"><img src="https://images.unsplash.com/photo-1570222301987-a228f420e6e7?q=80&w=2670" class="w-full h-full object-cover sepia brightness-50"><div class="absolute inset-0 flex items-center justify-center"><h2 class="ts-xl text-white font-serif italic">GRAVITY</h2></div></div>`,
+                    backup_svg: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="w-full h-full bg-[#2a1b0a]"><circle cx="100" cy="50" r="10" fill="#c2410c"><animate attributeName="cy" from="50" to="150" dur="1s" fill="freeze"/></circle></svg>`,
+                    steps: [{
+                        narration: "It began with a falling apple.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div id="p5-grav" class="w-full h-full bg-black"></div>`,
+                    script: `(ctx) => {
+                        new p5((p) => {
+                            let balls = [];
+                            p.setup = () => { p.createCanvas(ctx.root.offsetWidth, ctx.root.offsetHeight); for(let i=0; i<10; i++) balls.push({x:p.random(p.width), y:0, vy:0}); };
+                            p.draw = () => {
+                                p.background(0, 50); p.fill(255); p.noStroke();
+                                balls.forEach(b => { b.y += b.vy; b.vy += 0.5; if(b.y > p.height) { b.y = p.height; b.vy *= -0.7; } p.circle(b.x, b.y, 20); });
+                            };
+                        }, ctx.root.querySelector('#p5-grav'));
+                    }`,
+                    steps: [{
+                        narration: "A force that binds the universe together.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-zinc-900 p-12"><canvas id="ch13"></canvas></div>`,
+                    script: `(ctx) => { ctx.chart('#ch13', { type: 'bar', data: { labels: ['Sound', 'Light'], datasets: [{ data: [343, 299792458], backgroundColor: ['#fff', '#3b82f6'] }] }, options: { indexAxis: 'y', scales: { x: { type: 'logarithmic' } }, plugins: { legend: { display: false } } } }); }`,
+                    steps: [{
+                        narration: "Then came the speed limit. Nothing travels faster than light.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-[#111] flex items-center justify-center"><svg viewBox="0 0 200 200" class="w-64 h-64 animate-[spin_10s_linear_infinite]"><ellipse cx="100" cy="100" rx="90" ry="20" fill="none" stroke="#00ffff" stroke-width="2"/><ellipse cx="100" cy="100" rx="90" ry="20" fill="none" stroke="#00ffff" stroke-width="2" transform="rotate(60 100 100)"/><circle cx="100" cy="100" r="10" fill="white" class="animate-pulse"/></svg></div>`,
+                    steps: [{
+                        narration: "At the smallest scale, reality gets strange. The quantum realm.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full flex"><div class="w-1/2 bg-blue-900 flex items-center justify-center border-r border-white/10"><h2 class="ts-lg font-bold text-white">PARTICLE</h2></div><div class="w-1/2 bg-purple-900 flex items-center justify-center"><h2 class="ts-lg font-bold text-white">WAVE</h2></div></div>`,
+                    steps: [{
+                        narration: "Is it a particle? Or is it a wave? It is both.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-white flex items-center justify-center p-20 text-center"><p class="ts-base text-black font-light leading-relaxed">"Imagination is more important than <span id="m16" class="bg-yellow-300 px-2">knowledge</span>."</p></div>`,
+                    backup_svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="bg-white"><text x="50" y="50" text-anchor="middle" font-size="50">E=mc²</text></svg>`,
+                    steps: [{
+                        narration: "Einstein taught us that space and time are one.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div id="map17" class="w-full h-full z-0"></div>`,
+                    script: `(ctx) => { const map = ctx.map('#map17', {zoomControl:false}).setView([46.2330, 6.0557], 13); L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map); L.circle([46.2330, 6.0557], {radius: 1000, color: 'yellow', fill: false, weight: 5}).addTo(map); }`,
+                    steps: [{
+                        narration: "At CERN, we smash atoms to find the God particle.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-[#1e1e1e] p-8 flex items-center"><pre class="w-full"><code class="language-c text-green-400 ts-sm" id="code18">void updatePhysics(float dt) {\n velocity += acceleration * dt;\n position += velocity * dt;\n}</code></pre></div>`,
+                    script: `(ctx) => Prism.highlightElement(ctx.root.querySelector('#code18'))`,
+                    steps: [{
+                        narration: "We simulate these laws to build our own virtual worlds.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-black flex items-center justify-center"><div class="w-[50cqw] h-[50cqw] rounded-full bg-orange-500 shadow-[0_0_100px_orange] flex items-center justify-center animate-pulse"><div class="w-[45cqw] h-[45cqw] rounded-full bg-black"></div></div></div>`,
+                    steps: [{
+                        narration: "Where physics breaks down: The Event Horizon.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-green-950 flex items-center justify-center"><h1 class="opacity-0 translate-y-4 ts-xl font-black text-green-400 transition-all duration-1000">BIOLOGY</h1></div>`,
+                    steps: [{
+                        narration: "From matter, life emerged.",
+                        actions: [{
+                            type: 'reveal',
+                            target: 'h1'
+                        }]
+                    }]
+                },
+                // --- BIOLOGY ---
+                {
+                    html: `<div class="w-full h-full bg-black flex items-center justify-center"><svg viewBox="0 0 100 200" class="w-64 h-[80vh]"><path d="M30,0 Q70,50 30,100 T30,200" stroke="#22c55e" fill="none" stroke-width="5" class="animate-pulse"/><path d="M70,0 Q30,50 70,100 T70,200" stroke="#22c55e" fill="none" stroke-width="5" class="animate-pulse" style="animation-delay:0.5s"/><line x1="30" y1="20" x2="70" y2="20" stroke="white" stroke-width="2"/></svg></div>`,
+                    steps: [{
+                        narration: "DNA. The software of every living thing.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full relative"><img src="https://images.unsplash.com/photo-1530026405186-ed1f139313f8?q=80&w=2535" class="w-full h-full object-cover"><div class="absolute bottom-0 w-full bg-gradient-to-t from-black to-transparent p-10"><h2 class="text-white ts-lg font-bold">The Cell</h2></div></div>`,
+                    backup_svg: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="w-full h-full bg-[#14532d]"><circle cx="100" cy="100" r="80" fill="#22c55e" opacity="0.5"/><circle cx="100" cy="100" r="30" fill="#15803d"/></svg>`,
+                    steps: [{
+                        narration: "A microscopic factory of incredible complexity.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-white p-12 flex flex-col items-center"><h2 class="text-black ts-base mb-4 font-bold">Cost to Sequence Genome</h2><div class="w-full h-[80%]"><canvas id="ch23"></canvas></div></div>`,
+                    script: `(ctx) => { ctx.chart('#ch23', { type: 'line', data: { labels: ['2001', '2007', '2014', '2022'], datasets: [{ label: 'Cost ($)', data: [100000000, 10000000, 1000, 100], borderColor: '#16a34a', backgroundColor: '#16a34a' }] }, options: { scales: { y: { type: 'logarithmic' } } } }); }`,
+                    steps: [{
+                        narration: "We have learned to read this code. What cost millions now costs pennies.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div id="p5-cell" class="w-full h-full bg-green-900"></div>`,
+                    script: `(ctx) => { new p5((p) => { p.setup = () => { p.createCanvas(ctx.root.offsetWidth, ctx.root.offsetHeight); }; p.draw = () => { p.background(6, 78, 59); p.translate(p.width/2, p.height/2); p.noStroke(); p.fill(200, 255, 200); let split = p.constrain(p.frameCount * 0.5, 0, 100); p.circle(-split, 0, 100); p.circle(split, 0, 100); }; }, ctx.root.querySelector('#p5-cell')); }`,
+                    steps: [{
+                        narration: "One cell becomes two. Life finds a way to multiply.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div id="map25" class="w-full h-full z-0"></div>`,
+                    script: `(ctx) => { const map = ctx.map('#map25', {zoomControl:false}).setView([-0.8293, -90.9821], 8); L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}').addTo(map); }`,
+                    steps: [{
+                        narration: "The Galapagos. Where Darwin saw the engine of evolution.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-[#fdf6e3] flex items-center justify-center p-20"><p class="ts-base text-[#657b83] font-serif leading-loose italic">"There is grandeur in this view of life..."</p></div>`,
+                    steps: [{
+                        narration: "Survival of the fittest driven by natural selection.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full flex"><div class="w-1/2 bg-black flex flex-col items-center justify-center"><img src="https://images.unsplash.com/photo-1505672675380-5a22986271c1?q=80&w=2670" class="h-1/2 object-contain grayscale"><p class="text-white mt-4">PAST</p></div><div class="w-1/2 bg-white flex flex-col items-center justify-center"><img src="https://images.unsplash.com/photo-1544526226-d4569e1266a8?q=80&w=2670" class="h-1/2 object-contain"><p class="text-black mt-4">PRESENT</p></div></div>`,
+                    backup_svg: `<svg viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#333"/><circle cx="50" cy="50" r="30" fill="#666"/><rect x="100" width="100" height="100" fill="#eee"/><circle cx="150" cy="50" r="30" fill="#ccc"/></svg>`,
+                    steps: [{
+                        narration: "We are the result of millions of years of adaptation.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-black p-10 flex flex-col justify-center"><p class="text-gray-500 mb-2">// Homo Sapiens Genome</p><div class="text-green-500 font-mono ts-sm break-all leading-relaxed">AGCT TAGC CCGA GCTA TGGC CAAT<br><span class="text-white bg-green-900">GCTA GCAT</span> TGGC AGCT CCGA AGCT</div></div>`,
+                    steps: [{
+                        narration: "Four letters. A, G, C, T. The alphabet of existence.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-zinc-900 flex items-center justify-center p-20"><div class="w-full h-1 bg-white relative"><div class="absolute left-0 -top-2 w-4 h-4 bg-white rounded-full"></div><div class="absolute left-[80%] -top-2 w-4 h-4 bg-primary rounded-full"></div><p class="absolute left-0 top-6 text-gray-500 text-xs">Single Cell</p><p class="absolute left-[80%] top-6 text-primary text-xs font-bold">Humans</p></div></div>`,
+                    steps: [{
+                        narration: "Humans have existed for only a blink of cosmic time.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-blue-950 flex items-center justify-center"><h1 class="opacity-0 translate-y-4 ts-xl font-black text-blue-400 font-mono transition-all duration-1000">&lt;COMPUTING&gt;</h1></div>`,
+                    steps: [{
+                        narration: "Then, we built a new kind of mind.",
+                        actions: [{
+                            type: 'reveal',
+                            target: 'h1'
+                        }]
+                    }]
+                },
+                // --- COMPUTING ---
+                {
+                    html: `<div class="w-full h-full relative"><img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=2670" class="w-full h-full object-cover grayscale opacity-60"><div class="absolute inset-0 flex items-center justify-center"><h1 class="text-white ts-lg font-mono bg-black/50 p-4">DECRYPTION</h1></div></div>`,
+                    backup_svg: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="bg-gray-800"><text x="20" y="50" fill="#0f0" font-family="monospace">010101</text></svg>`,
+                    steps: [{
+                        narration: "It started with breaking codes in war.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-[#282c34] p-10 flex items-center"><pre class="w-full"><code class="language-nasm text-yellow-300 ts-sm" id="code32">section .data\n msg db 'Hello World'\nsection .text\n global _start\n_start:\n mov eax, 4</code></pre></div>`,
+                    script: `(ctx) => Prism.highlightElement(ctx.root.querySelector('#code32'))`,
+                    steps: [{
+                        narration: "Speaking to machines in their native tongue.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-white p-12"><canvas id="ch33"></canvas></div>`,
+                    script: `(ctx) => { ctx.chart('#ch33', { type: 'line', data: { labels: ['1970', '1990', '2010', '2030'], datasets: [{ label: 'Transistors', data: [1000, 1000000, 1000000000, 50000000000], borderColor: '#000' }] }, options: { scales: { y: { type: 'logarithmic' } } } }); }`,
+                    steps: [{
+                        narration: "Moore's Law. Computing power doubling every two years.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-[#111] flex items-center justify-center"><svg viewBox="0 0 400 200" class="w-full max-w-2xl"><rect x="50" y="80" width="40" height="40" fill="white" rx="5"/><rect x="310" y="80" width="40" height="40" fill="white" rx="5"/><line x1="90" y1="100" x2="310" y2="100" stroke="#333" stroke-width="2"/><circle cx="100" cy="100" r="5" fill="#3b82f6"><animate attributeName="cx" from="90" to="310" dur="1s" repeatCount="indefinite"/></circle></svg></div>`,
+                    steps: [{
+                        narration: "Information flowing as packets of light.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div id="map35" class="w-full h-full z-0"></div>`,
+                    script: `(ctx) => { const map = ctx.map('#map35', {zoomControl:false}).setView([37.4220, -122.0841], 11); L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{y}/{x}{r}.png').addTo(map); }`,
+                    steps: [{
+                        narration: "Silicon Valley. The engine of the modern world.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div id="p5-matrix" class="w-full h-full bg-black"></div>`,
+                    script: `(ctx) => { new p5((p) => { let drops = []; p.setup = () => { p.createCanvas(ctx.root.offsetWidth, ctx.root.offsetHeight); for(let i=0; i<50; i++) drops.push({x:p.random(p.width), y:p.random(p.height), s:p.random(2,5)}); }; p.draw = () => { p.background(0, 50); p.fill(0, 255, 0); p.textFont('monospace'); drops.forEach(d => { p.text(String.fromCharCode(0x30A0 + p.random(96)), d.x, d.y); d.y += d.s; if(d.y > p.height) d.y = 0; }); }; }, ctx.root.querySelector('#p5-matrix')); }`,
+                    steps: [{
+                        narration: "A digital rain of data, defining our new reality.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full relative"><img src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=2000" class="w-full h-full object-cover"><div class="absolute inset-0 bg-blue-900/30 mix-blend-color-dodge"></div></div>`,
+                    backup_svg: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="bg-black"><rect x="20" y="20" width="160" height="160" fill="#111" stroke="#333"/><circle cx="160" cy="40" r="5" fill="#0f0" class="animate-pulse"/></svg>`,
+                    steps: [{
+                        narration: "The cloud isn't in the sky. It's here, in humming rows of silicon.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-black p-8 font-mono text-green-500 ts-sm"><p>> INITIATING UPLINK...</p><p>> BYPASSING FIREWALL...</p><p class="text-white animate-pulse">> ACCESS GRANTED</p></div>`,
+                    steps: [{
+                        narration: "With great power comes great vulnerability.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-indigo-950 flex items-center justify-center p-20 text-center"><p class="ts-base text-indigo-200 font-serif italic">"The Analytical Engine weaves algebraic patterns just as the Jacquard loom weaves flowers and leaves."</p></div>`,
+                    steps: [{
+                        narration: "The first programmer saw the beauty in the machine.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-purple-950 flex items-center justify-center"><h1 class="opacity-0 translate-y-4 ts-xl font-black text-white transition-all duration-1000">THE NETWORK</h1></div>`,
+                    steps: [{
+                        narration: "Now, we are all connected.",
+                        actions: [{
+                            type: 'reveal',
+                            target: 'h1'
+                        }]
+                    }]
+                },
+                // --- CONNECTED WORLD ---
+                {
+                    html: `<div class="w-full h-full bg-[#050505] flex items-center justify-center"><svg viewBox="0 0 300 200" class="w-full max-w-2xl"><circle cx="50" cy="50" r="10" fill="#333"/><circle cx="150" cy="100" r="10" fill="#333"/><line x1="50" y1="50" x2="150" y2="100" stroke="#333" stroke-width="2"><animate attributeName="stroke" values="#333;#6366f1;#333" dur="2s" repeatCount="indefinite"/></line></svg></div>`,
+                    steps: [{
+                        narration: "Neural networks inspired by the human brain.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-zinc-900 p-12"><canvas id="ch42"></canvas></div>`,
+                    script: `(ctx) => { ctx.chart('#ch42', { type: 'bar', data: { labels: ['1995', '2005', '2015', '2025'], datasets: [{ label: 'Users', data: [0.04, 1, 3, 5.5], backgroundColor: '#a855f7' }] }, options: { plugins: { legend: { display: false } } } }); }`,
+                    steps: [{
+                        narration: "Half of humanity is now online.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div id="map43" class="w-full h-full z-0"></div>`,
+                    script: `(ctx) => { const map = ctx.map('#map43', {zoomControl:false}).setView([20,0], 2); L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{y}/{x}{r}.png').addTo(map); L.polyline([[51.5, -0.1], [40.7, -74.0]], {color: 'cyan', weight: 2}).addTo(map); }`,
+                    steps: [{
+                        narration: "Glass threads on the ocean floor connecting continents.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-[#1e293b] p-10 flex items-center"><pre class="w-full"><code class="language-python text-blue-300 ts-sm" id="code44">import torch\nmodel = Transformer()\noutput = model.generate()</code></pre></div>`,
+                    script: `(ctx) => Prism.highlightElement(ctx.root.querySelector('#code44'))`,
+                    steps: [{
+                        narration: "Artificial Intelligence learning to speak, draw, and think.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full relative"><img src="https://images.unsplash.com/photo-1622979135225-d2ba269fb1bd?q=80&w=2670" class="w-full h-full object-cover"><h1 class="absolute top-10 left-10 ts-lg font-black text-white drop-shadow-lg">METAVERSE</h1></div>`,
+                    backup_svg: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="bg-purple-900"><path d="M50 80 Q100 120 150 80 L160 100 Q100 150 40 100 Z" fill="#000" stroke="#fff"/></svg>`,
+                    steps: [{
+                        narration: "Blurring the line between the real and the virtual.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div id="p5-swarm" class="w-full h-full bg-black"></div>`,
+                    script: `(ctx) => { new p5((p) => { let swarm = []; p.setup = () => { p.createCanvas(ctx.root.offsetWidth, ctx.root.offsetHeight); for(let i=0;i<50;i++) swarm.push({x:p.random(p.width),y:p.random(p.height),vx:p.random(-1,1),vy:p.random(-1,1)}); }; p.draw = () => { p.background(0, 20); p.stroke(255); for(let i=0; i<swarm.length; i++){ let a = swarm[i]; a.x+=a.vx; a.y+=a.vy; if(a.x<0||a.x>p.width) a.vx*=-1; if(a.y<0||a.y>p.height) a.vy*=-1; p.point(a.x, a.y); } }; }, ctx.root.querySelector('#p5-swarm')); }`,
+                    steps: [{
+                        narration: "Swarm intelligence. Smarter together than alone.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full flex"><div class="w-1/2 bg-white flex items-center justify-center"><h2 class="ts-lg font-serif italic text-black">ARTIST</h2></div><div class="w-1/2 bg-black flex items-center justify-center"><h2 class="ts-lg font-mono font-bold text-white">GENERATOR</h2></div></div>`,
+                    steps: [{
+                        narration: "Will machines replace our creativity? Or amplify it?",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-purple-600 flex items-center justify-center p-20 text-center"><p class="ts-base text-white font-bold leading-tight">"Any sufficiently advanced technology is indistinguishable from <span class="text-black">magic</span>."</p></div>`,
+                    steps: [{
+                        narration: "We live in a magical age.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-black overflow-hidden flex flex-col justify-center"><div class="whitespace-nowrap animate-[scroll_5s_linear_infinite] text-white/20 ts-huge font-black">010101 DATA STREAM 010101</div></div>`,
+                    steps: [{
+                        narration: "A river of data that never sleeps.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-black flex items-center justify-center"><h1 class="opacity-0 translate-y-4 ts-xl font-black text-white italic tracking-tighter transition-all duration-1000">BEYOND</h1></div>`,
+                    steps: [{
+                        narration: "Where do we go next? To the stars.",
+                        actions: [{
+                            type: 'reveal',
+                            target: 'h1'
+                        }]
+                    }]
+                },
+                // --- FUTURE ---
+                {
+                    html: `<div class="w-full h-full relative"><img src="https://images.unsplash.com/photo-1614728853975-69c960c72217?q=80&w=2671" class="w-full h-full object-cover"><div class="absolute top-10 right-10 border border-white p-4 bg-black/50 backdrop-blur"><h2 class="text-white font-mono">SOL 1</h2></div></div>`,
+                    backup_svg: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="bg-[#3a1a1a]"><circle cx="100" cy="150" r="100" fill="#c2410c"/></svg>`,
+                    steps: [{
+                        narration: "A new home on the red planet.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-zinc-900 p-12"><canvas id="ch52"></canvas></div>`,
+                    script: `(ctx) => { ctx.chart('#ch52', { type: 'radar', data: { labels: ['Energy', 'Space', 'Control', 'AI', 'Bio'], datasets: [{ label: 'Type I Civ', data: [80, 20, 90, 80, 100], borderColor: '#facc15', backgroundColor: 'rgba(250, 204, 21, 0.2)' }] }, options: { scales: { r: { grid: { color: '#333' } } } } }); }`,
+                    steps: [{
+                        narration: "Becoming a Type I civilization. Masters of our own planet.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-black flex items-center justify-center"><svg viewBox="0 0 300 300" class="w-[80cqw] h-[80cqw]"><circle cx="150" cy="150" r="40" fill="#facc15"/><circle cx="150" cy="150" r="100" fill="none" stroke="#333" stroke-width="20" stroke-dasharray="20"/></svg></div>`,
+                    steps: [{
+                        narration: "Harvesting the full energy of the sun.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-gray-900 flex items-center justify-center text-white"><p class="ts-lg font-bold">LUNAR BASE ALPHA</p></div>`,
+                    steps: [{
+                        narration: "The Moon will be our gateway to the solar system.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div id="p5-warp" class="w-full h-full bg-black"></div>`,
+                    script: `(ctx) => { new p5((p) => { let stars = []; p.setup = () => { p.createCanvas(ctx.root.offsetWidth, ctx.root.offsetHeight); for(let i=0;i<800;i++) stars.push({x:p.random(-p.width,p.width),y:p.random(-p.height,p.height),z:p.random(p.width)}); }; p.draw = () => { p.background(0); p.translate(p.width/2, p.height/2); p.fill(255); p.noStroke(); stars.forEach(s => { s.z -= 10; if(s.z < 1) s.z = p.width; let sx = p.map(s.x/s.z, 0, 1, 0, p.width); let sy = p.map(s.y/s.z, 0, 1, 0, p.height); let r = p.map(s.z, 0, p.width, 8, 0); p.ellipse(sx, sy, r, r); }); }; }, ctx.root.querySelector('#p5-warp')); }`,
+                    steps: [{
+                        narration: "Faster than light. To boldly go where no one has gone before.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-[#050505] p-10 flex flex-col justify-center items-center"><h2 class="text-green-500 mb-4 animate-pulse">PLANETARY STATUS</h2><div class="w-full bg-gray-800 rounded-full h-6"><div class="bg-green-500 h-6 rounded-full w-[10%] animate-[width_5s_ease-out_forwards]"></div></div><p class="text-white mt-2">OXYGEN LEVELS: RISING</p></div>`,
+                    steps: [{
+                        narration: "Breathing life into dead rocks.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-black flex items-center justify-center p-20 text-center"><div class="w-2 h-2 bg-blue-400 rounded-full shadow-[0_0_10px_cyan] mb-8 mx-auto"></div><p class="ts-sm text-gray-300 font-light">"Look again at that dot. That's here. That's home. That's us."</p></div>`,
+                    steps: [{
+                        narration: "But we must never forget where we came from.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full relative"><img src="https://images.unsplash.com/photo-1462331940185-00759f5b61c6?q=80&w=2670" class="w-full h-full object-cover"><div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div></div>`,
+                    backup_svg: `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" class="bg-black"><circle cx="100" cy="100" r="1" fill="#fff" opacity="0.5"/></svg>`,
+                    steps: [{
+                        narration: "The cosmos is vast, and we have only just begun to explore.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full grid grid-cols-2 grid-rows-2"><div class="bg-blue-500 flex items-center justify-center"><i class="bi bi-cpu-fill text-white text-6xl"></i></div><div class="bg-purple-500 flex items-center justify-center"><i class="bi bi-rocket-takeoff-fill text-white text-6xl"></i></div><div class="bg-green-500 flex items-center justify-center"><i class="bi bi-flower1 text-white text-6xl"></i></div><div class="bg-yellow-500 flex items-center justify-center"><i class="bi bi-lightbulb-fill text-white text-6xl"></i></div></div>`,
+                    steps: [{
+                        narration: "Math, Physics, Biology, Computing. The tools of the architects.",
+                        actions: []
+                    }]
+                },
+                {
+                    html: `<div class="w-full h-full bg-black flex flex-col items-center justify-center p-10 overflow-hidden"><h1 id="end-t" class="opacity-0 translate-y-4 ts-huge font-black text-white italic tracking-tighter mb-4 transition-all duration-1000">FIN</h1><div id="end-b" class="opacity-0 translate-y-4 w-24 h-1 bg-primary mb-8 transition-all duration-1000"></div><p id="end-s" class="opacity-0 translate-y-4 text-gray-500 font-mono text-xs uppercase transition-all duration-1000">Auto-Video Elite // v3.1</p></div>`,
+                    steps: [{
+                        narration: "This is our reality. What will you build?",
+                        actions: [{
+                            type: 'reveal',
+                            target: '#end-t'
+                        }, {
+                            type: 'reveal',
+                            target: '#end-b'
+                        }, {
+                            type: 'reveal',
+                            target: '#end-s'
+                        }]
+                    }]
+                }
+            ]
+        };
+
+        window.onload = Engine.init;
+    </script>
+<script src="index.js"></script>
+</body>
+
+</html>
