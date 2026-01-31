@@ -1,0 +1,961 @@
+{
+  "meta": {
+    "topic": "DNA",
+    "audience": "General science enthusiasts",
+    "language": "en",
+    "syllabus": "DNA Structure and Properties; Replication and Central Dogma; Genetic Variation, Sequencing, and Data; DNA Technologies, Ethics, and Future",
+    "duration": "28 minutes"
+  },
+  "chapters": [
+    {
+      "chapter_id": "CH1",
+      "chapter_title": "DNA Structure and Properties",
+      "scenes": [
+        {
+          "scene_id": "CH1-S1",
+          "scene_type": "title_cinematic",
+          "steps": [
+            {
+              "step_id": "step1",
+              "narration": "The screen opens to a deep midnight blue field. The main title DNA: The Blueprint of Life materializes in bold letters, assembling from wisps of light as a subtle hum builds in the background.",
+              "visual_description": "Title fades in from left to center with a soft glow; a faint double helix silhouette glows behind the title and slowly rotates.",
+              "visual_actions": ["appear", "animate"],
+              "visual_suggestions": [
+                "title_DNA_blueprint.png",
+                "DNA_helix_background.gif"
+              ],
+              "sources": [
+                "Watson J.D., Crick F. (1953). A structure for deoxyribose nucleic acid. Nature.",
+                "Franklin R., Gosling L. (1952). Molecular structure of nucleic acids. Nature."
+              ]
+            },
+            {
+              "step_id": "step2",
+              "narration": "A subtitle emerges beneath the title: 'Structure, Function, Evolution'. The camera performs a gentle dolly zoom toward the screen as the subtitle settles.",
+              "visual_description": "Subtitle slides up from below; helix silhouette brightens; subtle camera zoom toward the center.",
+              "visual_actions": ["appear", "zoom", "highlight"],
+              "visual_suggestions": [
+                "subtitle_DNA_structure.png",
+                "DNA_helix_focus.png"
+              ],
+              "sources": [
+                "Alberts et al., Molecular Biology of the Cell – DNA basics",
+                "National Center for Biotechnology Information (NCBI) overview of DNA structure"
+              ]
+            },
+            {
+              "step_id": "step3",
+              "narration": "An info-bar or animated line traces a DNA-like path across the frame, hinting at the double-helix without revealing every detail, then fades to prepare for the next segment.",
+              "visual_description": "Animated line/bar traces across the frame; morphs into a faint helix; then exits.",
+              "visual_actions": ["draw", "animate", "exit"],
+              "visual_suggestions": [
+                "dna_path_bar.png",
+                "helix_subtle_outline.png"
+              ],
+              "sources": [
+                "Barabási & Oltvai on information flow in biology (2004)",
+                "Molecular biology primers – base-pair concept"
+              ]
+            }
+          ]
+        },
+        {
+          "scene_id": "CH1-S2",
+          "scene_type": "docu_title",
+          "steps": [
+            {
+              "step_id": "step1",
+              "narration": "Chapter 1 header card slides in: 'DNA Structure and Properties' accompanied by a soft dissolve to introduce the section.",
+              "visual_description": "Chapter header card enters from the left, then dissolves into a clean content transition.",
+              "visual_actions": ["appear", "dissolve"],
+              "visual_suggestions": [
+                "chapter_header_CH1.png",
+                "soft_dissolve_transition.gif"
+              ],
+              "sources": [
+                "Documentary editing techniques for chapter transitions"
+              ]
+            },
+            {
+              "step_id": "step2",
+              "narration": "A subheading appears: 'From Molecule to Life's Code', with a gentle glow around the header to emphasize importance.",
+              "visual_description": "Subheading text glows and dims in; subtle motion around the text",
+              "visual_actions": ["appear", "highlight"],
+              "visual_suggestions": [
+                "section_subheading.png"
+              ],
+              "sources": [
+                "Alberts et al., Molecular Biology of the Cell – chapter on nucleic acids"
+              ]
+            },
+            {
+              "step_id": "step3",
+              "narration": "The screen briefly shows an illustrative backbone-and-base-pair schematic, then transitions to a more detailed view of DNA structure.",
+              "visual_description": "Backbone and base pairs appear in a schematic, then morph to a clearer 3D-like representation",
+              "visual_actions": ["appear", "transition", "exit"],
+              "visual_suggestions": [
+                "backbone_schematic.png",
+                "dna_structure_detail.svg"
+              ],
+              "sources": [
+                "Heredity and DNA structural primers (textbook resource)"
+              ]
+            }
+          ]
+        },
+        {
+          "scene_id": "CH1-S3",
+          "scene_type": "collage",
+          "steps": [
+            {
+              "step_id": "step1",
+              "narration": "A collage of cellular imagery appears: histones, chromatin fibers, and DNA base pairs in a dynamic mosaic.",
+              "visual_description": "Multiple images fly in from different directions; elements arrange into a cohesive composition around a central DNA image.",
+              "visual_actions": ["appear", "arrange", "highlight"],
+              "visual_suggestions": [
+                "histone_chip.png",
+                "chromatin_bundle.jpg",
+                "base_pairs_collage.png"
+              ],
+              "sources": [
+                "Alberts et al.; chromatin organization resources",
+                "ENCODE project overview"
+              ]
+            },
+            {
+              "step_id": "step2",
+              "narration": "The backbone is highlighted while the base-pair rungs light up in alternating colors to emphasize A-T and G-C pairing.",
+              "visual_description": "Backbone highlighted; A-T and G-C bases glow with color-coded accents.",
+              "visual_actions": ["highlight", "zoom", "pulse"],
+              "visual_suggestions": [
+                "backbone_highlight.png",
+                "base_pair_colors.svg"
+              ],
+              "sources": [
+                "DNA base pairing rules – educational resources"
+              ]
+            },
+            {
+              "step_id": "step3",
+              "narration": "The collage tightens into a single, coherent representation of DNA’s key features and then dissolves to the next scene.",
+              "visual_description": "Elements tighten into a unified DNA motif; the scene exits with a soft dissolve.",
+              "visual_actions": ["animate", "exit"],
+              "visual_suggestions": [
+                "collage_to_dna_single.png"
+              ],
+              "sources": [
+                "Educational visualizations of DNA structure"
+              ]
+            }
+          ]
+        },
+        {
+          "scene_id": "CH1-S4",
+          "scene_type": "webgl",
+          "steps": [
+            {
+              "step_id": "step1",
+              "narration": "A 3D DNA double helix model emerges in perspective, built in WebGL with subtle lighting.",
+              "visual_description": "3D helix model materializes with smooth shading; camera begins a slow orbit around the molecule.",
+              "visual_actions": ["appear", "rotate", "highlight"],
+              "visual_suggestions": [
+                "dna_3d_model.webgl"
+              ],
+              "sources": [
+                "DNA 3D visualization resources; structural biology databases"
+              ]
+            },
+            {
+              "step_id": "step2",
+              "narration": "The camera completes a 180-degree orbit, revealing major and minor grooves colored to distinguish sugar-phosphate backbone and bases.",
+              "visual_description": "Camera continues orbit; grooves colored to differentiate components.",
+              "visual_actions": ["pan", "highlight", "rotate"],
+              "visual_suggestions": [
+                "groove_colors.png"
+              ],
+              "sources": [
+                "Molecular Biology principles on DNA grooves"
+              ]
+            },
+            {
+              "step_id": "step3",
+              "narration": "As the orbit ends, the helix spins slowly and shifts color to indicate dynamic conformation, then returns to a neutral view as the scene exits.",
+              "visual_description": "Spin and color shift; transition to neutral view; exit.",
+              "visual_actions": ["rotate", "color_shift", "exit"],
+              "visual_suggestions": [
+                "dna_spin_shift.gif"
+              ],
+              "sources": [
+                "Structural dynamics studies of DNA conformations"
+              ]
+            }
+          ]
+        },
+        {
+          "scene_id": "CH1-S5",
+          "scene_type": "svg",
+          "steps": [
+            {
+              "step_id": "step1",
+              "narration": "A clean SVG ladder appears, representing the DNA backbone with numbered base-pair rungs, coming into focus one by one.",
+              "visual_description": "DNA ladder lines appear; base-pair rungs stagger into place; labels show A-T and G-C on each rung.",
+              "visual_actions": ["appear", "scroll", "highlight"],
+              "visual_suggestions": [
+                "dna_ladder.svg"
+              ],
+              "sources": [
+                "Educational SVG renderings of DNA ladder"
+              ]
+            },
+            {
+              "step_id": "step2",
+              "narration": "Bases are labeled: A pairs with T, G pairs with C; the anti-parallel orientation is indicated with subtle arrows.",
+              "visual_description": "Labels appear; arrows show anti-parallel orientation; color coding emphasizes pairing rules.",
+              "visual_actions": ["highlight", "arrow_show", "pan"],
+              "visual_suggestions": [
+                "base_pair_labels.svg",
+                "anti_parallel_arrows.png"
+              ],
+              "sources": [
+                "Basic nucleic acid pairing information from textbooks"
+              ]
+            },
+            {
+              "step_id": "step3",
+              "narration": "The ladder tightens into a compact but readable schematic, then transitions to a broader view of chromatin packaging.",
+              "visual_description": "Compact DNA schematic; transition to chromatin-level view.",
+              "visual_actions": ["collapse", "transition", "exit"],
+              "visual_suggestions": [
+                "dna_to_chromatin.svg"
+              ],
+              "sources": [
+                "Chromatin structure of DNA in textbooks"
+              ]
+            }
+          ]
+        },
+        {
+          "scene_id": "CH1-S6",
+          "scene_type": "timeline",
+          "steps": [
+            {
+              "step_id": "step1",
+              "narration": "A horizontal timeline appears, with markers at key moments in DNA history: 1869 (Miescher’s nuclein), 1952 (X-ray diffraction images by Franklin), 1953 (Watson and Crick's DNA structure).",
+              "visual_description": "Horizontal line appears with labeled milestones; markers pop sequentially.",
+              "visual_actions": ["draw", "pop", "highlight"],
+              "visual_suggestions": [
+                "timeline_milestones.png"
+              ],
+              "sources": [
+                "Miescher's nuclein discovery (1869)",
+                "Franklin & Wilkins (1952)",
+                "Watson & Crick (1953)"
+              ]
+            },
+            {
+              "step_id": "step2",
+              "narration": "Date markers glow as each milestone is briefly described by the narrator with a short caption.",
+              "visual_description": "Captions appear near each milestone; glow highlights cycle through milestones.",
+              "visual_actions": ["highlight", "scroll", "pause"],
+              "visual_suggestions": [
+                "timeline_labels.png"
+              ],
+              "sources": [
+                "Historical timeline references"
+              ]
+            },
+            {
+              "step_id": "step3",
+              "narration": "The active year zooms toward 1953, where the DNA structure is finalized, then the timeline soft-dissolves into the next chapter.",
+              "visual_description": "Active year highlight centered; camera zooms; transition to CH2.",
+              "visual_actions": ["zoom", "highlight", "exit"],
+              "visual_suggestions": [
+                "timeline_active_1953.png"
+              ],
+              "sources": [
+                "Watson & Crick (1953)"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "chapter_id": "CH2",
+      "chapter_title": "Replication and the Central Dogma",
+      "scenes": [
+        {
+          "scene_id": "CH2-S1",
+          "scene_type": "docu_title",
+          "steps": [
+            {
+              "step_id": "step1",
+              "narration": "Chapter header reveals: 'Replication and the Central Dogma'. Subtle motion introduces the concept of information transfer from DNA to functional products.",
+              "visual_description": "Chapter header card slides in, with an ambient DNA motif in the background.",
+              "visual_actions": ["appear", "dissolve"],
+              "visual_suggestions": [
+                "chapter_header_CH2.png"
+              ],
+              "sources": [
+                "Crick's Central Dogma concept (1958)"
+              ]
+            },
+            {
+              "step_id": "step2",
+              "narration": "A secondary subtitle emphasizes replication and transcription: how information is copied and read.",
+              "visual_description": "Subtitle fade-in with gentle glow; small icons for DNA, RNA, and protein appear.",
+              "visual_actions": ["appear", "highlight"],
+              "visual_suggestions": [
+                "subtitle_CH2.png",
+                "dna_rna_protein_icons.png"
+              ],
+              "sources": [
+                "Central Dogma explanations from molecular biology texts"
+              ]
+            },
+            {
+              "step_id": "step3",
+              "narration": "The scene transitions to a more visual explanation using a montage of core processes.",
+              "visual_description": "Transition to a montage sequence that previews replication and transcription steps.",
+              "visual_actions": ["transition", "exit"],
+              "visual_suggestions": [
+                "monteage_core_processes.mp4"
+              ],
+              "sources": [
+                "Overview of replication and transcription in textbooks"
+              ]
+            }
+          ]
+        },
+        {
+          "scene_id": "CH2-S2",
+          "scene_type": "ken_burns_photo",
+          "steps": [
+            {
+              "step_id": "step1",
+              "narration": "A replication fork scene materializes with a 3D-like photo pan of the fork, showing DNA strands being separated by helicase.",
+              "visual_description": "KEN BURNS style image of replication fork: slow pan, subtle vignette, focus on fork.",
+              "visual_actions": ["appear", "pan", "highlight"],
+              "visual_suggestions": [
+                "replication_fork_photo.jpg"
+              ],
+              "sources": [
+                "Kornberg (1974) DNA polymerase discovery; replication mechanism primers"
+              ]
+            },
+            {
+              "step_id": "step2",
+              "narration": "The polymerases add nucleotides to form complementary strands; the fork grows as replication proceeds.",
+              "visual_description": "Base pairing action simulated on the fork; nucleotides add in real time.",
+              "visual_actions": ["animate", "highlight", "exit"],
+              "visual_suggestions": [
+                "polymerase_action.gif"
+              ],
+              "sources": [
+                "DNA replication mechanics – textbooks"
+              ]
+            },
+            {
+              "step_id": "step3",
+              "narration": "The scene shifts to a broader view showing how replication ensures faithful genetic inheritance.",
+              "visual_description": "Global view of the replication process with simplified chromosomal segment highlighted.",
+              "visual_actions": ["pan", "exit"],
+              "visual_suggestions": [
+                "replication_overview.svg"
+              ],
+              "sources": [
+                "Genetic inheritance principles in molecular biology"
+              ]
+            }
+          ]
+        },
+        {
+          "scene_id": "CH2-S3",
+          "scene_type": "p5_diagram",
+          "steps": [
+            {
+              "step_id": "step1",
+              "narration": "A P5.js-generated diagram unfolds: DNA unwinds, RNA primase lays down primers, DNA polymerase extends the new strand.",
+              "visual_description": "Interactive diagram with dynamic labels for helicase, primase, polymerase; nucleotides flow in.",
+              "visual_actions": ["appear", "animate", "highlight"],
+              "visual_suggestions": [
+                "p5_replication_diagram.ts"
+              ],
+              "sources": [
+                "Kornberg replication studies; primer creation concepts"
+              ]
+            },
+            {
+              "step_id": "step2",
+              "narration": "Leading and lagging strands are illustrated, with okazaki fragments forming on the lagging strand.",
+              "visual_description": "Two strands: continuous leading strand; discontinuous fragments on lagging strand; ligase seals gaps.",
+              "visual_actions": ["highlight", "scroll", "assemble"],
+              "visual_suggestions": [
+                "leading_lagging_fragments.svg"
+              ],
+              "sources": [
+                "DNA replication fork models from molecular biology primers"
+              ]
+            },
+            {
+              "step_id": "step3",
+              "narration": "The diagram transitions to a simplified view of transcription: information flows from DNA to RNA.",
+              "visual_description": "Arrow from DNA to a growing RNA strand; polymerase movement indicated.",
+              "visual_actions": ["animate", "highlight", "exit"],
+              "visual_suggestions": [
+                "transcription_flow.png"
+              ],
+              "sources": [
+                "Central Dogma and transcription basics"
+              ]
+            }
+          ]
+        },
+        {
+          "scene_id": "CH2-S4",
+          "scene_type": "chart_full",
+          "steps": [
+            {
+              "step_id": "step1",
+              "narration": "A full-screen chart illustrates the Central Dogma: DNA is transcribed to RNA, which is translated into protein.",
+              "visual_description": "Fullscreen chart with DNA, RNA, protein nodes connected by arrows; animation highlights the directional flow.",
+              "visual_actions": ["appear", "highlight", "animate"],
+              "visual_suggestions": [
+                "central_dogma_chart.png"
+              ],
+              "sources": [
+                "Crick's central dogma concept; standard textbooks"
+              ]
+            },
+            {
+              "step_id": "step2",
+              "narration": "Key steps flash in with brief captions: 'Transcription', 'Translation', 'Protein Folding'.",
+              "visual_description": "Step captions pop sequentially; icons next to each caption animate.",
+              "visual_actions": ["pop", "highlight", "exit"],
+              "visual_suggestions": [
+                "transcription_translation_icons.png"
+              ],
+              "sources": [
+                "Molecular biology primers on transcription and translation"
+              ]
+            },
+            {
+              "step_id": "step3",
+              "narration": "The chart dissolves into the next scene, reminding viewers that DNA is the master code.",
+              "visual_description": "Chart dissolves with a soft fade; DNA motif remains subtly in background.",
+              "visual_actions": ["dissolve", "exit"],
+              "visual_suggestions": [
+                "dna_motif_background.png"
+              ],
+              "sources": [
+                "General DNA conceptual resources"
+              ]
+            }
+          ]
+        },
+        {
+          "scene_id": "CH2-S5",
+          "scene_type": "code_terminal",
+          "steps": [
+            {
+              "step_id": "step1",
+              "narration": "A terminal-style window appears, and the sequence of transcription is printed line by line as if typed in real time.",
+              "visual_description": "Monospace window with blinking cursor; lines of RNA transcription appear sequentially.",
+              "visual_actions": ["appear", "type", "cursor_blink"],
+              "visual_suggestions": [
+                "rna_transcription_terminal.gif"
+              ],
+              "sources": [
+                "Genes and transcription – basic concept overviews"
+              ]
+            },
+            {
+              "step_id": "step2",
+              "narration": "We see a prompt: 'DNA -> RNA: transcription in detail', then the lines illustrate base pairing rules in real time.",
+              "visual_description": "Lines show DNA template and nascent RNA with base-pair matching (A-U, C-G).",
+              "visual_actions": ["type", "highlight"],
+              "visual_suggestions": [
+                "rna_basepairing_rules.png"
+              ],
+              "sources": [
+                "Transcription mechanism basics"
+              ]
+            },
+            {
+              "step_id": "step3",
+              "narration": "The terminal window compresses into a small icon that hints at translation engines, signaling the next stage.",
+              "visual_description": "Terminal shrinks to a corner; a ribosome icon appears to buzz in the distance.",
+              "visual_actions": ["exit", "dock"],
+              "visual_suggestions": [
+                "translation_icon.png"
+              ],
+              "sources": [
+                "Translation and ribosome concept primers"
+              ]
+            }
+          ]
+        },
+        {
+          "scene_id": "CH2-S6",
+          "scene_type": "flowchart",
+          "steps": [
+            {
+              "step_id": "step1",
+              "narration": "A concise flowchart breaks down replication: initiation, elongation, and termination, with arrows guiding the path.",
+              "visual_description": "Flowchart nodes appear in order; arrows connect stages with glowing lines.",
+              "visual_actions": ["appear", "connect", "highlight"],
+              "visual_suggestions": [
+                "replication_flowchart.png"
+              ],
+              "sources": [
+                "Molecular biology primers – replication steps"
+              ]
+            },
+            {
+              "step_id": "step2",
+              "narration": "Each step is briefly described by captions that appear beside each node: 'Unwind', 'Copy', 'Terminate'.",
+              "visual_description": "Captions pop alongside nodes; active path glows.",
+              "visual_actions": ["appear", "highlight", "scroll"],
+              "visual_suggestions": [
+                "flowchart_step_captions.png"
+              ],
+              "sources": [
+                "Educational flowchart resources"
+              ]
+            },
+            {
+              "step_id": "step3",
+              "narration": "The flowchart compresses into a compact summary and fades to the next topic.",
+              "visual_description": "Flowchart collapses; transition to CH3.",
+              "visual_actions": ["collapse", "exit"],
+              "visual_suggestions": [
+                "flowchart_summary.png"
+              ],
+              "sources": [
+                "General genetic flow concepts"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "chapter_id": "CH3",
+      "chapter_title": "Genetic Variation, Sequencing, and Data",
+      "scenes": [
+        {
+          "scene_id": "CH3-S1",
+          "scene_type": "docu_title",
+          "steps": [
+            {
+              "step_id": "step1",
+              "narration": "Chapter header appears: 'Genetic Variation, Sequencing, and Data', introducing how diversity is measured and interpreted.",
+              "visual_description": "Chapter header slides in with a subtle shimmer; a DNA diversity motif animates in the background.",
+              "visual_actions": ["appear", "shine", "dissolve"],
+              "visual_suggestions": [
+                "chapter_header_CH3.png"
+              ],
+              "sources": [
+                "Population genetics foundations"
+              ]
+            },
+            {
+              "step_id": "step2",
+              "narration": "A secondary subtitle emphasizes the role of sequencing and data in modern biology.",
+              "visual_description": "Subtitle fades in with data-like glyphs streaming across the screen.",
+              "visual_actions": ["appear", "scroll", "highlight"],
+              "visual_suggestions": [
+                " sequencing_data_glyphs.png"
+              ],
+              "sources": [
+                "Next-generation sequencing overviews"
+              ]
+            },
+            {
+              "step_id": "step3",
+              "narration": "The scene transitions to a data-centric overview, hinting at real-world datasets and maps.",
+              "visual_description": "Transition to a data visualization motif (datasets and maps).",
+              "visual_actions": ["transition", "exit"],
+              "visual_suggestions": [
+                "data_visual_transition.png"
+              ],
+              "sources": [
+                "Genome datasets and data visualization primers"
+              ]
+            }
+          ]
+        },
+        {
+          "scene_id": "CH3-S2",
+          "scene_type": "map_points",
+          "steps": [
+            {
+              "step_id": "step1",
+              "narration": "A global genetic map loads, with pins marking key populations and loci across continents.",
+              "visual_description": "World map loads; pins appear with gentle glow; side UI panel reveals locus names.",
+              "visual_actions": ["appear", "pin_glow", "pan"],
+              "visual_suggestions": [
+                "global_genome_map.png",
+                "pin_glow_effect.gif"
+              ],
+              "sources": [
+                "1000 Genomes Project and population genetics resources"
+              ]
+            },
+            {
+              "step_id": "step2",
+              "narration": "The map scrolls to a few highlights: a gene region, allele frequency, and diversity index.",
+              "visual_description": "Map pans to selected regions with side panel data updates.",
+              "visual_actions": ["scroll", "update_ui", "highlight"],
+              "visual_suggestions": [
+                "region_highlights.svg",
+                "allele_frequency_panel.png"
+              ],
+              "sources": [
+                "Population genetics datasets"
+              ]
+            },
+            {
+              "step_id": "step3",
+              "narration": "The UI panel folds back and the map dissolves to the next scene.",
+              "visual_description": "Panel folds; map fades to next scene.",
+              "visual_actions": ["fold", "exit"],
+              "visual_suggestions": [
+                "ui_panel_fold.png"
+              ],
+              "sources": [
+                "UI/UX visualization techniques"
+              ]
+            }
+          ]
+        },
+        {
+          "scene_id": "CH3-S3",
+          "scene_type": "stock_ticker",
+          "steps": [
+            {
+              "step_id": "step1",
+              "narration": "A horizontal stock-ticker stream shows sequencing read counts and variant allele frequencies scrolling across the screen.",
+              "visual_description": "Numbers and color-coded changes scroll left to right; red/green indicate variant frequency shifts.",
+              "visual_actions": ["scroll", "color_change", "pause"],
+              "visual_suggestions": [
+                "sequencing_read_counts_ticker.gif"
+              ],
+              "sources": [
+                "Genomic sequencing data interpretation"
+              ]
+            },
+            {
+              "step_id": "step2",
+              "narration": "Key statistical summaries appear as flash badges: coverage, depth, and minor allele frequency.",
+              "visual_description": "Badges slide in with numeric values; color cues denote significance.",
+              "visual_actions": ["appear", "highlight", "exit"],
+              "visual_suggestions": [
+                "stat_badges.png"
+              ],
+              "sources": [
+                "Genomics sequencing QC metrics"
+              ]
+            },
+            {
+              "step_id": "step3",
+              "narration": "The ticker dissolves to the next scene, carrying forward the data-centric theme.",
+              "visual_description": "Ticker fades; transition to next step.",
+              "visual_actions": ["exit"],
+              "visual_suggestions": [
+                "ticker_to_next.png"
+              ],
+              "sources": [
+                "Data visualization flow"
+              ]
+            }
+          ]
+        },
+        {
+          "scene_id": "CH3-S4",
+          "scene_type": "parallax",
+          "steps": [
+            {
+              "step_id": "step1",
+              "narration": "A multi-layer parallax of genomes slowly reveals layers: individual genomes, population structure, and a global comparison.",
+              "visual_description": "Foreground genome layer moves faster than background population-structure layer; depth cues emphasize layering.",
+              "visual_actions": ["scroll", "pan", "adjust"],
+              "visual_suggestions": [
+                "genome_parallax_layers.png"
+              ],
+              "sources": [
+                "Population genetics and comparative genomics"
+              ]
+            },
+            {
+              "step_id": "step2",
+              "narration": "The layers converge into a single cohesive view, illustrating how variation shapes population differences.",
+              "visual_description": "Layers merge; a combined visualization shows diversity patterns.",
+              "visual_actions": ["merge", "highlight", "exit"],
+              "visual_suggestions": [
+                "layer_merge.png"
+              ],
+              "sources": [
+                "Diversity and population genetics literature"
+              ]
+            },
+            {
+              "step_id": "step3",
+              "narration": "Transition to a 3D plot of genetic variation, hinting at clustering and principal component analysis.",
+              "visual_description": "3D scatter grows from a cloud into distinct clusters.",
+              "visual_actions": ["transition", "rotate", "highlight"],
+              "visual_suggestions": [
+                "genetic_pca_3dplot.png"
+              ],
+              "sources": [
+                "PCA and clustering in genomics"
+              ]
+            }
+          ]
+        },
+        {
+          "scene_id": "CH3-S5",
+          "scene_type": "3d_plot",
+          "steps": [
+            {
+              "step_id": "step1",
+              "narration": "A 3D plot builds: points representing individuals cluster by ancestry; the camera rotates to reveal structure.",
+              "visual_description": "3D scatter/surface formation; clusters labeled by ancestry; camera rotates around the plot.",
+              "visual_actions": ["appear", "rotate", "highlight"],
+              "visual_suggestions": [
+                "genetic_pca_3dplot_activity.png"
+              ],
+              "sources": [
+                "Principal component analysis in population genomics"
+              ]
+            },
+            {
+              "step_id": "step2",
+              "narration": "The clusters settle into recognizable groups, illustrating human genetic diversity.",
+              "visual_description": "Clusters settle; annotations identify major continental groups.",
+              "visual_actions": ["settle", "annotate", "pause"],
+              "visual_suggestions": [
+                "genetic_clusters_annotations.png"
+              ],
+              "sources": [
+                "Population genetics diversity resources"
+              ]
+            },
+            {
+              "step_id": "step3",
+              "narration": "The plot softly fades into a heatmap theme to preview next discussion of variant frequencies.",
+              "visual_description": "Heatmap overlay fades in on top of the plot.",
+              "visual_actions": ["overlay", "fade_in", "exit"],
+              "visual_suggestions": [
+                "heatmap_overlay.png"
+              ],
+              "sources": [
+                "Genomic variant frequency heatmaps in population genetics"
+              ]
+            }
+          ]
+        },
+        {
+          "scene_id": "CH3-S6",
+          "scene_type": "heatmap_pulse",
+          "steps": [
+            {
+              "step_id": "step1",
+              "narration": "A pulse of heat maps across a grid shows regional variant frequencies rising and falling with time.",
+              "visual_description": "Grid-based heatmap animates with pulsing cells indicating frequency changes.",
+              "visual_actions": ["pulse", "highlight", "scroll"],
+              "visual_suggestions": [
+                "regional_variant_heatmap.gif"
+              ],
+              "sources": [
+                "Regional variant frequency studies"
+              ]
+            },
+            {
+              "step_id": "step2",
+              "narration": "Key regions light up with high frequencies; a caption provides context about sampling depth and bias.",
+              "visual_description": "High-frequency cells glow; contextual captions appear.",
+              "visual_actions": ["highlight", "caption", "exit"],
+              "visual_suggestions": [
+                "high_freq_regions.png"
+              ],
+              "sources": [
+                "Genomic sampling bias discussions"
+              ]
+            },
+            {
+              "step_id": "step3",
+              "narration": "Heatmap dissolves to the next topic, signaling transition toward sequencing data interpretation.",
+              "visual_description": "Heatmap fades; transition cue to CH4.",
+              "visual_actions": ["dissolve", "exit"],
+              "visual_suggestions": [
+                "exit_to_next_topic.png"
+              ],
+              "sources": [
+                "Educational heatmap visualization techniques"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "chapter_id": "CH4",
+      "chapter_title": "DNA Technologies, Ethics, and Future",
+      "scenes": [
+        {
+          "scene_id": "CH4-S1",
+          "scene_type": "docu_title",
+          "steps": [
+            {
+              "step_id": "step1",
+              "narration": "Chapter header reveals: 'DNA Technologies, Ethics, and Future'. A soft ambient glow accompanies the title as the scene transitions from prior topics into applied technologies.",
+              "visual_description": "Chapter header card with a subtle glow; ambient DNA motif in the background.",
+              "visual_actions": ["appear", "glow", "dissolve"],
+              "visual_suggestions": [
+                "chapter_header_CH4.png"
+              ],
+              "sources": [
+                "Ethical discussions in genome editing and biotechnology"
+              ]
+            },
+            {
+              "step_id": "step2",
+              "narration": "A hologram-scan montage demonstrates CRISPR-Cas editing: a DNA target sequence is scanned and a precise edit is shown in place.",
+              "visual_description": "Hologram-like wireframe scanning of a target sequence; focal pulse highlights the edit site.",
+              "visual_actions": ["appear", "scan", "highlight"],
+              "visual_suggestions": [
+                "hologram_crispr_scan.png"
+              ],
+              "sources": [
+                "CRISPR-Cas9 foundational papers (Doudna & Charpentier, 2012)"
+              ]
+            },
+            {
+              "step_id": "step3",
+              "narration": "A montage contrasts potential benefits and risks: treating disease against risks of off-target effects and ethics of enhancement.",
+              "visual_description": "Split-screen: benefits on one side (disease treatment), risks on the other (off-target edits, ethical icons).",
+              "visual_actions": ["split", "highlight", "exit"],
+              "visual_suggestions": [
+                "crispr_benefits_risks_split.png"
+              ],
+              "sources": [
+                "Ethics guidelines in genome editing; Nature and Science editorials"
+              ]
+            }
+          ]
+        },
+        {
+          "scene_id": "CH4-S4",
+          "scene_type": "pros_and_cons",
+          "steps": [
+            {
+              "step_id": "step1",
+              "narration": "A two-column layout presents 'Pros' and 'Cons' with animated bullet points highlighting the most important considerations.",
+              "visual_description": "Left column lists Pros with check marks; right column lists Cons with caution icons; current point highlighted as narration references it.",
+              "visual_actions": ["appear", "highlight", "scroll"],
+              "visual_suggestions": [
+                "pros_cons_editing.png"
+              ],
+              "sources": [
+                "Ethical analyses of gene editing"
+              ]
+            },
+            {
+              "step_id": "step2",
+              "narration": "The key takeaways from the discussion appear one by one, culminating in a thoughtful closing thought.",
+              "visual_description": "Bullet points animate in sequence; a closing thought card appears.",
+              "visual_actions": ["appear", "highlight", "exit"],
+              "visual_suggestions": [
+                "pros_cons_takeaways.png"
+              ],
+              "sources": [
+                "Policy and ethics resources"
+              ]
+            },
+            {
+              "step_id": "step3",
+              "narration": "The two-column panel dissolves into a full-screen, forward-looking message about responsible innovation.",
+              "visual_description": "Panel dissolves; full-screen optimistic message about responsible science.",
+              "visual_actions": ["dissolve", "exit"],
+              "visual_suggestions": [
+                "future_of_genomics_message.png"
+              ],
+              "sources": [
+                "Ethics and policy discussions worldwide"
+              ]
+            }
+          ]
+        },
+        {
+          "scene_id": "CH4-S5",
+          "scene_type": "end_cinematic",
+          "steps": [
+            {
+              "step_id": "step1",
+              "narration": "The final statement appears: 'DNA is a living record of life and a frontier of science.' A slow-motion reveal fades to a neutral gradient as credits begin.",
+              "visual_description": "End cinematic with slow motion reveal; text sits over a neutral gradient.",
+              "visual_actions": ["appear", "fade", "exit"],
+              "visual_suggestions": [
+                "end_credits_reveal.png"
+              ],
+              "sources": [
+                "General documentary ending styles"
+              ]
+            },
+            {
+              "step_id": "step2",
+              "narration": "Key terms reappear in kinetic typography to reinforce retention: DNA, Genome, CRISPR, Ethics.",
+              "visual_description": "Kinetic typography with bold terms moving rhythmically in time with narration.",
+              "visual_actions": ["highlight", "animate", "exit"],
+              "visual_suggestions": [
+                "kinetic_typography_terms.png"
+              ],
+              "sources": [
+                "Educational typography techniques for retention"
+              ]
+            }
+          ]
+        },
+        {
+          "scene_id": "CH4-S6",
+          "scene_type": "ken_burns_photo",
+          "steps": [
+            {
+              "step_id": "step1",
+              "narration": "A final Ken Burns-style montage cycles through imagery of laboratories, classrooms, and global communities benefiting from DNA science.",
+              "visual_description": "Images fade in and pan slowly; color shifts subtly to convey tone transitions.",
+              "visual_actions": ["appear", "pan", "color_shift"],
+              "visual_suggestions": [
+                "dna_lab_classroom_global.jpg"
+              ],
+              "sources": [
+                "Science outreach visuals; educational resources"
+              ]
+            },
+            {
+              "step_id": "step2",
+              "narration": "The montage ends with a call to action: learn, think critically, and participate in responsible science.",
+              "visual_description": "Closing frame with a call-to-action banner and soft fade to black.",
+              "visual_actions": ["fade_out", "exit"],
+              "visual_suggestions": [
+                "call_to_action_banner.png"
+              ],
+              "sources": [
+                "Science communication best practices"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "closing": {
+    "summary": "This production guides viewers through DNA basics, replication, the central dogma, genetic variation and data, and the cutting-edge technologies shaping biology today. It weaves in historical milestones, real-world datasets, and ethical considerations to give a holistic view of DNA as both a scientific foundation and a social topic.",
+    "final_actions": [
+      "Provide a list of recommended reading and trusted online resources on DNA and genetics.",
+      "Offer downloadable assets and data visualizations used in the video.",
+      "Invite audience feedback and questions to foster engagement and deeper learning."
+    ]
+  }
+}
