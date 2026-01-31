@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Video-Like</title>
+
+    <!-- LIBRARIES -->
+    <script src="https://js.puter.com/v2/"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- FONTS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800;900&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #fbbf24;
+            --glass: rgba(10, 10, 12, 0.9);
+            --border: rgba(255, 255, 255, 0.12);
+            --ease: cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        body {
+            background-color: #000;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            color: white;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #stage-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+            position: relative;
+            padding-bottom: 100px;
+        }
+
+        #stage-content {
+            background: #000;
+            position: relative;
+            aspect-ratio: 16/9;
+            width: 100%;
+            max-width: calc((100vh - 200px) * (16/9));
+            box-shadow: 0 0 0 1px #333, 0 50px 100px -20px rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+            container-type: size;
+            transition: aspect-ratio 0.5s var(--ease);
+        }
+
+        #stage-content.portrait {
+            aspect-ratio: 9/16;
+            max-width: none;
+            height: 85vh;
+            width: auto;
+        }
+
+        /* UI LAYER & AUTO-HIDE */
+        .ui-layer {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: auto;
+            min-width: 320px;
+            height: 70px;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 35px;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 0 1.5rem;
+            z-index: 2000;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
+        }
+
+        .ui-layer.inactive {
+            opacity: 0;
+            transform: translateX(-50%) translateY(40px);
+            pointer-events: none;
+        }
+
+        .btn-ui {
+            background: rgba(255, 255, 255, 0.05);
+            color: #94a3b8;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: 0.2s;
+        }
+
+        .btn-ui:hover {
+            background: white;
+            color: black;
+            transform: translateY(-2px);
+        }
+
+        .btn-ui.active {
+            background: var(--primary);
+            color: black;
+        }
+
+        .btn-play {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: white;
+            color: black;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+
+        /* SYSTEM MENU */
+        #system-menu {
+            position: absolute;
+            bottom: 90px;
+            left: 0;
+            background: #09090b;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            width: 280px;
+            padding: 8px;
+            display: none;
+            flex-direction: column;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+            transform-origin: bottom left;
+            animation: menuPop 0.2s var(--ease);
+        }
+
+        #system-menu.open {
+            display: flex;
+        }
+
+        @keyframes menuPop {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        /* MODALS */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(15px);
+            z-index: 5000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal-box {
+            width: 850px;
+            max-width: 95%;
+            background: #09090b;
+            border: 1px solid #27272a;
+            border-radius: 24px;
+            padding: 32px;
+        }
+
+        /* TOASTS */
+        #notification-area {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: #1a1a1a;
+            color: white;
+            border-left: 4px solid var(--primary);
+            padding: 12px 24px;
+            border-radius: 12px;
+            transform: translateX(120%);
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        /* LOADER */
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left-color: var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ERROR FALLBACK PATTERN */
+        .bg-fallback-tech {
+            background-image: radial-gradient(#333 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            margin-top: -7px;
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="notification-area"></div>
+
+    <div id="stage-container">
+        <div id="stage-content"></div>
+    </div>
+
+    <div class="ui-layer" id="main-ui">
+        <div class="relative">
+            <button class="btn-ui" onclick="Engine.ui.toggleMenu()" id="menu-btn"><i class="bi bi-grid-fill"></i></button>
+            <div id="system-menu">
+                <div class="p-3 hover:bg-white/10 cursor-pointer rounded-lg flex items-center gap-3" onclick="Engine.ui.openModal('ai')"><i class="bi bi-robot text-purple-400"></i> AI Architect</div>
+                <div class="p-3 hover:bg-white/10 cursor-pointer rounded-lg flex items-center gap-3" onclick="Engine.ui.openModal('audio')"><i class="bi bi-music-note-beamed text-pink-400"></i> Background Music</div>
+                <div class="p-3 hover:bg-white/10 cursor-pointer rounded-lg flex items-center gap-3" onclick="Engine.ui.copyPrompt()"><i class="bi bi-file-earmark-text text-yellow-400"></i> Script Prompt</div>
+                <div class="p-3 hover:bg-white/10 cursor-pointer rounded-lg flex items-center gap-3" onclick="Engine.ui.openModal('settings')"><i class="bi bi-sliders text-blue-400"></i> Studio Settings</div>
+                <div class="p-3 hover:bg-white/10 cursor-pointer rounded-lg flex items-center gap-3" onclick="Engine.ui.openModal('import')"><i class="bi bi-code-slash text-green-400"></i> Project JSON</div>
+                <div class="h-[1px] bg-white/10 my-1"></div>
+                <div class="p-3 hover:bg-white/10 cursor-pointer rounded-lg flex items-center gap-3" onclick="Engine.ui.toggleRatio()"><i class="bi bi-phone"></i> Toggle Portrait</div>
+            </div>
+        </div>
+        <button class="btn-ui" onclick="Engine.prev()"><i class="bi bi-skip-start-fill"></i></button>
+        <button class="btn-play" id="play-btn" onclick="Engine.togglePlay()"><i class="bi bi-play-fill"></i></button>
+        <button class="btn-ui" onclick="Engine.next()"><i class="bi bi-skip-end-fill"></i></button>
+        <button class="btn-ui" onclick="Engine.ui.toggleFullscreen()"><i class="bi bi-arrows-fullscreen"></i></button>
+    </div>
+
+    <!-- AUDIO MODAL -->
+    <div id="modal-audio" class="modal-overlay">
+        <div class="modal-box w-[600px]">
+            <h2 class="text-3xl font-black mb-8 italic tracking-tighter">BACKGROUND MUSIC</h2>
+
+            <div class="mb-8">
+                <div class="flex justify-between mb-2">
+                    <label class="text-[10px] text-gray-500 font-bold tracking-[0.2em]">MUSIC VOLUME</label>
+                    <span id="bgm-vol-val" class="text-primary text-xs font-mono">30%</span>
+                </div>
+                <input type="range" min="0" max="1" step="0.05" value="0.3" oninput="Engine.audio.setVolume(this.value)">
+            </div>
+
+            <label class="text-[10px] text-gray-500 font-bold tracking-[0.2em] block mb-4">PRESET LIBRARY</label>
+            <div class="grid gap-3 mb-8">
+                <div class="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 bg-pink-500/20 rounded-full flex items-center justify-center text-pink-400"><i class="bi bi-music-note"></i></div>
+                        <div>
+                            <div class="font-bold text-sm">Study Lo-Fi 1</div>
+                            <div class="text-[10px] text-gray-400">Chill / Ambient</div>
+                        </div>
+                    </div>
+                    <button onclick="Engine.audio.setTrack('https://res.cloudinary.com/dmttn34te/video/upload/v1763065409/study-110111_at7lye.mp3')" class="px-4 py-2 bg-white text-black text-xs font-bold rounded-lg hover:bg-primary transition"><i class="bi bi-play-circle-fill mr-1"></i> LOAD</button>
+                </div>
+                <div class="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center text-blue-400"><i class="bi bi-music-note"></i></div>
+                        <div>
+                            <div class="font-bold text-sm">Study Focus 2</div>
+                            <div class="text-[10px] text-gray-400">Piano / Soft</div>
+                        </div>
+                    </div>
+                    <button onclick="Engine.audio.setTrack('https://res.cloudinary.com/dmttn34te/video/upload/v1763064765/study-music-181044_jbuwpq.mp3')" class="px-4 py-2 bg-white text-black text-xs font-bold rounded-lg hover:bg-primary transition"><i class="bi bi-play-circle-fill mr-1"></i> LOAD</button>
+                </div>
+            </div>
+
+            <label class="text-[10px] text-gray-500 font-bold tracking-[0.2em] block mb-4">UPLOAD CUSTOM</label>
+            <input type="file" accept="audio/*" onchange="Engine.audio.upload(this)" class="w-full text-xs text-gray-400 file:mr-4 file:py-3 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20 transition cursor-pointer">
+
+            <button onclick="Engine.ui.closeModal()" class="w-full mt-8 bg-white/5 border border-white/10 text-white font-bold py-4 rounded-xl hover:bg-white/10 transition">CLOSE</button>
+        </div>
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div id="modal-settings" class="modal-overlay">
+        <div class="modal-box">
+            <h2 class="text-3xl font-black mb-8 italic tracking-tighter">STUDIO SETTINGS</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div>
+                    <label class="text-[10px] text-gray-500 font-bold tracking-[0.2em] mb-4 block">NARRATION VOICE</label>
+                    <div class="flex gap-2 mb-4">
+                        <button onclick="Engine.audio.filterVoices('all')" class="px-3 py-1 bg-white/10 border border-white/10 rounded text-xs">ALL</button>
+                        <button onclick="Engine.audio.filterVoices('male')" class="px-3 py-1 bg-white/10 border border-white/10 rounded text-xs">MALE</button>
+                        <button onclick="Engine.audio.filterVoices('female')" class="px-3 py-1 bg-white/10 border border-white/10 rounded text-xs">FEMALE</button>
+                    </div>
+                    <select id="voice-select" class="w-full bg-black border border-white/10 rounded-xl p-4 text-sm" onchange="Engine.audio.setVoice(this.value)"></select>
+                </div>
+                <div class="space-y-8">
+                    <div>
+                        <div class="flex justify-between mb-2"><label class="text-[10px] text-gray-500 font-bold tracking-[0.2em]">SPEED</label><span id="speed-val" class="text-primary text-xs font-mono">1.0x</span></div>
+                        <input type="range" id="tts-speed" min="0.5" max="2.0" step="0.1" value="1.0" oninput="document.getElementById('speed-val').innerText=this.value+'x'">
+                    </div>
+                    <div>
+                        <div class="flex justify-between mb-2"><label class="text-[10px] text-gray-500 font-bold tracking-[0.2em]">PITCH</label><span id="pitch-val" class="text-primary text-xs font-mono">1.0</span></div>
+                        <input type="range" id="tts-pitch" min="0.1" max="2.0" step="0.1" value="1.0" oninput="document.getElementById('pitch-val').innerText=this.value">
+                    </div>
+                </div>
+            </div>
+            <button onclick="Engine.ui.closeModal()" class="w-full mt-12 bg-white/5 border border-white/10 text-white font-bold py-4 rounded-xl hover:bg-primary hover:text-black transition">SAVE CHANGES</button>
+        </div>
+    </div>
+
+    <!-- JSON EDITOR MODAL -->
+    <div id="modal-import" class="modal-overlay">
+        <div class="modal-box w-[1000px] relative">
+            <h2 class="text-xl font-bold mb-4 italic">PROJECT JSON EDITOR</h2>
+
+            <!-- LOADER OVERLAY -->
+            <div id="json-loader" class="absolute inset-0 bg-black/90 z-50 flex flex-col items-center justify-center rounded-2xl hidden">
+                <div class="loading-spinner mb-6"></div>
+                <div class="text-2xl font-bold italic tracking-tighter animate-pulse">DIRECTOR IS WRITING SCRIPT...</div>
+                <div class="text-gray-500 text-xs mt-2 font-mono">Generating Scenes, Visuals, and Narration</div>
+            </div>
+
+            <div class="flex gap-4 mb-6">
+                <button onclick="Engine.io.downloadJSON()" class="flex-1 bg-blue-600/20 border border-blue-500/50 text-blue-400 font-bold py-3 rounded-xl hover:bg-blue-600 hover:text-white transition"><i class="bi bi-download mr-2"></i> DOWNLOAD PROJECT</button>
+                <button onclick="document.getElementById('file-upload').click()" class="flex-1 bg-purple-600/20 border border-purple-500/50 text-purple-400 font-bold py-3 rounded-xl hover:bg-purple-600 hover:text-white transition"><i class="bi bi-upload mr-2"></i> UPLOAD JSON</button>
+                <input type="file" id="file-upload" hidden accept=".json" onchange="Engine.io.uploadJSON(this)">
+            </div>
+            <textarea id="json-editor" class="w-full h-[450px] bg-[#0d1117] text-green-400 font-mono text-xs p-6 rounded-2xl border border-white/10 outline-none resize-none" spellcheck="false"></textarea>
+            <div class="mt-6 flex gap-4">
+                <button onclick="Engine.io.apply()" class="flex-[2] bg-green-600 text-white font-black py-4 rounded-xl tracking-widest hover:bg-green-500 transition">APPLY CHANGES</button>
+                <button onclick="Engine.ui.closeModal()" class="flex-1 bg-white/5 text-gray-400 font-bold py-4 rounded-xl">CLOSE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI ARCHITECT MODAL -->
+    <div id="modal-ai" class="modal-overlay">
+        <div class="modal-box">
+            <h2 class="text-4xl font-black italic mb-2 tracking-tighter">AI ARCHITECT</h2>
+            <p class="text-gray-500 text-xs mb-6 font-mono tracking-widest uppercase">Puter.js Powered</p>
+
+            <textarea id="ai-prompt" class="w-full bg-black border border-white/10 rounded-2xl p-6 h-40 mb-4 text-white outline-none focus:border-primary transition font-mono text-sm" placeholder="Enter topic, full script JSON, or description here..."></textarea>
+
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                    <label class="text-[10px] text-gray-500 font-bold tracking-[0.2em] block mb-2">TARGET AUDIENCE</label>
+                    <select id="ai-style" class="w-full bg-black border border-white/10 rounded-xl p-3 text-sm text-gray-300">
+                        <option value="documentary">Cinematic Documentary</option>
+                        <option value="teaching">Educational / Academic</option>
+                        <option value="kids">Kids / Storytelling</option>
+                        <option value="hybrid">Hybrid Explainer</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[10px] text-gray-500 font-bold tracking-[0.2em] block mb-2">LANGUAGE</label>
+                    <select id="ai-lang" class="w-full bg-black border border-white/10 rounded-xl p-3 text-sm text-gray-300"></select>
+                </div>
+            </div>
+
+            <div class="flex gap-4">
+                <button id="json-btn" onclick="Engine.ai.getScript()" class="flex-1 bg-gray-900 text-white font-bold py-5 rounded-2xl hover:bg-gray-700 transition flex items-center justify-center gap-2 border border-white/10">
+                    <i class="bi bi-file-earmark-code"></i> RESEARCH
+                </button>
+                <button id="gen-btn" onclick="Engine.ai.render()" class="flex-[2] bg-gray-500 text-yellow-400 font-black py-5 rounded-2xl tracking-[0.3em] hover:bg-white transition flex items-center justify-center gap-2">
+                    <i class="bi bi-film"></i> GENERATE
+                </button>
+            </div>
+            <button onclick="Engine.ui.closeModal()" class="w-full mt-4 text-gray-600 text-xs hover:text-white transition">CANCEL</button>
+        </div>
+    </div>
+    <script>
+        const DEMO_DATA = {
+            "meta": {
+                "title": "Showcase",
+                "lang": "en-US"
+            },
+            "scenes": [{
+                "html": "<div class='w-full h-full bg-black flex items-center justify-center'><h1 id='h1' class='text-6xl font-black italic opacity-0 translate-y-4 transition-all duration-1000 tracking-tighter'>VIDEO-LIKE <span class='text-amber-500'>AI</span></h1></div>",
+                "steps": [{
+                    "narration": "Welcome to Video-Like. The future of content creation.",
+                    "actions": [{
+                        "type": "reveal",
+                        "target": "#h1"
+                    }]
+                }]
+            }]
+        };
+
+        const SCRIPT_PROMPT = `
+**Video-Like Apps Script Generator: Researched Narration with Visual Guidance**
+
+You are a world-class documentary and educational content creator. Your task is to generate a **fully structured, production-ready video script** using researched materials, designed for automated AI video generation.
+
+**Input:**
+[User provided topic or syllabus]
+
+**Target Duration:**
+Approximately 20–30 minutes of spoken narration or longer depending on full unit length
+
+---
+
+**Instructions:**
+
+1. **Divide input automatically into chapters or sub-topics**.
+2. **For each chapter**, generate **multiple modular scenes**, using the **Universal Scene Library (56 scenes)** as reference.
+3. Each **scene must include multi-step visual narration**, describing:
+   * Visual actions per step: appear, highlight, point, zoom, pan, scroll, adjust, animate, exit
+   * Scene type: image, video, SVG, Canvas, WebGL, p5.js, 2D cartoon, UI mockups
+   * Step-by-step progression (e.g., step1: fade in, step2: zoom, step3: highlight)
+   * Visual suggestions: images, videos, diagrams, animations
+   * Research sources for each step: textbooks, journals, websites, archival videos, datasets
+4. **Maintain narration style per audience type**.
+5. Integrate research naturally: trends, stats, data, maps, images, videos, diagrams.
+6. Sections of the script:
+   * Title / Chapter Header
+   * Opening Hook
+   * Background / Context
+   * Core Explanation (split into multi-step visual scenes)
+   * Data / Evidence / Maps / Trends
+   * Implications / Impact
+   * Key Takeaways
+   * Closing Summary
+
+**Output Requirements:**
+
+* Produce **JSON output only**.
+* JSON must include:
+  * meta: topic, audience, language, syllabus, duration
+  * chapters: chapter_id, chapter_title, scenes
+  * each scene: scene_id, scene_type, step-by-step visual narrative, actions, visual_suggestions, sources
+  * closing: summary and final actions
+* Narration text should be **descriptive per scene step**, showing how the scene should look and animate, **not plain narration only**.
+* The AI may choose which scenes to produce and how many times.
+
+---
+
+# 56 Distinct Scene Types & Library Idea
+
+Usage: Documentary, explainer, education, cinematic narration, AI video generation  
+Core Actions: appear, highlight, point, zoom, pan, scroll, adjust, animate, exit  
+Media Types: Image, Video, SVG, Canvas, WebGL, p5.js, 2D cartoon, UI mockups  
+
+## Scene List
+
+1. TITLE CINEMATIC – Main title reveals, subtitle appears, animated bar draws, fade out  
+2. DOCU TITLE – Chapter or section title card appears, subtle motion, dissolve  
+3. NEWSPAPER – Page appears, headline highlights, article zoom, burn or crumple exit  
+4. NEON DATA CRASH – Line chart draws, peaks, crashes to zero, red shockwave pulse  
+5. SATELLITE MAP ZOOM – Earth view, continent, city, street, target pin pulse  
+6. MAP POINTS – Map loads, pins or polygons appear, hover glow, side UI panel reveals  
+7. DETECTIVE BOARD – Photos fly in, red strings connect clues, link reveal  
+8. COUNTER – Numbers spin rapidly, decelerate, final value locks, glow highlight  
+9. QUOTE – Quote text fades in, key phrase highlights, attribution appears  
+10. KEN BURNS PHOTO – Image fades in, slow pan and zoom, vignette, color shift  
+11. VIDEO – Fullscreen video plays, captions appear, glitch or film grain overlay  
+12. TIMELINE – Line draws, date markers pop, scrubber moves, active year highlights  
+13. KPI STATS CASCADE – Info cards stagger in, numbers count up, confirmation marks  
+14. GLITCH TEXT – RGB split, jitter and static, distortion, clean reform  
+15. PARTICLE EXPLOSION – Central pulse, particle burst, radial expansion, settle  
+16. LIQUID WAVEFORM – SVG wave animates, peaks glow, amplitude reacts to audio  
+17. MATRIX RAIN – Symbol columns fall, random glyph highlights, continuous stream  
+18. FIREWORKS BURST – Launch trails, aerial bursts, sparkles fall, fade  
+19. AURORA WAVES – Flowing plasma bands, color shifts, ambient motion  
+20. NEON SIGN GLOW – Text flickers, glow layers activate, steady illumination  
+21. HOLOGRAM SCAN – Wireframe rotates, scanline passes, vertices flare  
+22. DOUGHNUT CHART – Segments animate in, percentages appear, hover expansion  
+23. HEATMAP PULSE – Grid fades in, intensity pulses, crosshair scans focus area  
+24. PROCESS STEPS – Step cards appear sequentially, active step highlights, arrow points  
+25. 3D BAR GRAPH – Bars extrude upward, light sweep, labels fade in  
+26. NETWORK NODES – Nodes pulse, connections draw, data flows across edges  
+27. STOCK TICKER – Numbers scroll horizontally, color change on rise or fall  
+28. FUNNEL – Particles enter top, drop through stages, conversion rate shown  
+29. GAUGE SWEEP – Needle moves from zero, accelerates, settles on value  
+30. BULLETS – Bullet points animate in one by one, current point highlights  
+31. CODE TERMINAL – Terminal window appears, code types line by line, cursor blinks  
+32. 3D PLOT – Scatter or surface plot builds, camera rotates, clusters highlight  
+33. KINETIC TYPOGRAPHY – Large text animates rhythmically with narration  
+34. TABLE – Table fades in, rows highlight sequentially, key cell zooms  
+35. P5 DIAGRAM – Generative or physics diagram runs, parameters animate  
+36. COMPARISON – Split screen, left and right labels, differences highlighted  
+37. SPOTLIGHT – Screen darkens, circular spotlight reveals focus area  
+38. BREAKING NEWS – Broadcast frame appears, headline bar, scrolling ticker  
+39. PROS AND CONS – Two-column layout, points animate alternately, summary highlight  
+40. CHART FULL – Fullscreen chart animates, trend emphasized, annotations appear  
+41. CHART SPLIT – Chart on one side, explanation text or image on the other  
+42. NOTIFICATIONS – Notification bubble slides in, icon pulses, dismiss animation  
+43. CALENDAR – Calendar view appears, date circles, event label pops  
+44. PICTURE IN PICTURE – Small video or image overlays main scene, resizes, exits  
+45. VENN DIAGRAM – Circles animate in, overlap highlights, labels appear  
+46. CAROUSEL – Cards slide or flip, center item enlarges, side items blur  
+47. SOCIAL POST – Social media card appears, interaction counts animate  
+48. CHAT CONVERSATION – Chat bubbles appear sequentially, typing indicator, pause  
+49. SLIDER – Before and after divider slides, difference highlighted  
+50. QUIZ – Question appears, options animate in, correct answer highlights  
+51. TREE DIAGRAM – Root node appears, branches grow, leaf nodes highlight  
+52. FLOWCHART – Nodes animate in order, arrows draw, active path glows  
+53. COLLAGE – Multiple images fly in, arrange dynamically, unified composition  
+54. PARALLAX – Foreground and background layers move at different speeds  
+55. EXPLODED VIEW – Object separates into components, labels appear, reassemble  
+56. END CINEMATIC – Final statement or credits, slow motion, fade to neutral gradient  
+
+## Implementation Notes
+
+Performance Target: Mobile-friendly, 30fps  
+Scene Design: Each scene supports narration-driven highlighting, pointing, zooming, scrolling, and clean exits  
+AI Compatibility: Each scene is a modular block with internal narrative sub-steps
+`;
+
+        const DIRECTOR_PROMPT_TEMPLATE = (prompt, style, langCode) => `
+# APP: Video-Like
+# ROLE: Elite Documentary & Educational Director
+# GOAL: Create a complete, professional, cinematic explainer/educational video.
+
+# INPUT
+Topic / Keyword / Syllabus / Sources / Library / Unit / Raw Script: 
+"${prompt}"
+
+Audience Type: ${style}  (documentary / teaching / kids / hybrid)
+Language: ${langCode}  (narration text must be in this language for TTS)
+
+# INSTRUCTIONS
+1. Analyze the INPUT. If it is already JSON, refine it. If it is text/topic, create a full script.
+2. Structure into Chapters -> Scenes -> Steps.
+3. Use the Universal Scene Library (title, map, chart, video, image, quiz, etc).
+4. Create step-by-step visual actions (reveal, highlight, point, zoom, pan, scroll, adjust, animate, exit).
+5. Visual types: image, video, SVG, Canvas, p5.js, 2D cartoon, UI mockups.
+6. Background mood and cinematic style.
+7. Charts, diagrams, maps, or data visualization where relevant.
+8. Write engaging narration describing each scene clearly.
+9. Optional credible references: textbooks, journals, websites, datasets.
+10. Ensure smooth pacing and cinematic transitions between scenes (fade, zoom, dissolve, slide).
+11. Repeat or vary scene types as needed to explain concepts clearly.
+12. Include background audio or TTS narration synced with visuals if applicable.
+13. Output a complete, production-ready video plan: every scene, step, narration, visual, and transition is fully described.
+14. The AI decides the number of scenes and scene types based on topic complexity.
+
+# SCENE TYPES (You can invent or repeat as needed)
+title_cinematic, bullets, quote, image, video, newspaper, map_points, kinetic, docu_title, spotlight, film_strip, pip, social_post, chat_conv, breaking_news, notifications, chart_split, chart_full, 3d_plot, timeline, table, funnel, calendar, counter, flowchart, code_terminal, concept, quiz, tree, matrix, comparison, pros_cons, venn, tier_list, slider, bento, carousel, collage, parallax, exploded, search, end, neon_data, satellite_map, detective_board, kpi_stats, glitch_text, particle_explosion, liquid_waveform, matrix_rain, fireworks, aurora, neon_sign, hologram, doughnut, heatmap, process_steps, network_nodes, stock_ticker, gauge, p5_diagram
+
+# NARRATION
+Break complex scenes into 5–6 phases. Each phase must have a visual action (reveal, highlight, chart_highlight, pointing).
+
+# OUTPUT
+Output ONLY valid JSON based on this blueprint: ${JSON.stringify(DEMO_DATA)}
+Valid JSON ONLY. Maximize variety. No placeholders. Include meta, scenes, steps, narration, actions, visuals, and optional references.`;
+    </script>
+    <script>
+        const Engine = {
+            data: null,
+            state: {
+                scene: 0,
+                step: 0,
+                paused: true,
+                voice: null,
+                idleTimer: null,
+                activeScript: null
+            },
+            audioEl: new Audio(),
+            tts: window.speechSynthesis,
+
+            init: () => {
+                Engine.audioEl.loop = true;
+                Engine.audioEl.volume = 0.3;
+
+                const systemInit = () => {
+                    Engine.audio.populateVoices();
+                    const aiSel = document.getElementById('ai-lang');
+                    aiSel.innerHTML = '';
+                    const voices = Engine.tts.getVoices();
+                    const uniqueLangs = [...new Set(voices.map(v => v.lang))].sort();
+                    uniqueLangs.forEach(langCode => {
+                        const opt = document.createElement('option');
+                        opt.value = langCode;
+                        try {
+                            const readable = new Intl.DisplayNames([navigator.language], {
+                                type: 'language'
+                            }).of(langCode);
+                            opt.text = `${readable} (${langCode})`;
+                        } catch (e) {
+                            opt.text = langCode;
+                        }
+                        aiSel.appendChild(opt);
+                    });
+                    const enLang = uniqueLangs.find(l => l.startsWith('en'));
+                    if (enLang) aiSel.value = enLang;
+                };
+
+                if (Engine.tts.getVoices().length) systemInit();
+                else Engine.tts.onvoiceschanged = systemInit;
+
+                Engine.ui.trackIdle();
+                Engine.load(DEMO_DATA);
+            },
+
+            load: (json) => {
+                Engine.data = json;
+                Engine.state.scene = 0;
+                Engine.state.step = 0;
+                Engine.state.paused = true;
+                Engine.render(0);
+                Engine.loader.preload(1);
+                Engine.ui.update();
+            },
+
+            gfx: {
+                handleError: (img) => {
+                    const sceneIdx = parseInt(img.dataset.sceneIndex || 0);
+                    const attempt = parseInt(img.dataset.failCount || 0) + 1;
+                    img.dataset.failCount = attempt;
+                    if (attempt <= 2) {
+                        img.src = `https://picsum.photos/seed/${sceneIdx}_tech/1920/1080?grayscale&blur=2`;
+                        return;
+                    }
+                    img.style.display = 'none';
+                    img.parentElement.classList.add('bg-fallback-tech', 'bg-gray-900');
+                }
+            },
+
+            loader: {
+                preload: (nextIdx) => {
+                    for (let i = nextIdx; i < nextIdx + 2; i++) {
+                        if (Engine.data && Engine.data.scenes[i]) {
+                            const parser = new DOMParser();
+                            const doc = parser.parseFromString(Engine.data.scenes[i].html, 'text/html');
+                            doc.querySelectorAll('img').forEach(img => {
+                                const i = new Image();
+                                i.src = img.src;
+                            });
+                        }
+                    }
+                }
+            },
+
+            render: (idx) => {
+                if (Engine.state.activeScript && Engine.state.activeScript.remove) {
+                    try {
+                        Engine.state.activeScript.remove();
+                    } catch (e) {}
+                }
+                if (!Engine.data.scenes[idx]) return;
+                const stage = document.getElementById('stage-content');
+                const scene = Engine.data.scenes[idx];
+                const layer = document.createElement('div');
+                layer.className = 'slide-layer bg-black active';
+                let processedHTML = scene.html.replace(/<img /g, `<img data-scene-index="${idx}" onerror="Engine.gfx.handleError(this)" `);
+                layer.innerHTML = processedHTML;
+                const old = stage.querySelectorAll('.slide-layer.active');
+                old.forEach(l => {
+                    l.classList.remove('active');
+                    setTimeout(() => l.remove(), 800);
+                });
+                stage.appendChild(layer);
+                if (scene.script) {
+                    setTimeout(() => {
+                        try {
+                            const fn = new Function('return ' + scene.script)();
+                            const instance = fn({
+                                root: layer,
+                                chart: (id, cfg) => new Chart(layer.querySelector(id), cfg),
+                                map: (id, cfg) => L.map(layer.querySelector(id), cfg),
+                                p5: (sketch, id) => new p5(sketch, layer.querySelector(id)),
+                                window: window
+                            });
+                            Engine.state.activeScript = instance;
+                        } catch (e) {
+                            console.error("Script Error:", e);
+                        }
+                    }, 50);
+                }
+            },
+
+            playStep: () => {
+                if (Engine.state.paused) return;
+                const scene = Engine.data.scenes[Engine.state.scene];
+                const step = scene.steps[Engine.state.step];
+                if (step.actions) {
+                    step.actions.forEach(a => {
+                        const el = document.querySelector(a.target);
+                        if (el) {
+                            if (a.type === 'reveal') el.classList.remove('opacity-0', 'translate-y-4', 'scale-90');
+                            if (a.type === 'highlight') el.classList.add('active', 'border-primary');
+                            if (a.type === 'width-grow') el.style.width = a.value || '100%';
+                            if (a.type === 'custom') {
+                                try {
+                                    new Function('return ' + a.fn)()();
+                                } catch (e) {}
+                            }
+                        }
+                    });
+                }
+                Engine.tts.cancel();
+                const u = new SpeechSynthesisUtterance(step.narration);
+                u.voice = Engine.state.voice;
+                u.rate = parseFloat(document.getElementById('tts-speed').value);
+                u.pitch = parseFloat(document.getElementById('tts-pitch').value);
+                u.onend = () => {
+                    if (!Engine.state.paused) setTimeout(Engine.nextStep, 500);
+                };
+                Engine.tts.speak(u);
+            },
+
+            nextStep: () => {
+                if (Engine.state.paused) return;
+                const scene = Engine.data.scenes[Engine.state.scene];
+                if (Engine.state.step < scene.steps.length - 1) {
+                    Engine.state.step++;
+                    Engine.playStep();
+                } else if (Engine.state.scene < Engine.data.scenes.length - 1) {
+                    Engine.state.scene++;
+                    Engine.state.step = 0;
+                    Engine.render(Engine.state.scene);
+                    Engine.loader.preload(Engine.state.scene + 1);
+                    setTimeout(Engine.playStep, 1000);
+                } else {
+                    Engine.togglePlay();
+                }
+            },
+
+            togglePlay: () => {
+                Engine.state.paused = !Engine.state.paused;
+                Engine.ui.update();
+                if (!Engine.state.paused) {
+                    Engine.audioEl.play().catch(() => {});
+                    Engine.playStep();
+                } else {
+                    Engine.audioEl.pause();
+                    Engine.tts.cancel();
+                }
+            },
+
+            prev: () => {
+                if (Engine.state.scene > 0) {
+                    Engine.state.paused = true;
+                    Engine.state.scene--;
+                    Engine.state.step = 0;
+                    Engine.render(Engine.state.scene);
+                    Engine.ui.update();
+                }
+            },
+            next: () => {
+                if (Engine.state.scene < Engine.data.scenes.length - 1) {
+                    Engine.state.paused = true;
+                    Engine.state.scene++;
+                    Engine.state.step = 0;
+                    Engine.render(Engine.state.scene);
+                    Engine.loader.preload(Engine.state.scene + 1);
+                    Engine.ui.update();
+                }
+            },
+
+            ai: {
+                getScript: async () => {
+                    // Existing research logic (kept same as previous version but abbreviated here)
+                    const promptText = document.getElementById('ai-prompt').value;
+                    if (!promptText) {
+                        Engine.ui.notify("Topic needed", "error");
+                        return;
+                    }
+                    const btn = document.getElementById('json-btn');
+                    btn.disabled = true;
+                    btn.innerHTML = "RESEARCHING...";
+                    try {
+                        const res = await puter.ai.chat(`${SCRIPT_PROMPT}\n\nTOPIC: ${promptText}\n\nOUTPUT JSON.`);
+                        let clean = res.message.content.replace(/```json|```/g, "").trim();
+                        document.getElementById('ai-prompt').value = clean;
+                        Engine.ui.notify("Research Complete", "success");
+                    } catch (e) {
+                        Engine.ui.notify("Error", "error");
+                    }
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-file-earmark-code"></i> RESEARCH';
+                },
+
+                // NEW RENDER LOGIC
+                render: async () => {
+                    const promptText = document.getElementById('ai-prompt').value;
+                    const langCode = document.getElementById('ai-lang').value;
+                    const style = document.getElementById('ai-style').value;
+
+                    // 1. Switch to JSON Modal and Show Loader
+                    Engine.ui.openModal('import');
+                    const loader = document.getElementById('json-loader');
+                    loader.classList.remove('hidden');
+
+                    // 2. Set Voice preference
+                    const voices = Engine.tts.getVoices();
+                    const matchingVoice = voices.find(v => v.lang === langCode);
+                    if (matchingVoice) {
+                        Engine.state.voice = matchingVoice;
+                        document.getElementById('voice-select').value = voices.indexOf(matchingVoice);
+                    }
+
+                    try {
+                        // 3. Call AI with whatever text is in promptText
+                        const fullPrompt = DIRECTOR_PROMPT_TEMPLATE(promptText, style, langCode);
+
+                        const res = await puter.ai.chat(fullPrompt, {
+                            model: 'gemini-3-flash-preview'
+                        });
+
+                        let clean = res.message.content;
+                        if (clean.includes('```json')) {
+                            clean = clean.split('```json')[1].split('```')[0].trim();
+                        } else if (clean.includes('```')) {
+                            clean = clean.split('```')[1].split('```')[0].trim();
+                        }
+
+                        // 4. Populate JSON Editor & Render
+                        document.getElementById('json-editor').value = clean;
+                        Engine.io.apply(); // This loads the JSON and validates it
+                        Engine.ui.notify("Masterpiece Generated!", "success");
+                        setTimeout(() => Engine.togglePlay(), 1000);
+
+                    } catch (e) {
+                        console.error(e);
+                        Engine.ui.notify("Generation failed. Try again.", "error");
+                        // Reveal editor even if failed so user can see raw output
+                    } finally {
+                        loader.classList.add('hidden');
+                    }
+                }
+            },
+
+            audio: {
+                populateVoices: (filter = 'all') => {
+                    const voices = Engine.tts.getVoices();
+                    const sel = document.getElementById('voice-select');
+                    sel.innerHTML = '';
+                    voices.forEach((v, i) => {
+                        let show = true;
+                        const n = v.name.toLowerCase();
+                        if (filter === 'male' && (n.includes('female') || n.includes('zira') || n.includes('samantha'))) show = false;
+                        if (filter === 'female' && (n.includes('male') || n.includes('david'))) show = false;
+                        if (show) {
+                            const opt = document.createElement('option');
+                            opt.value = i;
+                            opt.text = `${v.name} (${v.lang})`;
+                            sel.appendChild(opt);
+                        }
+                    });
+                    if (sel.options.length > 0 && !Engine.state.voice) {
+                        Engine.state.voice = voices[sel.options[0].value];
+                    }
+                },
+                filterVoices: (gender) => Engine.audio.populateVoices(gender),
+                setVoice: (idx) => Engine.state.voice = Engine.tts.getVoices()[idx],
+
+                // NEW AUDIO FUNCTIONS
+                setVolume: (val) => {
+                    Engine.audioEl.volume = val;
+                    document.getElementById('bgm-vol-val').innerText = Math.round(val * 100) + '%';
+                },
+                setTrack: (url) => {
+                    Engine.audioEl.src = url;
+                    if (!Engine.state.paused) Engine.audioEl.play();
+                    Engine.ui.notify("Music Track Loaded", "success");
+                },
+                upload: (input) => {
+                    if (input.files && input.files[0]) {
+                        const url = URL.createObjectURL(input.files[0]);
+                        Engine.audio.setTrack(url);
+                    }
+                }
+            },
+
+            io: {
+                downloadJSON: () => {
+                    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(Engine.data, null, 2));
+                    const dlAnchorElem = document.createElement('a');
+                    dlAnchorElem.setAttribute("href", dataStr);
+                    dlAnchorElem.setAttribute("download", "VideoLike_Project.json");
+                    dlAnchorElem.click();
+                },
+                uploadJSON: (input) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        document.getElementById('json-editor').value = e.target.result;
+                        Engine.ui.notify('JSON Loaded to Editor', 'success');
+                    };
+                    reader.readAsText(input.files[0]);
+                },
+                apply: () => {
+                    try {
+                        const json = JSON.parse(document.getElementById('json-editor').value);
+                        Engine.load(json);
+                        Engine.ui.notify('Project Updated', 'success');
+                    } catch (e) {
+                        Engine.ui.notify('Invalid JSON Format', 'error');
+                    }
+                }
+            },
+
+            ui: {
+                toggleMenu: () => {
+                    document.getElementById('system-menu').classList.toggle('open');
+                    document.getElementById('menu-btn').classList.toggle('active');
+                },
+                openModal: (id) => {
+                    Engine.ui.closeModal();
+                    document.getElementById('system-menu').classList.remove('open');
+                    document.getElementById('modal-' + id).classList.add('open');
+                    if (id === 'import') {
+                        // Only fill if not empty (to preserve generated text if any)
+                        if (!document.getElementById('json-editor').value) {
+                            document.getElementById('json-editor').value = JSON.stringify(Engine.data, null, 2);
+                        }
+                    }
+                },
+                closeModal: () => document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open')),
+                toggleRatio: () => document.getElementById('stage-content').classList.toggle('portrait'),
+                toggleFullscreen: () => document.fullscreenElement ? document.exitFullscreen() : document.body.requestFullscreen(),
+                notify: (msg, type) => {
+                    const t = document.createElement('div');
+                    t.className = `toast`;
+                    let icon = type === 'success' ? 'bi-check-circle-fill' : (type === 'error' ? 'bi-exclamation-triangle-fill' : 'bi-info-circle-fill');
+                    t.innerHTML = `<i class="bi ${icon}"></i> ${msg}`;
+                    document.getElementById('notification-area').appendChild(t);
+                    setTimeout(() => t.classList.add('show'), 100);
+                    setTimeout(() => {
+                        t.classList.remove('show');
+                        setTimeout(() => t.remove(), 500);
+                    }, 3000);
+                },
+                trackIdle: () => {
+                    const bar = document.getElementById('main-ui');
+                    const reset = () => {
+                        bar.classList.remove('inactive');
+                        clearTimeout(Engine.state.idleTimer);
+                        Engine.state.idleTimer = setTimeout(() => {
+                            if (!Engine.state.paused) bar.classList.add('inactive');
+                        }, 5000);
+                    };
+                    ['mousemove', 'mousedown', 'keydown', 'touchstart'].forEach(e => window.addEventListener(e, reset));
+                    reset();
+                },
+                update: () => {
+                    document.getElementById('play-btn').innerHTML = Engine.state.paused ? '<i class="bi bi-play-fill"></i>' : '<i class="bi bi-pause-fill"></i>';
+                },
+                copyPrompt: () => {
+                    navigator.clipboard.writeText(SCRIPT_PROMPT);
+                    Engine.ui.notify('Script Prompt Copied', 'success');
+                }
+            }
+        };
+
+        window.onload = Engine.init;
+    </script>
+</body>
+
+</html>
