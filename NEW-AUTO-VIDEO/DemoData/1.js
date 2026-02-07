@@ -5,7 +5,7 @@ const DEMO_DATA = {
         "lang": "en-US"
     },
     "scenes": [
-        // 1. TITLE_CINEMATIC: Blur-to-Focus with God Ray (WORKING)
+        // 1. TITLE_CINEMATIC: Blur-to-Focus with God Ray
         {
             "html": `
             <div class="w-full h-full bg-black relative flex items-center justify-center overflow-hidden">
@@ -39,7 +39,7 @@ const DEMO_DATA = {
             ]
         },
 
-        // 2. KINETIC_TYPE: High Contrast Rhythmic (REBUILT & FIXED)
+        // 2. KINETIC_TYPE: High Contrast Rhythmic
         {
             "html": `
             <div class="w-full h-full bg-black flex items-center justify-center overflow-hidden font-black uppercase text-white tracking-tighter">
@@ -89,10 +89,10 @@ const DEMO_DATA = {
             ]
         },
         
-        // 3. GLITCH_TEXT: RGB Split Cyberpunk (WORKING)
+        // 3. GLITCH_TEXT: RGB Split Cyberpunk
         {
             "html": `
-            <div class="w-full h-full bg-[#050505] flex items-center justify-center font-mono">
+            <div class="w-full h-full bg-[#050505] flex items-center justify-center font-mono overflow-hidden">
                 <div class="relative group">
                     <!-- Red Channel -->
                     <h1 class="text-8xl font-bold text-red-500 absolute top-0 left-0 -ml-1 opacity-70 mix-blend-screen animate-pulse" id="glitch-r">SYSTEM FAILURE</h1>
@@ -105,26 +105,34 @@ const DEMO_DATA = {
             </div>`,
             "script": `(ctx) => {
                 const main = ctx.root.querySelector('#glitch-main');
+                const red = ctx.root.querySelector('#glitch-r');
+                const blue = ctx.root.querySelector('#glitch-b');
+                
                 const final = "SYSTEM REBOOT";
                 const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+                
                 return {
                     decode: () => {
                         let i = 0;
-                        main.innerText = ""; // Clear initial text
+                        main.innerText = ""; 
                         const interval = setInterval(() => {
                             main.innerText = final.split('').map((letter, index) => {
                                 if(index < i) return final[index];
                                 return chars[Math.floor(Math.random() * chars.length)];
                             }).join('');
+                            
+                            // Randomize glitch layers
+                            red.innerText = main.innerText;
+                            blue.innerText = main.innerText;
+                            
                             if(i >= final.length) {
                                 clearInterval(interval);
-                                main.innerText = final; // Ensure final text is clean
+                                main.innerText = final;
+                                red.style.display = 'none';
+                                blue.style.display = 'none';
                             }
-                            i += 1/3; // Slow reveal
+                            i += 1/3; 
                         }, 50);
-                        // Stop glitching
-                        ctx.root.querySelector('#glitch-r').style.display = 'none';
-                        ctx.root.querySelector('#glitch-b').style.display = 'none';
                     }
                 }
             }`,
@@ -134,7 +142,7 @@ const DEMO_DATA = {
                     "actions": []
                 },
                 {
-                    "narration": "Initiating recovery protocols.",
+                    "narration": "Initiating recovery protocols now.",
                     "actions": [
                         { "type": "custom", "fn": "Engine.state.activeScript.decode()" }
                     ]
@@ -142,29 +150,32 @@ const DEMO_DATA = {
             ]
         },
 
-        // 4. QUOTE_SCENE: Texture & Highlighter (WORKING)
+        // 4. QUOTE_SCENE: Texture & Highlighter
         {
             "html": `
             <div class="w-full h-full bg-[#f3e9d2] flex items-center justify-center p-24 relative overflow-hidden">
-                <div class="texture-paper"></div>
+                <!-- Simple CSS Pattern for Paper -->
+                <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#000_1px,transparent_1px)] bg-[size:20px_20px]"></div>
                 <div class="film-grain"></div>
                 
                 <div class="relative z-10 max-w-5xl">
                     <i class="bi bi-quote text-6xl text-gray-400 absolute -top-10 -left-10 opacity-50"></i>
                     <p class="text-6xl font-serif text-[#1a1a1a] leading-tight tracking-tight">
                         We are drowning in 
-                        <span class="relative inline-block">
-                            <span id="hl-info" class="marker-highlight"></span>
+                        <span class="relative inline-block px-2">
+                            <span id="hl-info" class="absolute inset-0 bg-yellow-300 mix-blend-multiply w-0 transition-all duration-700 ease-in-out"></span>
                             <span class="relative z-10">information</span>
                         </span>
                         but starved for 
-                        <span class="relative inline-block">
-                            <span id="hl-know" class="marker-highlight bg-blue-300"></span>
+                        <span class="relative inline-block px-2">
+                            <span id="hl-know" class="absolute inset-0 bg-blue-300 mix-blend-multiply w-0 transition-all duration-700 ease-in-out"></span>
                             <span class="relative z-10">knowledge</span>
                         </span>.
                     </p>
                     <div class="mt-12 flex items-center gap-4 opacity-0 translate-y-4 transition-all duration-700" id="author">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e8/John_Naisbitt.jpg" class="w-16 h-16 rounded-full grayscale object-cover">
+                        <div class="w-16 h-16 rounded-full bg-gray-400 grayscale overflow-hidden">
+                             <img src="https://upload.wikimedia.org/wikipedia/commons/e/e8/John_Naisbitt.jpg" class="w-full h-full object-cover">
+                        </div>
                         <div>
                             <p class="font-bold text-black">John Naisbitt</p>
                             <p class="text-xs text-gray-500 uppercase tracking-widest">Megatrends, 1982</p>
@@ -176,26 +187,26 @@ const DEMO_DATA = {
                 {
                     "narration": "We are drowning in information.",
                     "actions": [
-                        { "type": "highlight", "target": "#hl-info" }
+                        { "type": "custom", "fn": "document.getElementById('hl-info').style.width = '100%'" }
                     ]
                 },
                 {
                     "narration": "But we are starved for actual knowledge.",
                     "actions": [
-                        { "type": "highlight", "target": "#hl-know" },
+                        { "type": "custom", "fn": "document.getElementById('hl-know').style.width = '100%'" },
                         { "type": "reveal", "target": "#author" }
                     ]
                 }
             ]
         },
 
-        // 5. SPOTLIGHT: Flashlight Reveal (WORKING)
+        // 5. SPOTLIGHT: Flashlight Reveal
         {
             "html": `
             <div class="w-full h-full bg-black relative flex items-center justify-center overflow-hidden">
                 <!-- The Hidden Content (Visible only through mask) -->
                 <div id="spotlight-content" class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1518546305927-5a555bb7020d?q=80&w=2069')] bg-cover grayscale contrast-125"
-                     style="mask-image: radial-gradient(circle 150px at var(--x, 50%) var(--y, 50%), black 0%, transparent 100%); -webkit-mask-image: radial-gradient(circle 150px at var(--x, 50%) var(--y, 50%), black 0%, transparent 100%);">
+                     style="mask-image: radial-gradient(circle 150px at var(--x, 50%) var(--y, 50%), black 100%, transparent 100%); -webkit-mask-image: radial-gradient(circle 150px at var(--x, 50%) var(--y, 50%), black 100%, transparent 100%);">
                 </div>
                 
                 <!-- Text Overlay (Always visible but dim) -->
@@ -206,12 +217,16 @@ const DEMO_DATA = {
             "script": `(ctx) => {
                 let angle = 0;
                 let animationFrameId;
+                const el = ctx.root.querySelector('#spotlight-content');
+                
                 const updateLight = () => {
                     angle += 0.02;
                     const x = 50 + Math.cos(angle) * 30; // 30% radius
                     const y = 50 + Math.sin(angle * 1.5) * 20; // Lissajous figure
-                    ctx.root.querySelector('#spotlight-content').style.setProperty('--x', x + '%');
-                    ctx.root.querySelector('#spotlight-content').style.setProperty('--y', y + '%');
+                    if(el) {
+                        el.style.setProperty('--x', x + '%');
+                        el.style.setProperty('--y', y + '%');
+                    }
                     animationFrameId = requestAnimationFrame(updateLight);
                 };
                 animationFrameId = requestAnimationFrame(updateLight);
@@ -220,10 +235,16 @@ const DEMO_DATA = {
                     remove: () => cancelAnimationFrame(animationFrameId), // Cleanup
                     revealAll: () => {
                         cancelAnimationFrame(animationFrameId); // Stop the animation
-                        const el = ctx.root.querySelector('#spotlight-content');
-                        el.style.transition = 'all 1s ease';
-                        el.style.maskImage = 'radial-gradient(circle 1500px at 50% 50%, black 100%, transparent 100%)';
-                        el.style.webkitMaskImage = 'radial-gradient(circle 1500px at 50% 50%, black 100%, transparent 100%)';
+                        if(el) {
+                            el.style.transition = 'mask-size 1.5s ease-in-out, -webkit-mask-size 1.5s ease-in-out';
+                            // Expand the mask to cover full screen
+                            el.style.maskImage = 'radial-gradient(circle at 50% 50%, black 100%, transparent 100%)';
+                            el.style.webkitMaskImage = 'radial-gradient(circle at 50% 50%, black 100%, transparent 100%)';
+                            // CSS hack: increase size of the radial gradient via shorthand or just switch classes
+                            // Simplest approach: Use Clip Path for full reveal
+                            el.style.mask = 'none';
+                            el.style.webkitMask = 'none';
+                        }
                     }
                 };
             }`,
@@ -241,7 +262,7 @@ const DEMO_DATA = {
             ]
         },
 
-        // 6. NEON_SIGN: Flicker & Bloom (WORKING)
+        // 6. NEON_SIGN: Flicker & Bloom
         {
             "html": `
             <div class="w-full h-full bg-[#080808] flex items-center justify-center relative overflow-hidden">
@@ -284,7 +305,7 @@ const DEMO_DATA = {
             ]
         },
 
-        // 7. PARALLAX_LAYER: Depth Movement (WORKING)
+        // 7. PARALLAX_LAYER: Depth Movement
         {
             "html": `
             <div class="w-full h-full bg-[#0f172a] relative overflow-hidden flex items-center justify-center perspective-[1000px]">
@@ -311,9 +332,9 @@ const DEMO_DATA = {
                     const x = Math.sin(time) * 20; 
                     const y = Math.cos(time) * 10;
 
-                    l1.style.transform = \`translate(\${x * 0.5}px, \${y * 0.5}px) scale(1.1)\`;
-                    l2.style.transform = \`translate(\${x}px, \${y}px)\`;
-                    l3.style.transform = \`translate(\${x * 3}px, \${y * 3}px) scale(1.2)\`;
+                    if(l1) l1.style.transform = \`translate(\${x * 0.5}px, \${y * 0.5}px) scale(1.1)\`;
+                    if(l2) l2.style.transform = \`translate(\${x}px, \${y}px)\`;
+                    if(l3) l3.style.transform = \`translate(\${x * 3}px, \${y * 3}px) scale(1.2)\`;
                     
                     animationFrameId = requestAnimationFrame(loop);
                 };
