@@ -49,6 +49,7 @@
         }
 
         #stage-content {
+            margin-top: 10px;
             background: #000;
             position: relative;
             aspect-ratio: 16/9;
@@ -63,7 +64,7 @@
         }
 
         #stage-content.portrait {
-            aspect-ratio: 9/16;
+            aspect-ratio: 4/5;
             max-width: none;
             height: 80vh;
             width: auto;
@@ -3321,6 +3322,7 @@ Valid JSON ONLY. Maximize variety. No placeholders. Include meta, scenes, steps,
                 }
             }
         };
+        Engine.audio.setTrack('https://res.cloudinary.com/dmttn34te/video/upload/v1763064765/study-music-181044_jbuwpq.mp3');
         window.onload = Engine.init;
     </script>
 </body>
