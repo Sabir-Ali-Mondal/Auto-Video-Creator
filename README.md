@@ -1,65 +1,155 @@
 # VIDEO-LIKE 
 
-**VIDEO-LIKE** is a powerful, browser-based application that transforms structured JSON data into engaging, narrated videos. It offers a unique dual-engine approach, allowing users to create either data-driven graph presentations or visually rich creative showcases from a single, intuitive script format.
+**VIDEO-LIKE** is a powerful, browser-based application that transforms structured JSON data into engaging, narrated videos.
 
-This project bridges the gap between data and storytelling, enabling developers, marketers, and analysts to produce programmatic videos without complex editing software.
+This project bridges the gap between data and storytelling, enabling developers, marketers, and analysts to produce code based videos without complex editing software.
+
+VIDEO-LIKE: A Auto Video Creator uses **frontend and text generating AI**.
 
 It will be awesome.
 
 
-Here is the consolidated list of all 41 scene types discussed, along with a brief technical implementation strategy for each using HTML, CSS (Tailwind), and JavaScript.
+```
+**Role & Objective:**
+You are an expert **Video Engine Architect** and **Motion Graphics Director**. Your task is to generate a production-ready `JSON` payload for an automated video rendering engine. The output must be **visually cinematic**, **educationally deep**, and **technically flawless**.
 
-**Social Media & Communications**
-1. Social Media Post: Use a Flexbox container with a border, padding, and specific gap settings. Use `rounded-full` for avatars and font-weight variations for handles vs. content.
-2. Chat Conversation: Use a vertical Flex column. Align "sent" bubbles to `self-end` (right) and "received" bubbles to `self-start` (left) with different background colors and rounded corners.
-3. Breaking News: Use a fixed position `bottom-0` container. Implement the scrolling ticker using a CSS `@keyframes` animation translating text from `translateX(100%)` to `translateX(-100%)`.
-4. Notification Stack: Use absolute positioning with `z-index` layering. Apply `top` margins incrementally and fade-in animations with delays to simulate stacking.
-5. Search Browser: Create an input field container. Use JavaScript `setTimeout` loops to type text into the input value character-by-character, then reveal a dropdown `div` for results.
+## Scene Count : >20 | Each scene should have multiple sub-steps
 
-**Documentary & Journalism**
-6. Newspaper: Wrap the container in a `perspective` div. Apply `transform: rotateY(10deg)` to the paper div. Use CSS background patterns for texture and `span` tags with linear-gradient backgrounds for the highlighter effect.
-7. Map Points: Use a background image of a map. Place dots using absolute positioning (`top: %`, `left: %`). Use CSS keyframes `scale` and `opacity` to create a pulsing beacon effect.
-8. Investigation Board: Use a messy layout with rotated images (`rotate-2`, `-rotate-3`). Use SVG lines (`<line>`) positioned absolutely to draw strings between elements.
-9. Kinetic Typography: Use extremely large font sizes (`text-9xl`). Use JavaScript to toggle `display: none` or `opacity` rapidly between words to match the audio timing.
-10. Docu-Title: Use a dark background with a `radial-gradient` vignette. Use heavy fonts (Oswald) and `mix-blend-mode: overlay` to blend text with background textures.
-11. Spotlight: Create a dark overlay `div` covering the screen. Use CSS `mask-image: radial-gradient` or a large SVG path with a transparent hole to reveal the layer underneath.
-12. Film Strip: Create a wide container with a repeating pattern of "film holes" on top/bottom. Animate the `background-position` or `translateX` to slide the strip horizontally.
-13. Picture in Picture: Use a small container with `position: absolute`, `bottom-4`, `right-4`, `z-index: 50`. Add a border and shadow to separate it from the background.
+**1. VISUAL AESTHETIC (Mandatory):**
+* Background and colors **must be chosen according to the topic**, not by default.
+* Do **not always use dark backgrounds** or overly simple backgrounds.
+* Use **colors and gradient themes that fit the topic naturally**.
+* Dark themes are allowed **only when the topic requires it** (e.g., space, cyberpunk, deep tech).
+**Topic Palette hint**
+* History: sepia, paper textures, ink black, gold accents, serif fonts
+* Nature: greens, blues, earth tones, soft natural gradients
+* Maintain **slight color consistency across the entire video** to give a premium, cohesive feel.
+* Gradients, textures, or lighting may vary per scene, but the **core palette should stay related**.
+* Follow Netflix/Vox-style composition.
+* Use responsive, large typography and subtle depth.
+* Use advanced Tailwind utilities where relevant.
 
-**Data Visualization**
-14. Chart: Inject a `<canvas>` element. Use `new Chart(ctx, config)` via Chart.js library to render the visual.
-15. Chart Split: Use a CSS Grid with 2 columns (`grid-cols-2`). Place text content in the left cell and the Chart.js canvas in the right cell.
-16. 3D Plot: Use a `div` container. Pass data to `Plotly.newPlot()` to render WebGL-based 3D interactives.
-17. Timeline: Use a horizontal flex container (`overflow-x-auto`). Draw a central line using a `border-bottom` or an absolute `div`. Place nodes at specific intervals.
-18. Flowchart: Use Flexbox or Grid to position boxes. Use SVG `<path>` elements with `marker-end="url(#arrow)"` to draw the connectors between boxes.
-19. Funnel Chart: Use a Flex column. Create bars with decreasing widths (`w-full`, `w-3/4`, `w-1/2`) or use CSS `clip-path: polygon(...)` to create trapezoid shapes.
-20. Table: Use standard HTML `<table>`. Apply Tailwind `divide-y` and `border` classes for styling. Use `bg-gray-100` on alternating rows (zebra striping).
-21. Calendar View: Use a 7-column CSS Grid. Generate numbered cells. Use conditional styling to change the background color of specific "active" dates.
-22. Number Counter: Use a large text element. Use a JavaScript `requestAnimationFrame` loop to rapidly increment the `innerText` from 0 to the target number over a set duration.
+**2. THE RENDERING ENGINE API (Technical Constraints):**
+You must output valid `JSON` adhering to this strict schema.
+*   **Scripting Context (`ctx`):** The `script` field is a stringified JavaScript function: `(ctx) => { ... return { publicMethods } }`.
+*   **Available Libraries:**
+    *   **DOM:** `ctx.root.querySelector(...)`
+    *   **Generative Art:** `ctx.p5(sketchFunction, 'selector_id')` (P5.js instance mode).
+    *   **Data Viz:** `ctx.chart('selector_id', chartConfig)` (Chart.js).
+    *   **Maps:** `ctx.map('selector_id', leafletConfig)` (Leaflet.js).
+*   **Animation Logic:**
+    *   DOM elements meant to animate must start *hidden* (e.g., `opacity-0`, `scale-0`, `translate-y-10`) in the HTML.
+    *   The `script` defines functions (e.g., `showGraph()`, `flyToCity()`) that remove these classes or trigger library animations.
+    *   Clean up intervals/listeners in a `remove()` method.
 
-**Comparison & Logic**
-23. Comparison: Use a Flex row split 50/50. Apply a border to the right of the first element. Use contrasting text alignments (right-align vs. left-align) for symmetry.
-24. Pros and Cons: Use a 2-column Grid. Use green checkmark icons for the left column and red X icons for the right column.
-25. Venn Diagram: Use two or three `div` elements with `rounded-full`. Position them to overlap and use `mix-blend-mode: multiply` or `opacity: 0.7` so the intersection is visible.
-26. Tier List: Use a Flex column. Each row contains a colored label cell (S, A, B) and a content area. Use `flex-wrap` in the content area to stack items horizontally.
-27. Image Slider: Stack two images absolutely. Use `clip-path: inset(0 X% 0 0)` on the top image. Bind a range input slider's value to the X percentage to reveal/hide.
+**3. SCENE ARCHETYPES (Diversity Requirement):**
+Do not repeat scene types. Use a mix of the following:
+*   **Cinematic Title:** Giant text, slow pans, light sweeps, film grain.
+*   **Data Visualization:** Bar/Line/Doughnut charts that animate (Chart.js).
+*   **Geospatial:** 3D interactive maps flying to locations (Leaflet).
+*   **Generative Abstract:** Particle systems, swarms, networks, waves (P5.js).
+*   **3D Object/CSS:** Spinning 3D cards, exploding layers, perspective planes.
+*   **UI Simulation:** Fake terminal, chat window, browser search, notification stacks.
+*   **Split Screen/Comparison:** Before/After sliders or side-by-side grids.
+*   **Typography Motion:** Kinetic text that highlights/scales in sync with narration.
 
-**Layout & Motion**
-28. Bento Grid: Use CSS Grid with `grid-template-columns`. Use `col-span-2` or `row-span-2` classes on child elements to create tiles of different sizes.
-29. Card Carousel: Use a flex container with `overflow-x-scroll` and `snap-x`. Set child elements to `snap-center` so they lock into place when scrolling.
-30. Photo Collage: Use absolute positioning for multiple images. Apply random small rotations via CSS to simulate a scattered pile. Add `box-shadow` for depth.
-31. Parallax Scroll: Set a container to `perspective: 10px`. Set children to `transform: translateZ(...)`. As the container scrolls, depth creates different movement speeds.
-32. Exploded View: Use a container with `transform-style: preserve-3d`. Apply `transform: translateZ(Npx)` to separate layers of an image or diagram along the Z-axis.
+**4. JSON STRUCTURE:**
+```json
+{
+  "meta": { "topic": "String", "style": "String", "duration": "String" },
+  "scenes": [
+    {
+      "type": "scene_type_name",
+      "html": "<div class='w-full h-full bg-... relative overflow-hidden'>...HTML with Tailwind...</div>",
+      "script": "(ctx) => { \n  // Setup logic (charts, p5, etc.) \n  return { \n    triggerAction: () => { ... } \n  } \n}",
+      "steps": [
+        {
+          "narration": "Spoken audio script for this segment.",
+          "actions": [
+            { "type": "custom", "fn": "Engine.state.activeScript.triggerAction()" },
+            { "type": "reveal", "target": "#element-id" } 
+            // 'reveal' automatically removes opacity-0/translate classes
+          ]
+        }
+      ]
+    }
+  ]
+} ```
 
-**Technical & Educational**
-33. Code Terminal: Create a window-like `div` with a header bar (3 colored dots). Use a `<pre>` tag inside with Prism.js for syntax highlighting.
-34. Concept Sketch: Use an SVG `<path>`. Animate the `stroke-dashoffset` property from the path length to 0 to simulate the drawing action.
-35. Quiz: Create a grid of `<button>` elements. Use JavaScript onclick events to check the index against the correct answer and apply `.bg-green-500` or `.bg-red-500` classes.
-36. Generative Art: Use a dedicated `div` id. Initialize a P5.js sketch in instance mode to draw canvas graphics inside that div.
-37. Tree: Use a Flex column structure. Use CSS pseudo-elements `::before` and `::after` with borders to create the connecting "branches" between nodes.
+Distinct Scene Types & Library Idea
 
-**Standard Presentation**
-38. Title: Use Flexbox centering (`items-center justify-center`). Use huge font sizes (`text-6xl`) and letter spacing (`tracking-widest`).
-39. Bullets: Use a standard `<ul>`. Set list items `<li>` to `opacity: 0` by default and toggle to `opacity: 1` based on the step index.
-40. Image / Video: Use an `<img>` or `<video>` tag. Apply `object-fit: cover` and `w-full h-full` to ensure they fill their containers without distortion.
-41. Quote: Use a Flex column. Use a Serif font (`font-serif`) and large quotes (CSS `::before { content: '"' }`) for styling.
+Usage: Documentary, explainer, education, cinematic narration, AI video generation
+Core Actions: appear, highlight, point, zoom, pan, scroll, adjust, animate, exit
+Media Types: Scenes may use or embed Images, Videos, SVGs, Canvas, WebGL, p5.js sketches, 2D illustrations/cartoons, and UI mockups where appropriate.
+
+Scene List
+
+TITLE CINEMATIC – Main title reveals, subtitle appears, animated bar draws, fade out
+DOCU TITLE – Chapter or section title card appears, subtle motion, dissolve
+NEWSPAPER – Page appears, headline highlights, article zoom, burn or crumple exit
+NEON DATA CRASH – Line chart draws, peaks, crashes to zero, red shockwave pulse
+SATELLITE MAP ZOOM – Earth view, continent, city, street, target pin pulse
+MAP POINTS – Map loads, pins or polygons appear, hover glow, side UI panel reveals
+DETECTIVE BOARD – Photos fly in, red strings connect clues, link reveal
+COUNTER – Numbers spin rapidly, decelerate, final value locks, glow highlight
+QUOTE – Quote text fades in, key phrase highlights, attribution appears
+KEN BURNS PHOTO – Image fades in, slow pan and zoom, vignette, color shift
+VIDEO – Fullscreen video plays, captions appear, glitch or film grain overlay
+TIMELINE – Line draws, date markers pop, scrubber moves, active year highlights
+KPI STATS CASCADE – Info cards stagger in, numbers count up, confirmation marks
+GLITCH TEXT – RGB split, jitter and static, distortion, clean reform
+PARTICLE EXPLOSION – Central pulse, particle burst, radial expansion, settle
+LIQUID WAVEFORM – SVG wave animates, peaks glow, amplitude reacts to audio
+MATRIX RAIN – Symbol columns fall, random glyph highlights, continuous stream
+FIREWORKS BURST – Launch trails, aerial bursts, sparkles fall, fade
+AURORA WAVES – Flowing plasma bands, color shifts, ambient motion
+NEON SIGN GLOW – Text flickers, glow layers activate, steady illumination
+HOLOGRAM SCAN – Wireframe rotates, scanline passes, vertices flare
+DOUGHNUT CHART – Segments animate in, percentages appear, hover expansion
+HEATMAP PULSE – Grid fades in, intensity pulses, crosshair scans focus area
+PROCESS STEPS – Step cards appear sequentially, active step highlights, arrow points
+3D BAR GRAPH – Bars extrude upward, light sweep, labels fade in
+NETWORK NODES – Nodes pulse, connections draw, data flows across edges
+STOCK TICKER – Numbers scroll horizontally, color change on rise or fall
+FUNNEL – Particles enter top, drop through stages, conversion rate shown
+GAUGE SWEEP – Needle moves from zero, accelerates, settles on value
+BULLETS – Bullet points animate in one by one, current point highlights
+CODE TERMINAL – Terminal window appears, code types line by line, cursor blinks
+3D PLOT – Scatter or surface plot builds, camera rotates, clusters highlight
+KINETIC TYPOGRAPHY – Large text animates rhythmically with narration
+TABLE – Table fades in, rows highlight sequentially, key cell zooms
+P5 DIAGRAM – Generative or physics diagram runs, parameters animate
+COMPARISON – Split screen, left and right labels, differences highlighted
+SPOTLIGHT – Screen darkens, circular spotlight reveals focus area
+BREAKING NEWS – Broadcast frame appears, headline bar, scrolling ticker
+PROS AND CONS – Two-column layout, points animate alternately, summary highlight
+CHART FULL – Fullscreen chart animates, trend emphasized, annotations appear
+CHART SPLIT – Chart on one side, explanation text or image on the other
+NOTIFICATIONS – Notification bubble slides in, icon pulses, dismiss animation
+CALENDAR – Calendar view appears, date circles, event label pops
+PICTURE IN PICTURE – Small video or image overlays main scene, resizes, exits
+VENN DIAGRAM – Circles animate in, overlap highlights, labels appear
+CAROUSEL – Cards slide or flip, center item enlarges, side items blur
+SOCIAL POST – Social media card appears, interaction counts animate
+CHAT CONVERSATION – Chat bubbles appear sequentially, typing indicator, pause
+SLIDER – Before and after divider slides, difference highlighted
+QUIZ – Question appears, options animate in, correct answer highlights
+TREE DIAGRAM – Root node appears, branches grow, leaf nodes highlight
+FLOWCHART – Nodes animate in order, arrows draw, active path glows
+COLLAGE – Multiple images fly in, arrange dynamically, unified composition
+PARALLAX – Foreground and background layers move at different speeds
+EXPLODED VIEW – Object separates into components, labels appear, reassemble
+END CINEMATIC – Final statement or credits, slow motion, fade to neutral gradient
+
+Implementation Notes
+
+Libraries explicitly attached/initialized from scene <div> containers
+
+Libraries: GSAP, Anime.js, Motion One, SVG, D3.js, SVG.js, Snap.svg, Rough.js, Chart.js, Apache ECharts, Vega, Vega-Lite, HTML5 Canvas, PixiJS, Konva.js, Fabric.js, tsParticles, particles.js, p5.js, Matter.js, Verlet.js, Three.js, Babylon.js, Spline Runtime, WebGL2, GLSL, Three.js Postprocessing, Leaflet.js, MapLibre GL JS, Deck.gl, CesiumJS, HTML5 Video, Remotion, FFmpeg, Splitting.js, OpenType.js, GSAP TextPlugin, Lottie, Rive, SVGator, CSS Grid, Flexbox, Tailwind CSS, Web Audio API, Tone.js, Howler.js
+Performance Target: Mobile-friendly, 30fps
+
+Scene Design: Each scene supports narration-driven highlighting, pointing, zooming, scrolling, and clean exits. Responsive text (height/width aware scenes)
+
+AI Compatibility: Each scene is a modular block with internal narrative sub-steps
+You can use these scenes independently, combine multiple scenes, or invent new scene variations as per requirement.
+```
