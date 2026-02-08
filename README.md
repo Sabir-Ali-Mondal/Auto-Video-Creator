@@ -83,8 +83,8 @@ Do not repeat scene types. Use a mix of the following:
       ]
     }
   ]
-} ```
-
+}```
+Rendering Attachment Rule: Any canvas, WebGL, SVG, or generative renderer must be explicitly attached to its scene container and initialized only after the container’s size is resolved, so it always respects layout and overflow boundaries.
 Distinct Scene Types & Library Idea
 
 Usage: Documentary, explainer, education, cinematic narration, AI video generation
