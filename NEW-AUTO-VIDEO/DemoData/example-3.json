@@ -1,0 +1,431 @@
+{
+  "meta": {
+    "topic": "Circuit Design Fundamentals",
+    "style": "Educational Documentary - Electronics Theme",
+    "duration": "Extended Format (25+ Scenes)"
+  },
+  "scenes": [
+    {
+      "type": "TITLE_CINEMATIC",
+      "html": "<div class='w-full h-full bg-gradient-to-br from-[#0a2540] via-[#1a3a52] to-[#0f1419] relative flex items-center justify-center overflow-hidden'><div class='absolute inset-0 opacity-20 bg-[url(\"data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cpath d=\"M0 30h60M30 0v60\" stroke=\"%2300d4ff\" stroke-width=\"0.5\" fill=\"none\"/%3E%3C/svg%3E\")] bg-repeat'></div><div id='light-sweep' class='absolute inset-0 bg-gradient-to-r from-transparent via-cyan-400/20 to-transparent -translate-x-full z-20 pointer-events-none blur-2xl transition-transform duration-[4s] ease-in-out'></div><div class='z-10 text-center relative'><div class='mb-8 flex justify-center gap-3 opacity-0 transition-opacity duration-1000' id='icons'><div class='w-16 h-16 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center'><i class='bi bi-cpu text-3xl text-amber-400'></i></div><div class='w-16 h-16 rounded-lg bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center'><i class='bi bi-lightning-charge text-3xl text-cyan-400'></i></div><div class='w-16 h-16 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center'><i class='bi bi-diagram-3 text-3xl text-emerald-400'></i></div></div><h1 id='main-title' class='text-9xl font-black text-transparent bg-clip-text bg-gradient-to-b from-cyan-300 via-blue-400 to-blue-600 tracking-tighter scale-110 blur-xl opacity-0 transition-all duration-[2500ms] ease-out'>CIRCUIT<br/>DESIGN</h1><p class='text-cyan-400 font-mono text-sm tracking-[0.5em] uppercase mt-6 opacity-0 transition-opacity duration-1000 delay-1000' id='sub'>From Concept to Creation</p><div class='h-[2px] w-0 bg-gradient-to-r from-transparent via-cyan-400 to-transparent mx-auto mt-8 transition-all duration-[2s] delay-1500' id='line'></div></div></div>",
+      "steps": [
+        {
+          "narration": "Circuit design is the foundation of all modern electronics.",
+          "actions": [
+            {"type": "custom", "fn": "document.getElementById('main-title').classList.remove('scale-110', 'blur-xl', 'opacity-0')"},
+            {"type": "reveal", "target": "#icons"}
+          ]
+        },
+        {
+          "narration": "From smartphones to satellites, every device begins with a carefully planned circuit.",
+          "actions": [
+            {"type": "custom", "fn": "document.getElementById('light-sweep').classList.remove('-translate-x-full'); document.getElementById('light-sweep').classList.add('translate-x-full')"},
+            {"type": "reveal", "target": "#sub"},
+            {"type": "custom", "fn": "document.getElementById('line').style.width = '400px'"}
+          ]
+        }
+      ]
+    },
+    {
+      "type": "DOCU_TITLE",
+      "html": "<div class='w-full h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center relative overflow-hidden'><div class='absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#0f172a_100%)]'></div><div id='chapter' class='text-center z-10 opacity-0 translate-y-10 transition-all duration-1000'><div class='text-amber-400 text-xs font-mono tracking-[0.8em] uppercase mb-4'>Chapter 01</div><h2 class='text-7xl font-black text-white italic tracking-tight'>THE FUNDAMENTALS</h2><div class='mt-6 w-24 h-1 bg-amber-400 mx-auto'></div></div></div>",
+      "steps": [
+        {
+          "narration": "Let's begin with the fundamental principles that govern all circuit design.",
+          "actions": [{"type": "reveal", "target": "#chapter"}]
+        }
+      ]
+    },
+    {
+      "type": "KINETIC_TYPOGRAPHY",
+      "html": "<div class='w-full h-full bg-[#0a1628] flex items-center justify-center p-16 relative overflow-hidden'><div class='absolute inset-0 opacity-10'><svg class='w-full h-full'><defs><pattern id='circuit-pattern' x='0' y='0' width='100' height='100' patternUnits='userSpaceOnUse'><circle cx='50' cy='50' r='2' fill='#00d4ff'/><line x1='50' y1='0' x2='50' y2='50' stroke='#00d4ff' stroke-width='0.5'/><line x1='0' y1='50' x2='50' y2='50' stroke='#00d4ff' stroke-width='0.5'/></pattern></defs><rect width='100%' height='100%' fill='url(#circuit-pattern)'/></svg></div><div class='z-10 text-center'><p class='text-5xl font-bold text-gray-400 leading-tight tracking-tight'>An <span id='word-circuit' class='relative inline-block'><span class='absolute inset-0 bg-cyan-500/30 blur-xl scale-0 transition-transform duration-700'></span><span class='relative text-cyan-300'>electrical circuit</span></span> is a closed path that allows <span id='word-current' class='relative inline-block'><span class='absolute inset-0 bg-amber-500/30 blur-xl scale-0 transition-transform duration-700'></span><span class='relative text-amber-300'>electric current</span></span> to flow continuously.</p></div></div>",
+      "steps": [
+        {
+          "narration": "An electrical circuit is a closed path that allows electric current to flow continuously.",
+          "actions": [
+            {"type": "custom", "fn": "document.querySelector('#word-circuit span:first-child').style.transform = 'scale(1.5)'"}
+          ]
+        },
+        {
+          "narration": "Without a complete path, current cannot flow, and the circuit remains inactive.",
+          "actions": [
+            {"type": "custom", "fn": "document.querySelector('#word-current span:first-child').style.transform = 'scale(1.5)'"}
+          ]
+        }
+      ]
+    },
+    {
+      "type": "P5_DIAGRAM",
+      "html": "<div class='w-full h-full bg-[#050810] relative overflow-hidden'><div id='p5-basic-circuit' class='w-full h-full'></div><div class='absolute top-8 left-8 z-20 bg-black/80 backdrop-blur-sm border border-cyan-500/30 p-4 rounded-lg'><h3 class='text-cyan-400 text-sm font-mono tracking-wider mb-2'>BASIC CIRCUIT</h3><div class='text-[10px] text-gray-400 font-mono'><div>VOLTAGE SOURCE: <span class='text-white'>9V</span></div><div>RESISTANCE: <span class='text-white'>150Ω</span></div><div>CURRENT: <span id='current-val' class='text-amber-400'>0mA</span></div></div></div></div>",
+      "script": "(ctx) => { const sketch = p => { let flowProgress = 0; let particles = []; p.setup = () => { p.createCanvas(ctx.root.clientWidth, ctx.root.clientHeight); for(let i=0; i<30; i++) particles.push({pos: i/30, speed: p.random(0.005, 0.01)}); }; p.draw = () => { p.clear(); p.background(5, 8, 16); const cx = p.width/2, cy = p.height/2; const w = 300, h = 200; p.strokeWeight(4); p.stroke(59, 130, 246); p.noFill(); p.beginShape(); p.vertex(cx-w, cy-h); p.vertex(cx+w, cy-h); p.vertex(cx+w, cy+h); p.vertex(cx-w, cy+h); p.vertex(cx-w, cy-h); p.endShape(); p.fill(255); p.noStroke(); p.textAlign(p.CENTER, p.CENTER); p.textSize(14); p.text('+ Battery -', cx-w-60, cy); p.text('Resistor', cx, cy-h-30); p.text('LED', cx+w+40, cy); p.fill(251, 191, 36); p.circle(cx+w+40, cy, 24); particles.forEach(pt => { pt.pos = (pt.pos + pt.speed) % 1; const pathLen = (w*2 + h*2) * 2; const dist = pt.pos * pathLen; let x, y; if(dist < w*2) { x = cx-w + dist; y = cy-h; } else if(dist < w*2 + h*2) { x = cx+w; y = cy-h + (dist - w*2); } else if(dist < w*4 + h*2) { x = cx+w - (dist - w*2 - h*2); y = cy+h; } else { x = cx-w; y = cy+h - (dist - w*4 - h*2); } p.fill(34, 211, 238, 200); p.circle(x, y, 6); }); }; p.windowResized = () => p.resizeCanvas(ctx.root.clientWidth, ctx.root.clientHeight); }; const myP5 = ctx.p5(sketch, '#p5-basic-circuit'); return { remove: () => myP5.remove(), showCurrent: () => { const el = ctx.root.querySelector('#current-val'); if(el) el.textContent = '60mA'; } }; }",
+      "steps": [
+        {
+          "narration": "A basic circuit consists of a power source, conductive path, and a load.",
+          "actions": []
+        },
+        {
+          "narration": "When the circuit is closed, electrons flow from negative to positive, powering the load.",
+          "actions": [{"type": "custom", "fn": "Engine.state.activeScript.showCurrent()"}]
+        }
+      ]
+    },
+    {
+      "type": "QUOTE",
+      "html": "<div class='w-full h-full bg-gradient-to-br from-[#1a2332] to-[#0f1419] flex items-center justify-center p-24 relative overflow-hidden'><div class='absolute inset-0 opacity-5 bg-[url(\"data:image/svg+xml,%3Csvg width=\"80\" height=\"80\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Ctext x=\"10\" y=\"40\" font-size=\"40\" fill=\"%2300d4ff\" opacity=\"0.3\"%3EV=IR%3C/text%3E%3C/svg%3E\")] bg-repeat'></div><div class='relative z-10 max-w-4xl'><i class='bi bi-quote text-7xl text-cyan-500/30 absolute -top-12 -left-12'></i><p class='text-6xl font-serif text-gray-200 leading-tight tracking-tight'>The relationship <span class='relative inline-block px-3'><span id='hl-ohm' class='absolute inset-0 bg-amber-400 mix-blend-screen w-0 transition-all duration-1000 ease-out'></span><span class='relative z-10 font-mono font-bold text-amber-300'>V = I × R</span></span> is the cornerstone of electrical engineering.</p><div class='mt-10 opacity-0 translate-y-4 transition-all duration-700' id='author'><div class='text-cyan-400 font-bold text-xl'>Ohm's Law</div><div class='text-xs text-gray-500 uppercase tracking-widest mt-1'>Georg Simon Ohm, 1827</div></div></div></div>",
+      "steps": [
+        {
+          "narration": "Ohm's Law defines the fundamental relationship between voltage, current, and resistance.",
+          "actions": [{"type": "custom", "fn": "document.getElementById('hl-ohm').style.width = '100%'"}]
+        },
+        {
+          "narration": "Voltage equals current multiplied by resistance - this equation powers all circuit calculations.",
+          "actions": [{"type": "reveal", "target": "#author"}]
+        }
+      ]
+    },
+    {
+      "type": "DOCU_TITLE",
+      "html": "<div class='w-full h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center relative overflow-hidden'><div class='absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#0f172a_100%)]'></div><div id='chapter2' class='text-center z-10 opacity-0 translate-y-10 transition-all duration-1000'><div class='text-emerald-400 text-xs font-mono tracking-[0.8em] uppercase mb-4'>Chapter 02</div><h2 class='text-7xl font-black text-white italic tracking-tight'>ESSENTIAL COMPONENTS</h2><div class='mt-6 w-24 h-1 bg-emerald-400 mx-auto'></div></div></div>",
+      "steps": [
+        {
+          "narration": "Every circuit is built from a set of essential electronic components.",
+          "actions": [{"type": "reveal", "target": "#chapter2"}]
+        }
+      ]
+    },
+    {
+      "type": "KPI_STATS_CASCADE",
+      "html": "<div class='w-full h-full bg-[#0a0e1a] flex items-center justify-center p-12 relative overflow-hidden'><div class='absolute inset-0 opacity-10 bg-gradient-to-br from-cyan-500/20 to-purple-500/20'></div><div class='grid grid-cols-3 gap-8 w-full max-w-6xl relative z-10'><div id='comp-1' class='bg-gradient-to-br from-amber-900/20 to-amber-800/10 border-2 border-amber-500/30 p-10 rounded-3xl opacity-0 translate-y-10 transition-all duration-700 ease-out relative overflow-hidden'><div class='absolute top-0 right-0 text-[120px] text-amber-500/5'><i class='bi bi-slash-circle'></i></div><div class='text-amber-400 text-xs font-black tracking-[0.3em] mb-4 uppercase'>Resistor</div><div class='text-6xl font-black text-white italic tracking-tighter mb-3'>Control</div><div class='text-amber-200 text-sm font-mono mb-4'>Limits current flow through the circuit</div><div class='w-full h-1 bg-white/10'><div class='h-full bg-amber-500 w-0 transition-all duration-[2000ms] ease-out' id='bar-1'></div></div></div><div id='comp-2' class='bg-gradient-to-br from-cyan-900/20 to-cyan-800/10 border-2 border-cyan-500/30 p-10 rounded-3xl opacity-0 translate-y-10 transition-all duration-700 delay-200 ease-out relative overflow-hidden'><div class='absolute top-0 right-0 text-[120px] text-cyan-500/5'><i class='bi bi-battery-charging'></i></div><div class='text-cyan-400 text-xs font-black tracking-[0.3em] mb-4 uppercase'>Capacitor</div><div class='text-6xl font-black text-white italic tracking-tighter mb-3'>Store</div><div class='text-cyan-200 text-sm font-mono mb-4'>Stores and releases electrical energy</div><div class='w-full h-1 bg-white/10'><div class='h-full bg-cyan-500 w-0 transition-all duration-[2000ms] ease-out' id='bar-2'></div></div></div><div id='comp-3' class='bg-gradient-to-br from-purple-900/20 to-purple-800/10 border-2 border-purple-500/30 p-10 rounded-3xl opacity-0 translate-y-10 transition-all duration-700 delay-400 ease-out relative overflow-hidden'><div class='absolute top-0 right-0 text-[120px] text-purple-500/5'><i class='bi bi-arrow-right'></i></div><div class='text-purple-400 text-xs font-black tracking-[0.3em] mb-4 uppercase'>Diode</div><div class='text-6xl font-black text-white italic tracking-tighter mb-3'>Direct</div><div class='text-purple-200 text-sm font-mono mb-4'>Allows current in one direction only</div><div class='w-full h-1 bg-white/10'><div class='h-full bg-purple-500 w-0 transition-all duration-[2000ms] ease-out' id='bar-3'></div></div></div></div></div>",
+      "script": "(ctx) => { return { runStats: () => { ['comp-1', 'comp-2', 'comp-3'].forEach(id => { const el = ctx.root.querySelector('#' + id); if(el) el.classList.remove('opacity-0', 'translate-y-10'); }); const bars = ['bar-1', 'bar-2', 'bar-3']; bars.forEach(id => { const b = ctx.root.querySelector('#' + id); if(b) b.style.width = '100%'; }); } }; }",
+      "steps": [
+        {
+          "narration": "Resistors, capacitors, and diodes are three of the most fundamental passive and active components.",
+          "actions": [{"type": "custom", "fn": "Engine.state.activeScript.runStats()"}]
+        }
+      ]
+    },
+    {
+      "type": "PROCESS_STEPS",
+      "html": "<div class='w-full h-full bg-[#0d1117] flex flex-col items-center justify-center p-8'><h1 class='text-4xl font-black text-cyan-300 mb-16 italic tracking-tighter'>TRANSISTOR OPERATION</h1><div class='grid grid-cols-5 items-center w-full max-w-5xl'><div id='trans-1' class='flex flex-col items-center gap-4 opacity-0 scale-90 transition-all duration-500'><div id='trans-icon-1' class='w-24 h-24 rounded-full bg-white/5 border-2 border-white/10 flex items-center justify-center text-4xl text-gray-500 transition-all duration-300'><i class='bi bi-input-cursor-text'></i></div><p class='text-xs text-gray-400 font-bold uppercase text-center'>Base<br/>Input</p></div><div id='trans-arrow-1' class='h-1 bg-white/10 w-full scale-x-0 origin-left transition-transform duration-500'></div><div id='trans-2' class='flex flex-col items-center gap-4 opacity-0 scale-90 transition-all duration-500'><div id='trans-icon-2' class='w-24 h-24 rounded-full bg-white/5 border-2 border-white/10 flex items-center justify-center text-4xl text-gray-500 transition-all duration-300'><i class='bi bi-lightning-charge-fill'></i></div><p class='text-xs text-gray-400 font-bold uppercase text-center'>Gate<br/>Control</p></div><div id='trans-arrow-2' class='h-1 bg-white/10 w-full scale-x-0 origin-left transition-transform duration-500'></div><div id='trans-3' class='flex flex-col items-center gap-4 opacity-0 scale-90 transition-all duration-500'><div id='trans-icon-3' class='w-24 h-24 rounded-full bg-white/5 border-2 border-white/10 flex items-center justify-center text-4xl text-gray-500 transition-all duration-300'><i class='bi bi-arrow-bar-right'></i></div><p class='text-xs text-gray-400 font-bold uppercase text-center'>Amplified<br/>Output</p></div></div></div>",
+      "script": "(ctx) => { const activate = (step, arrow) => { const stepEl = ctx.root.querySelector(`#trans-${step}`); const iconEl = ctx.root.querySelector(`#trans-icon-${step}`); const arrowEl = ctx.root.querySelector(`#trans-arrow-${step}`); if(stepEl) stepEl.classList.remove('opacity-0', 'scale-90'); if(iconEl) { iconEl.classList.remove('text-gray-500', 'border-white/10'); iconEl.classList.add('text-emerald-400', 'bg-emerald-500/10', 'border-emerald-500/40', 'shadow-lg', 'shadow-emerald-500/20'); } if(arrowEl) { arrowEl.classList.remove('scale-x-0'); arrowEl.classList.add('bg-emerald-500'); } }; return { s1: () => activate(1), s2: () => activate(2, 1), s3: () => activate(3, 2) }; }",
+      "steps": [
+        {
+          "narration": "Transistors act as electronic switches and amplifiers.",
+          "actions": [{"type": "custom", "fn": "Engine.state.activeScript.s1()"}]
+        },
+        {
+          "narration": "A small signal at the base controls a much larger current between collector and emitter.",
+          "actions": [{"type": "custom", "fn": "Engine.state.activeScript.s2()"}]
+        },
+        {
+          "narration": "This amplification capability makes transistors the building blocks of modern electronics.",
+          "actions": [{"type": "custom", "fn": "Engine.state.activeScript.s3()"}]
+        }
+      ]
+    },
+    {
+      "type": "COLLAGE",
+      "html": "<div class='w-full h-full bg-[#0a0f1e] flex items-center justify-center p-16 relative overflow-hidden'><div class='absolute inset-0 opacity-5 bg-gradient-to-br from-blue-500 to-purple-500'></div><div class='relative w-full max-w-6xl h-full grid grid-cols-4 grid-rows-3 gap-4'><div id='img-1' class='col-span-2 row-span-2 bg-gradient-to-br from-amber-900/20 to-amber-700/10 border border-amber-500/20 rounded-2xl flex items-center justify-center text-9xl text-amber-400/30 opacity-0 translate-y-20 transition-all duration-700'><i class='bi bi-resistor'></i></div><div id='img-2' class='bg-gradient-to-br from-cyan-900/20 to-cyan-700/10 border border-cyan-500/20 rounded-2xl flex items-center justify-center text-6xl text-cyan-400/30 opacity-0 translate-x-20 transition-all duration-700 delay-200'><i class='bi bi-capacitor'></i></div><div id='img-3' class='bg-gradient-to-br from-purple-900/20 to-purple-700/10 border border-purple-500/20 rounded-2xl flex items-center justify-center text-6xl text-purple-400/30 opacity-0 translate-x-20 transition-all duration-700 delay-300'><i class='bi bi-diode'></i></div><div id='img-4' class='bg-gradient-to-br from-emerald-900/20 to-emerald-700/10 border border-emerald-500/20 rounded-2xl flex items-center justify-center text-6xl text-emerald-400/30 opacity-0 translate-x-20 transition-all duration-700 delay-400'><i class='bi bi-transistor'></i></div><div id='img-5' class='bg-gradient-to-br from-blue-900/20 to-blue-700/10 border border-blue-500/20 rounded-2xl flex items-center justify-center text-6xl text-blue-400/30 opacity-0 translate-x-20 transition-all duration-700 delay-500'><i class='bi bi-cpu'></i></div><div id='img-6' class='col-span-2 bg-gradient-to-br from-rose-900/20 to-rose-700/10 border border-rose-500/20 rounded-2xl flex items-center justify-center text-7xl text-rose-400/30 opacity-0 translate-y-20 transition-all duration-700 delay-300'><i class='bi bi-lightning-charge'></i></div><div id='img-7' class='col-span-2 bg-gradient-to-br from-indigo-900/20 to-indigo-700/10 border border-indigo-500/20 rounded-2xl flex items-center justify-center text-7xl text-indigo-400/30 opacity-0 translate-y-20 transition-all duration-700 delay-400'><i class='bi bi-battery-full'></i></div></div></div>",
+      "steps": [
+        {
+          "narration": "From simple resistors to complex integrated circuits, each component plays a specific role.",
+          "actions": [
+            {"type": "custom", "fn": "['img-1','img-2','img-3','img-4','img-5','img-6','img-7'].forEach(id => { const el = document.getElementById(id); if(el) el.classList.remove('opacity-0', 'translate-y-20', 'translate-x-20'); })"}
+          ]
+        }
+      ]
+    },
+    {
+      "type": "DOCU_TITLE",
+      "html": "<div class='w-full h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center relative overflow-hidden'><div class='absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#0f172a_100%)]'></div><div id='chapter3' class='text-center z-10 opacity-0 translate-y-10 transition-all duration-1000'><div class='text-blue-400 text-xs font-mono tracking-[0.8em] uppercase mb-4'>Chapter 03</div><h2 class='text-7xl font-black text-white italic tracking-tight'>THE DESIGN PROCESS</h2><div class='mt-6 w-24 h-1 bg-blue-400 mx-auto'></div></div></div>",
+      "steps": [
+        {
+          "narration": "Now let's explore how engineers transform ideas into functional circuits.",
+          "actions": [{"type": "reveal", "target": "#chapter3"}]
+        }
+      ]
+    },
+    {
+      "type": "FLOWCHART",
+      "html": "<div class='w-full h-full bg-[#0a0e17] flex items-center justify-center p-12 relative overflow-hidden'><svg class='w-full h-full max-w-6xl' viewBox='0 0 1200 700'><defs><marker id='arrowhead' markerWidth='10' markerHeight='10' refX='9' refY='3' orient='auto'><path d='M0,0 L0,6 L9,3 z' fill='#3b82f6'/></marker><filter id='glow-blue'><feGaussianBlur stdDeviation='4'/><feMerge><feMergeNode/><feMergeNode in='SourceGraphic'/></feMerge></filter></defs><rect id='node-1' x='450' y='50' width='300' height='80' rx='10' fill='#1e3a5f' stroke='#3b82f6' stroke-width='3' opacity='0' class='transition-opacity duration-500'/><text x='600' y='95' text-anchor='middle' fill='#60a5fa' font-size='20' font-weight='bold' opacity='0' id='text-1'>DEFINE REQUIREMENTS</text><path id='arrow-1' d='M 600 130 L 600 190' stroke='#3b82f6' stroke-width='3' fill='none' marker-end='url(#arrowhead)' stroke-dasharray='60' stroke-dashoffset='60' opacity='0'/><rect id='node-2' x='450' y='190' width='300' height='80' rx='10' fill='#1e3a5f' stroke='#3b82f6' stroke-width='3' opacity='0'/><text x='600' y='235' text-anchor='middle' fill='#60a5fa' font-size='20' font-weight='bold' opacity='0' id='text-2'>CREATE SCHEMATIC</text><path id='arrow-2' d='M 600 270 L 600 330' stroke='#3b82f6' stroke-width='3' fill='none' marker-end='url(#arrowhead)' stroke-dasharray='60' stroke-dashoffset='60' opacity='0'/><rect id='node-3' x='450' y='330' width='300' height='80' rx='10' fill='#1e3a5f' stroke='#3b82f6' stroke-width='3' opacity='0'/><text x='600' y='375' text-anchor='middle' fill='#60a5fa' font-size='20' font-weight='bold' opacity='0' id='text-3'>SIMULATE & ANALYZE</text><path id='arrow-3' d='M 600 410 L 600 470' stroke='#3b82f6' stroke-width='3' fill='none' marker-end='url(#arrowhead)' stroke-dasharray='60' stroke-dashoffset='60' opacity='0'/><rect id='node-4' x='450' y='470' width='300' height='80' rx='10' fill='#1e3a5f' stroke='#3b82f6' stroke-width='3' opacity='0'/><text x='600' y='515' text-anchor='middle' fill='#60a5fa' font-size='20' font-weight='bold' opacity='0' id='text-4'>PCB LAYOUT DESIGN</text><path id='arrow-4' d='M 600 550 L 600 610' stroke='#3b82f6' stroke-width='3' fill='none' marker-end='url(#arrowhead)' stroke-dasharray='60' stroke-dashoffset='60' opacity='0'/><rect id='node-5' x='450' y='610' width='300' height='80' rx='10' fill='#059669' stroke='#10b981' stroke-width='3' opacity='0'/><text x='600' y='655' text-anchor='middle' fill='#6ee7b7' font-size='20' font-weight='bold' opacity='0' id='text-5'>PROTOTYPE & TEST</text></svg></div>",
+      "script": "(ctx) => { const showNode = (n) => { const node = ctx.root.querySelector(`#node-${n}`); const text = ctx.root.querySelector(`#text-${n}`); const arrow = ctx.root.querySelector(`#arrow-${n}`); if(node) { node.style.transition = 'opacity 0.5s ease-out'; node.style.opacity = '1'; } if(text) { text.style.transition = 'opacity 0.5s ease-out 0.2s'; text.style.opacity = '1'; } if(arrow) { setTimeout(() => { arrow.style.transition = 'stroke-dashoffset 0.8s ease-out, opacity 0.3s'; arrow.style.opacity = '1'; arrow.style.strokeDashoffset = '0'; }, 400); } }; return { step1: () => showNode(1), step2: () => showNode(2), step3: () => showNode(3), step4: () => showNode(4), step5: () => showNode(5) }; }",
+      "steps": [
+        {
+          "narration": "Circuit design begins with defining clear specifications and requirements.",
+          "actions": [{"type": "custom", "fn": "Engine.state.activeScript.step1()"}]
+        },
+        {
+          "narration": "Next, engineers create detailed schematics showing all component connections.",
+          "actions": [{"type": "custom", "fn": "Engine.state.activeScript.step2()"}]
+        },
+        {
+          "narration": "Before building hardware, the circuit is simulated to verify its behavior.",
+          "actions": [{"type": "custom", "fn": "Engine.state.activeScript.step3()"}]
+        },
+        {
+          "narration": "Once validated, the design moves to PCB layout, where physical placement is optimized.",
+          "actions": [{"type": "custom", "fn": "Engine.state.activeScript.step4()"}]
+        },
+        {
+          "narration": "Finally, a prototype is built and tested in real-world conditions.",
+          "actions": [{"type": "custom", "fn": "Engine.state.activeScript.step5()"}]
+        }
+      ]
+    },
+    {
+      "type": "CODE_TERMINAL",
+      "html": "<div class='w-full h-full bg-[#0d1117] flex items-center justify-center p-12 relative'><div class='w-full max-w-4xl bg-[#161b22] rounded-xl border border-[#30363d] shadow-2xl overflow-hidden'><div class='bg-[#21262d] px-4 py-3 flex items-center gap-2 border-b border-[#30363d]'><div class='flex gap-2'><div class='w-3 h-3 rounded-full bg-[#ff5f56]'></div><div class='w-3 h-3 rounded-full bg-[#ffbd2e]'></div><div class='w-3 h-3 rounded-full bg-[#27c93f]'></div></div><div class='ml-4 text-[#8b949e] text-xs font-mono'>circuit_simulation.py</div></div><div class='p-6 font-mono text-sm leading-relaxed' id='code-container'><div class='text-[#8b949e]'># Circuit Analysis Simulation</div><div id='line-1' class='opacity-0'><span class='text-[#ff7b72]'>import</span> <span class='text-[#79c0ff]'>numpy</span> <span class='text-[#ff7b72]'>as</span> <span class='text-[#79c0ff]'>np</span></div><div id='line-2' class='opacity-0'><span class='text-[#ff7b72]'>from</span> <span class='text-[#79c0ff]'>scipy</span> <span class='text-[#ff7b72]'>import</span> <span class='text-[#79c0ff]'>signal</span></div><div class='h-4' id='line-3' class='opacity-0'></div><div id='line-4' class='opacity-0'><span class='text-[#8b949e]'># Define circuit parameters</span></div><div id='line-5' class='opacity-0'><span class='text-[#79c0ff]'>voltage</span> = <span class='text-[#a5d6ff]'>9.0</span> <span class='text-[#8b949e]'># Volts</span></div><div id='line-6' class='opacity-0'><span class='text-[#79c0ff]'>resistance</span> = <span class='text-[#a5d6ff]'>150</span> <span class='text-[#8b949e]'># Ohms</span></div><div id='line-7' class='opacity-0'><span class='text-[#79c0ff]'>current</span> = voltage / resistance</div><div class='h-4' id='line-8' class='opacity-0'></div><div id='line-9' class='opacity-0'><span class='text-[#d2a8ff]'>print</span>(<span class='text-[#a5d6ff]'>f\"Current: {current:.3f} A\"</span>)</div><div id='line-10' class='opacity-0 text-emerald-400'><span class='text-[#8b949e]'>&gt;&gt;&gt;</span> Current: 0.060 A</div><div id='cursor' class='inline-block w-2 h-4 bg-cyan-400 animate-pulse ml-1'></div></div></div></div>",
+      "script": "(ctx) => { let lineIndex = 1; let interval; return { remove: () => clearInterval(interval), type: () => { interval = setInterval(() => { const line = ctx.root.querySelector(`#line-${lineIndex}`); if(line) { line.style.transition = 'opacity 0.3s'; line.style.opacity = '1'; lineIndex++; if(lineIndex > 10) clearInterval(interval); } }, 400); } }; }",
+      "steps": [
+        {
+          "narration": "Modern circuit design relies heavily on simulation software to predict behavior before physical construction.",
+          "actions": []
+        },
+        {
+          "narration": "Engineers write code to model voltage, current, and component interactions mathematically.",
+          "actions": [{"type": "custom", "fn": "Engine.state.activeScript.type()"}]
+        }
+      ]
+    },
+    {
+      "type": "DOCU_TITLE",
+      "html": "<div class='w-full h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center relative overflow-hidden'><div class='absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#0f172a_100%)]'></div><div id='chapter4' class='text-center z-10 opacity-0 translate-y-10 transition-all duration-1000'><div class='text-purple-400 text-xs font-mono tracking-[0.8em] uppercase mb-4'>Chapter 04</div><h2 class='text-7xl font-black text-white italic tracking-tight'>PCB DESIGN</h2><div class='mt-6 w-24 h-1 bg-purple-400 mx-auto'></div></div></div>",
+      "steps": [
+        {
+          "narration": "The printed circuit board transforms a schematic into a physical, manufacturable product.",
+          "actions": [{"type": "reveal", "target": "#chapter4"}]
+        }
+      ]
+    },
+    {
+      "type": "P5_DIAGRAM",
+      "html": "<div class='w-full h-full bg-[#0a1810] relative overflow-hidden'><div id='p5-pcb' class='w-full h-full'></div><div class='absolute top-8 right-8 z-20 bg-black/90 backdrop-blur-sm border border-emerald-500/30 p-5 rounded-lg'><h3 class='text-emerald-400 text-sm font-mono tracking-wider mb-3'>PCB LAYERS</h3><div class='space-y-2 text-[11px] text-gray-300 font-mono'><div class='flex items-center gap-2'><div class='w-4 h-4 bg-red-600 rounded'></div><span>Top Copper</span></div><div class='flex items-center gap-2'><div class='w-4 h-4 bg-blue-600 rounded'></div><span>Bottom Copper</span></div><div class='flex items-center gap-2'><div class='w-4 h-4 bg-emerald-600 rounded'></div><span>Ground Plane</span></div><div class='flex items-center gap-2'><div class='w-4 h-4 bg-amber-600 rounded'></div><span>Power Plane</span></div></div></div></div>",
+      "script": "(ctx) => { const sketch = p => { let pads = []; let traces = []; let rotation = 0; p.setup = () => { p.createCanvas(ctx.root.clientWidth, ctx.root.clientHeight); for(let i=0; i<20; i++) { pads.push({ x: p.random(200, p.width-200), y: p.random(200, p.height-200), size: p.random(8, 16), type: p.random() > 0.5 ? 'square' : 'circle' }); } for(let i=0; i<15; i++) { const p1 = pads[Math.floor(p.random(pads.length))]; const p2 = pads[Math.floor(p.random(pads.length))]; if(p1 !== p2) traces.push({x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y}); } }; p.draw = () => { p.clear(); p.background(10, 24, 16); p.push(); p.translate(p.width/2, p.height/2); p.rotate(rotation); p.translate(-p.width/2, -p.height/2); p.strokeWeight(3); traces.forEach(t => { p.stroke(16, 185, 129, 180); p.line(t.x1, t.y1, t.x2, t.y2); }); pads.forEach(pad => { p.noStroke(); p.fill(251, 191, 36); if(pad.type === 'circle') { p.circle(pad.x, pad.y, pad.size); } else { p.rectMode(p.CENTER); p.rect(pad.x, pad.y, pad.size, pad.size, 2); } }); p.pop(); rotation += 0.001; }; p.windowResized = () => p.resizeCanvas(ctx.root.clientWidth, ctx.root.clientHeight); }; const myP5 = ctx.p5(sketch, '#p5-pcb'); return { remove: () => myP5.remove() }; }",
+      "steps": [
+        {
+          "narration": "A PCB consists of multiple copper layers laminated together, with traces connecting component pads.",
+          "actions": []
+        },
+        {
+          "narration": "Engineers carefully route signals to avoid interference while minimizing board size and cost.",
+          "actions": []
+        }
+      ]
+    },
+    {
+      "type": "COMPARISON",
+      "html": "<div class='w-full h-full bg-gradient-to-br from-slate-900 to-slate-800 grid grid-cols-2 gap-1 relative overflow-hidden'><div class='bg-gradient-to-br from-red-900/20 to-red-800/10 flex flex-col items-center justify-center p-12 relative'><div class='absolute inset-0 opacity-5 bg-[url(\"data:image/svg+xml,%3Csvg width=\"40\" height=\"40\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Ctext x=\"5\" y=\"25\" font-size=\"20\" fill=\"%23ef4444\"%3E✗%3C/text%3E%3C/svg%3E\")] bg-repeat'></div><div id='bad-title' class='opacity-0 translate-y-10 transition-all duration-700 relative z-10'><h2 class='text-5xl font-black text-red-400 mb-8 italic'>POOR DESIGN</h2><ul class='space-y-4 text-red-200 text-lg'><li class='flex items-start gap-3'><span class='text-2xl'>⚠</span><span>Insufficient trace width causes overheating</span></li><li class='flex items-start gap-3'><span class='text-2xl'>⚠</span><span>No ground plane leads to signal noise</span></li><li class='flex items-start gap-3'><span class='text-2xl'>⚠</span><span>Components too close together</span></li><li class='flex items-start gap-3'><span class='text-2xl'>⚠</span><span>Power distribution bottlenecks</span></li></ul></div></div><div class='bg-gradient-to-br from-emerald-900/20 to-emerald-800/10 flex flex-col items-center justify-center p-12 relative'><div class='absolute inset-0 opacity-5 bg-[url(\"data:image/svg+xml,%3Csvg width=\"40\" height=\"40\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Ctext x=\"5\" y=\"25\" font-size=\"20\" fill=\"%2310b981\"%3E✓%3C/text%3E%3C/svg%3E\")] bg-repeat'></div><div id='good-title' class='opacity-0 translate-y-10 transition-all duration-700 delay-300 relative z-10'><h2 class='text-5xl font-black text-emerald-400 mb-8 italic'>OPTIMAL DESIGN</h2><ul class='space-y-4 text-emerald-200 text-lg'><li class='flex items-start gap-3'><span class='text-2xl'>✓</span><span>Proper trace sizing for current loads</span></li><li class='flex items-start gap-3'><span class='text-2xl'>✓</span><span>Solid ground planes reduce EMI</span></li><li class='flex items-start gap-3'><span class='text-2xl'>✓</span><span>Adequate component spacing</span></li><li class='flex items-start gap-3'><span class='text-2xl'>✓</span><span>Efficient power distribution</span></li></ul></div></div><div class='absolute inset-0 w-1 bg-white/20 left-1/2 transform -translate-x-1/2'></div></div>",
+      "steps": [
+        {
+          "narration": "Poor PCB design leads to overheating, signal interference, and reliability issues.",
+          "actions": [{"type": "reveal", "target": "#bad-title"}]
+        },
+        {
+          "narration": "Optimal design considers trace widths, ground planes, component spacing, and thermal management.",
+          "actions": [{"type": "reveal", "target": "#good-title"}]
+        }
+      ]
+    },
+    {
+      "type": "3D_BAR_GRAPH",
+      "html": "<div class='w-full h-full bg-[#0a0e17] flex flex-col p-12 relative overflow-hidden'><h2 class='text-white text-4xl font-black italic mb-10 tracking-tighter z-10'>PCB DESIGN CONSIDERATIONS</h2><div class='flex-1 relative bg-black/30 rounded-2xl border border-cyan-500/20 p-8 overflow-hidden'><canvas id='chart-pcb'></canvas></div></div>",
+      "script": "(ctx) => { const chart = ctx.chart('#chart-pcb', { type: 'bar', data: { labels: ['Trace Width', 'Layer Count', 'Via Density', 'Component Spacing', 'Thermal Mgmt'], datasets: [{ label: 'Importance Rating', data: [0, 0, 0, 0, 0], backgroundColor: ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981'], borderRadius: 8, barThickness: 60 }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { max: 100, grid: { color: '#1e293b' }, ticks: { color: '#94a3b8', font: { size: 14 } } }, y: { ticks: { color: '#fff', font: { weight: 'bold', size: 14 } }, grid: { display: false } } }, plugins: { legend: { display: false } }, animation: { duration: 2000, easing: 'easeOutQuart' } } }); return { populate: () => { chart.data.datasets[0].data = [95, 85, 75, 90, 88]; chart.update(); } }; }",
+      "steps": [
+        {
+          "narration": "Successful PCB design balances multiple competing factors, each critical to performance.",
+          "actions": [{"type": "custom", "fn": "Engine.state.activeScript.populate()"}]
+        }
+      ]
+    },
+    {
+      "type": "DOCU_TITLE",
+      "html": "<div class='w-full h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center relative overflow-hidden'><div class='absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#0f172a_100%)]'></div><div id='chapter5' class='text-center z-10 opacity-0 translate-y-10 transition-all duration-1000'><div class='text-rose-400 text-xs font-mono tracking-[0.8em] uppercase mb-4'>Chapter 05</div><h2 class='text-7xl font-black text-white italic tracking-tight'>POWER MANAGEMENT</h2><div class='mt-6 w-24 h-1 bg-rose-400 mx-auto'></div></div></div>",
+      "steps": [
+        {
+          "narration": "Efficient power management is critical for battery life, heat dissipation, and system reliability.",
+          "actions": [{"type": "reveal", "target": "#chapter5"}]
+        }
+      ]
+    },
+    {
+      "type": "CHART_FULL",
+      "html": "<div class='w-full h-full bg-[#0a0e17] flex flex-col p-8 relative overflow-hidden'><div class='flex justify-between items-center mb-6 z-10'><h2 class='text-white text-3xl font-black italic tracking-tighter'>VOLTAGE REGULATION</h2><div class='text-right'><div class='text-xs text-gray-400 uppercase tracking-wider'>Efficiency</div><div class='text-3xl text-emerald-400 font-black' id='efficiency-val'>0%</div></div></div><div class='flex-1 relative bg-black/30 rounded-2xl border border-amber-500/10 p-6 overflow-hidden'><canvas id='chart-voltage'></canvas></div></div>",
+      "script": "(ctx) => { const chart = ctx.chart('#chart-voltage', { type: 'line', data: { labels: ['0ms', '10ms', '20ms', '30ms', '40ms', '50ms', '60ms', '70ms', '80ms', '90ms', '100ms'], datasets: [ { label: 'Input (12V)', data: [12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12], borderColor: '#ef4444', backgroundColor: 'rgba(239, 68, 68, 0.1)', fill: true, tension: 0.1, borderWidth: 3, pointRadius: 0 }, { label: 'Output (5V)', data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.1, borderWidth: 3, pointRadius: 0 } ] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 15, grid: { color: '#1e293b' }, ticks: { color: '#94a3b8', callback: (val) => val + 'V' } }, x: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8' } } }, plugins: { legend: { labels: { color: '#fff', font: { size: 14, weight: 'bold' } } } }, animation: { duration: 1500 } } }); return { regulate: () => { chart.data.datasets[1].data = [0, 2, 4, 4.8, 5, 5, 5, 5, 5, 5, 5]; chart.update(); const eff = ctx.root.querySelector('#efficiency-val'); if(eff) { let val = 0; const interval = setInterval(() => { val += 2; eff.textContent = Math.min(val, 92) + '%'; if(val >= 92) clearInterval(interval); }, 30); } } }; }",
+      "steps": [
+        {
+          "narration": "Voltage regulators convert higher input voltages to stable, lower output levels.",
+          "actions": []
+        },
+        {
+          "narration": "Modern switching regulators achieve over ninety percent efficiency, minimizing wasted energy as heat.",
+          "actions": [{"type": "custom", "fn": "Engine.state.activeScript.regulate()"}]
+        }
+      ]
+    },
+    {
+      "type": "HEATMAP_PULSE",
+      "html": "<div class='w-full h-full bg-[#0a0510] relative overflow-hidden flex items-center justify-center p-20'><div id='crosshair-h2' class='absolute w-full h-[2px] bg-red-500/50 top-1/2 left-0 z-20 transition-all duration-700 opacity-0 shadow-[0_0_20px_rgba(239,68,68,0.8)]'></div><div id='crosshair-v2' class='absolute h-full w-[2px] bg-red-500/50 top-0 left-1/2 z-20 transition-all duration-700 opacity-0 shadow-[0_0_20px_rgba(239,68,68,0.8)]'></div><div class='relative z-10'><h2 class='text-white text-3xl font-black mb-8 text-center'>THERMAL HOTSPOT ANALYSIS</h2><div class='grid grid-cols-12 grid-rows-12 gap-1 w-[600px] h-[600px]' id='thermal-grid'></div></div></div>",
+      "script": "(ctx) => { const grid = ctx.root.querySelector('#thermal-grid'); let heatInterval; if(!grid.children.length) { for(let i=0; i<144; i++) { const cell = document.createElement('div'); cell.className = 'bg-blue-900/20 transition-all duration-500 rounded-sm'; cell.id = 'tcell-' + i; grid.appendChild(cell); } } const runHeat = () => { for(let i=0; i<144; i++) { const cell = ctx.root.querySelector('#tcell-'+i); if(cell && !cell.classList.contains('locked')) { const heat = Math.random(); if(heat > 0.7) cell.style.backgroundColor = `rgba(239, 68, 68, ${heat})`; else if(heat > 0.4) cell.style.backgroundColor = `rgba(251, 191, 36, ${heat})`; else cell.style.backgroundColor = `rgba(59, 130, 246, ${heat * 0.3})`; } } }; heatInterval = setInterval(runHeat, 400); return { remove: () => clearInterval(heatInterval), focusHotspot: (index, topPct, leftPct) => { const cell = ctx.root.querySelector('#tcell-'+index); const ch_h = ctx.root.querySelector('#crosshair-h2'); const ch_v = ctx.root.querySelector('#crosshair-v2'); if(cell && ch_h && ch_v) { cell.classList.add('locked'); cell.style.backgroundColor = '#ef4444'; cell.style.boxShadow = '0 0 30px #ef4444'; cell.style.transform = 'scale(1.3)'; ch_h.style.top = topPct + '%'; ch_h.style.opacity = '1'; ch_v.style.left = leftPct + '%'; ch_v.style.opacity = '1'; } } }; }",
+      "steps": [
+        {
+          "narration": "Thermal imaging reveals heat distribution across the circuit board during operation.",
+          "actions": []
+        },
+        {
+          "narration": "Critical hotspots require heat sinks, thermal vias, or component repositioning to prevent failure.",
+          "actions": [{"type": "custom", "fn": "Engine.state.activeScript.focusHotspot(78, 54, 65)"}]
+        }
+      ]
+    },
+    {
+      "type": "DOCU_TITLE",
+      "html": "<div class='w-full h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center relative overflow-hidden'><div class='absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#0f172a_100%)]'></div><div id='chapter6' class='text-center z-10 opacity-0 translate-y-10 transition-all duration-1000'><div class='text-cyan-400 text-xs font-mono tracking-[0.8em] uppercase mb-4'>Chapter 06</div><h2 class='text-7xl font-black text-white italic tracking-tight'>SIGNAL INTEGRITY</h2><div class='mt-6 w-24 h-1 bg-cyan-400 mx-auto'></div></div></div>",
+      "steps": [
+        {
+          "narration": "As circuit speeds increase, signal integrity becomes paramount to maintain data accuracy.",
+          "actions": [{"type": "reveal", "target": "#chapter6"}]
+        }
+      ]
+    },
+    {
+      "type": "LIQUID_WAVEFORM",
+      "html": "<div class='w-full h-full bg-[#020510] relative overflow-hidden flex items-center justify-center'><div id='wave-container' class='w-full h-full absolute inset-0'></div><div class='relative z-10 text-center pointer-events-none'><div class='text-xs text-cyan-400 font-mono tracking-[0.5em] uppercase mb-2'>Signal Frequency</div><div class='text-6xl font-black text-white' id='freq-display'>1.00<span class='text-3xl text-cyan-400 ml-2'>GHz</span></div></div></div>",
+      "script": "(ctx) => { const sketch = p => { let time = 0; let freq = 1.0; p.setup = () => p.createCanvas(ctx.root.clientWidth, ctx.root.clientHeight); p.draw = () => { p.clear(); p.background(2, 5, 16); p.stroke(34, 211, 238); p.strokeWeight(4); p.noFill(); p.beginShape(); for(let x = 0; x < p.width; x += 5) { const angle = time + p.map(x, 0, p.width, 0, p.TWO_PI * 3); const y = p.height/2 + p.sin(angle * freq) * 100; p.vertex(x, y); const glow = p.map(Math.abs(p.sin(angle * freq)), 0, 1, 0, 1); if(glow > 0.8) { p.stroke(34, 211, 238, 255); p.strokeWeight(6); } else { p.stroke(34, 211, 238, 180); p.strokeWeight(4); } } p.endShape(); time += 0.05; }; p.windowResized = () => p.resizeCanvas(ctx.root.clientWidth, ctx.root.clientHeight); }; const myP5 = ctx.p5(sketch, '#wave-container'); return { remove: () => myP5.remove(), increaseFreq: () => { const display = ctx.root.querySelector('#freq-display'); let f = 1.0; const interval = setInterval(() => { f += 0.1; if(display) display.innerHTML = f.toFixed(2) + '<span class=\"text-3xl text-cyan-400 ml-2\">GHz</span>'; if(f >= 3.5) clearInterval(interval); }, 100); } }; }",
+      "steps": [
+        {
+          "narration": "High-frequency signals require careful impedance matching to prevent reflections and distortion.",
+          "actions": []
+        },
+        {
+          "narration": "As frequency increases into the gigahertz range, even small design flaws cause signal degradation.",
+          "actions": [{"type": "custom", "fn": "Engine.state.activeScript.increaseFreq()"}]
+        }
+      ]
+    },
+    {
+      "type": "NETWORK_NODES",
+      "html": "<div class='w-full h-full bg-[#050a12] relative overflow-hidden'><div id='p5-network' class='w-full h-full'></div><div class='absolute bottom-8 left-8 z-20 bg-black/90 backdrop-blur-sm border border-cyan-500/30 p-4 rounded-lg'><h3 class='text-cyan-400 text-sm font-mono tracking-wider mb-2'>GROUND NETWORK</h3><div class='text-[10px] text-gray-400 font-mono'><div>NODES: <span class='text-white' id='node-count'>12</span></div><div>IMPEDANCE: <span class='text-emerald-400' id='impedance'>LOW</span></div></div></div></div>",
+      "script": "(ctx) => { const sketch = p => { let nodes = []; const numNodes = 12; p.setup = () => { p.createCanvas(ctx.root.clientWidth, ctx.root.clientHeight); for(let i=0; i<numNodes; i++) { nodes.push({ x: p.random(100, p.width-100), y: p.random(100, p.height-100), size: p.random(8, 16), pulse: p.random(p.TWO_PI) }); } }; p.draw = () => { p.clear(); p.background(5, 10, 18); nodes.forEach((n, i) => { n.pulse += 0.05; const scale = 1 + Math.sin(n.pulse) * 0.2; p.noStroke(); p.fill(16, 185, 129, 100); p.circle(n.x, n.y, n.size * scale * 3); p.fill(16, 185, 129); p.circle(n.x, n.y, n.size); nodes.forEach((other, j) => { if(j > i) { const d = p.dist(n.x, n.y, other.x, other.y); if(d < 200) { const alpha = p.map(d, 0, 200, 150, 0); p.stroke(59, 130, 246, alpha); p.strokeWeight(2); p.line(n.x, n.y, other.x, other.y); p.strokeWeight(1); p.stroke(34, 211, 238, alpha/2); const midX = (n.x + other.x)/2; const midY = (n.y + other.y)/2; const offset = Math.sin(p.frameCount * 0.05 + i + j) * 10; p.line(midX, midY, midX + offset, midY + offset); } }); }); }; p.windowResized = () => p.resizeCanvas(ctx.root.clientWidth, ctx.root.clientHeight); }; const myP5 = ctx.p5(sketch, '#p5-network'); return { remove: () => myP5.remove() }; }",
+      "steps": [
+        {
+          "narration": "A well-designed ground network provides low-impedance return paths for all signals.",
+          "actions": []
+        },
+        {
+          "narration": "Multiple ground connections reduce voltage differences and electromagnetic interference across the board.",
+          "actions": []
+        }
+      ]
+    },
+    {
+      "type": "DOCU_TITLE",
+      "html": "<div class='w-full h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center relative overflow-hidden'><div class='absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#0f172a_100%)]'></div><div id='chapter7' class='text-center z-10 opacity-0 translate-y-10 transition-all duration-1000'><div class='text-violet-400 text-xs font-mono tracking-[0.8em] uppercase mb-4'>Chapter 07</div><h2 class='text-7xl font-black text-white italic tracking-tight'>TESTING & VALIDATION</h2><div class='mt-6 w-24 h-1 bg-violet-400 mx-auto'></div></div></div>",
+      "steps": [
+        {
+          "narration": "Rigorous testing ensures circuits meet specifications before mass production.",
+          "actions": [{"type": "reveal", "target": "#chapter7"}]
+        }
+      ]
+    },
+    {
+      "type": "GAUGE_SWEEP",
+      "html": "<div class='w-full h-full bg-[#0a0e17] flex flex-col items-center justify-center relative overflow-hidden'><div class='absolute inset-0 opacity-5 bg-[url(\"data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Ccircle cx=\"30\" cy=\"30\" r=\"2\" fill=\"%233b82f6\"/%3E%3C/svg%3E\")] bg-repeat'></div><div class='z-10 flex flex-col items-center gap-6'><div class='text-amber-400 font-mono text-sm tracking-[0.5em] uppercase'>Reliability Test Progress</div><div class='relative w-80 h-40 overflow-hidden bg-gradient-to-b from-slate-800/50 to-slate-900/50 border-t-2 border-x-2 border-cyan-500/30 rounded-t-full backdrop-blur'><div id='gauge-needle' class='absolute bottom-0 left-1/2 w-1 h-36 bg-gradient-to-t from-red-500 to-amber-400 origin-bottom transition-transform duration-[2000ms] ease-out shadow-[0_0_20px_rgba(251,191,36,0.8)]' style='transform: translateX(-50%) rotate(-90deg)'></div><div class='absolute bottom-0 left-1/2 w-5 h-5 bg-white rounded-full -translate-x-1/2 translate-y-1/2 border-2 border-cyan-500 shadow-[0_0_15px_rgba(34,211,238,0.8)]'></div><div class='absolute bottom-2 left-4 text-xs text-cyan-400 font-mono'>0%</div><div class='absolute bottom-2 right-4 text-xs text-cyan-400 font-mono'>100%</div><div class='absolute top-8 left-1/2 -translate-x-1/2 text-center'><div class='text-5xl font-black text-white' id='gauge-value'>0<span class='text-2xl text-cyan-400'>%</span></div><div class='text-[10px] text-gray-400 uppercase tracking-wider mt-1'>Test Cycles Complete</div></div></div><div class='text-white text-7xl font-black italic tracking-tighter' id='gauge-status'>TESTING</div></div></div>",
+      "script": "(ctx) => { return { runTest: () => { const needle = ctx.root.querySelector('#gauge-needle'); const value = ctx.root.querySelector('#gauge-value'); const status = ctx.root.querySelector('#gauge-status'); if(needle) needle.style.transform = 'translateX(-50%) rotate(0deg)'; let v = 0; const interval = setInterval(() => { v += 2; if(value) value.innerHTML = Math.min(v, 100) + '<span class=\"text-2xl text-cyan-400\">%</span>'; if(v >= 100) { clearInterval(interval); if(status) { status.textContent = 'PASSED'; status.classList.add('text-emerald-400'); } } }, 40); } }; }",
+      "steps": [
+        {
+          "narration": "Prototype circuits undergo thousands of test cycles under various conditions.",
+          "actions": []
+        },
+        {
+          "narration": "Temperature extremes, voltage fluctuations, and electromagnetic interference are all evaluated.",
+          "actions": [{"type": "custom", "fn": "Engine.state.activeScript.runTest()"}]
+        }
+      ]
+    },
+    {
+      "type": "BULLETS",
+      "html": "<div class='w-full h-full bg-gradient-to-br from-[#0a1628] to-[#050a15] flex items-center justify-center p-16 relative overflow-hidden'><div class='absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_30%_50%,_#3b82f6_0%,_transparent_50%)]'></div><div class='max-w-4xl z-10'><h2 class='text-5xl font-black text-cyan-300 mb-12 italic tracking-tight'>Testing Methodologies</h2><ul class='space-y-6 text-2xl text-gray-300'><li id='test-1' class='flex items-start gap-4 opacity-0 translate-x-[-20px] transition-all duration-500'><span class='text-cyan-400 text-3xl'>▸</span><span><strong class='text-white'>Functional Testing:</strong> Verify all features work as designed under normal conditions</span></li><li id='test-2' class='flex items-start gap-4 opacity-0 translate-x-[-20px] transition-all duration-500'><span class='text-cyan-400 text-3xl'>▸</span><span><strong class='text-white'>Environmental Testing:</strong> Expose circuits to temperature, humidity, and vibration extremes</span></li><li id='test-3' class='flex items-start gap-4 opacity-0 translate-x-[-20px] transition-all duration-500'><span class='text-cyan-400 text-3xl'>▸</span><span><strong class='text-white'>EMI/EMC Testing:</strong> Measure electromagnetic emissions and immunity to interference</span></li><li id='test-4' class='flex items-start gap-4 opacity-0 translate-x-[-20px] transition-all duration-500'><span class='text-cyan-400 text-3xl'>▸</span><span><strong class='text-white'>Life Cycle Testing:</strong> Accelerated aging to predict long-term reliability</span></li></ul></div></div>",
+      "steps": [
+        {
+          "narration": "Functional testing confirms the circuit performs its intended tasks correctly.",
+          "actions": [{"type": "reveal", "target": "#test-1"}]
+        },
+        {
+          "narration": "Environmental testing exposes prototypes to harsh conditions beyond normal operation.",
+          "actions": [{"type": "reveal", "target": "#test-2"}]
+        },
+        {
+          "narration": "EMI and EMC testing ensure the device doesn't interfere with other electronics.",
+          "actions": [{"type": "reveal", "target": "#test-3"}]
+        },
+        {
+          "narration": "Life cycle testing predicts how long the circuit will operate reliably in the field.",
+          "actions": [{"type": "reveal", "target": "#test-4"}]
+        }
+      ]
+    },
+    {
+      "type": "DOCU_TITLE",
+      "html": "<div class='w-full h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center relative overflow-hidden'><div class='absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#0f172a_100%)]'></div><div id='chapter8' class='text-center z-10 opacity-0 translate-y-10 transition-all duration-1000'><div class='text-orange-400 text-xs font-mono tracking-[0.8em] uppercase mb-4'>Chapter 08</div><h2 class='text-7xl font-black text-white italic tracking-tight'>MANUFACTURING</h2><div class='mt-6 w-24 h-1 bg-orange-400 mx-auto'></div></div></div>",
+      "steps": [
+        {
+          "narration": "Once validated, the design moves to large-scale manufacturing and assembly.",
+          "actions": [{"type": "reveal", "target": "#chapter8"}]
+        }
+      ]
+    },
+    {
+      "type": "COUNTER",
+      "html": "<div class='w-full h-full bg-[#0a0e17] flex items-center justify-center relative overflow-hidden'><div class='absolute inset-0 opacity-5 bg-[url(\"data:image/svg+xml,%3Csvg width=\"100\" height=\"100\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Crect x=\"10\" y=\"10\" width=\"80\" height=\"80\" stroke=\"%233b82f6\" stroke-width=\"2\" fill=\"none\"/%3E%3C/svg%3E\")] bg-repeat'></div><div class='text-center z-10'><div class='text-amber-400 text-sm font-mono tracking-[0.5em] uppercase mb-4'>Automated Assembly Rate</div><div class='text-white'><span id='assembly-count' class='text-[180px] font-black italic tracking-tighter leading-none'>0</span><div class='text-4xl text-gray-400 mt-4'>PCBs per Hour</div></div></div></div>",
+      "script": "(ctx) => { const easeOut = (t) => 1 - Math.pow(1 - t, 3); return { countUp: () => { const el = ctx.root.querySelector('#assembly-count'); let startTime = null; const target = 1200; const duration = 3000; const step = (timestamp) => { if(!startTime) startTime = timestamp; const progress = Math.min((timestamp - startTime) / duration, 1); const easedProgress = easeOut(progress); if(el) el.textContent = Math.floor(easedProgress * target); if(progress < 1) window.requestAnimationFrame(step); }; window.requestAnimationFrame(step); } }; }",
+      "steps": [
+        {
+          "narration": "Modern PCB assembly lines use robotic pick-and-place machines for high-speed component mounting.",
+          "actions": [{"type": "custom", "fn": "Engine.state.activeScript.countUp()"}]
+        }
+      ]
+    },
+    {
+      "type": "TIMELINE",
+      "html": "<div class='w-full h-full bg-[#050505] flex flex-col justify-center relative overflow-hidden'><div class='absolute w-full h-[2px] bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent top-1/2 left-0 z-0'></div><div id='timeline-mfg' class='flex w-[400%] transition-transform duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] relative z-10 translate-x-0'><div class='w-1/4 flex flex-col items-center justify-center h-full'><div class='text-white text-5xl font-black mb-4'>DESIGN</div><div class='w-8 h-8 rounded-full bg-cyan-500 shadow-[0_0_30px_#06b6d4] mb-8 scale-125'></div><div class='text-gray-400 font-mono text-xs w-48 text-center uppercase tracking-widest'>CAD Schematics & Layout</div></div><div class='w-1/4 flex flex-col items-center justify-center h-full'><div class='text-white text-5xl font-black mb-4'>FABRICATE</div><div class='w-8 h-8 rounded-full bg-amber-500 shadow-[0_0_30px_#f59e0b] mb-8 scale-125'></div><div class='text-gray-400 font-mono text-xs w-48 text-center uppercase tracking-widest'>PCB Etching & Drilling</div></div><div class='w-1/4 flex flex-col items-center justify-center h-full'><div class='text-white text-5xl font-black mb-4'>ASSEMBLE</div><div class='w-8 h-8 rounded-full bg-purple-500 shadow-[0_0_30px_#a855f7] mb-8 scale-125'></div><div class='text-gray-400 font-mono text-xs w-48 text-center uppercase tracking-widest'>Component Placement & Solder</div></div><div class='w-1/4 flex flex-col items-center justify-center h-full'><div class='text-emerald-400 text-5xl font-black mb-4'>DEPLOY</div><div class='w-8 h-8 rounded-full bg-emerald-500 shadow-[0_0_30px_#10b981] mb-8 scale-125 animate-pulse'></div><div class='text-emerald-400 font-mono text-xs w-48 text-center uppercase tracking-widest'>Quality Control & Ship</div></div></div></div>",
+      "steps": [
+        {
+          "narration": "The journey begins with digital design files created by engineers.",
+          "actions": []
+        },
+        {
+          "narration": "Bare PCBs are fabricated through chemical etching and precision drilling.",
+          "actions": [{"type": "custom", "fn": "document.getElementById('timeline-mfg').style.transform = 'translateX(-25%)'"}]
+        },
+        {
+          "narration": "Components are then placed and soldered onto the boards automatically.",
+          "actions": [{"type": "custom", "fn": "document.getElementById('timeline-mfg').style.transform = 'translateX(-50%)'"}]
+        },
+        {
+          "narration": "Finally, each board is tested and prepared for deployment to customers worldwide.",
+          "actions": [{"type": "custom", "fn": "document.getElementById('timeline-mfg').style.transform = 'translateX(-75%)'"}]
+        }
+      ]
+    },
+    {
+      "type": "END_CINEMATIC",
+      "html": "<div class='w-full h-full bg-gradient-to-br from-[#0a2540] via-[#1a3a52] to-[#0f1419] relative flex items-center justify-center overflow-hidden'><div class='absolute inset-0 opacity-20 bg-[url(\"data:image/svg+xml,%3Csvg width=\"80\" height=\"80\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Ccircle cx=\"40\" cy=\"40\" r=\"2\" fill=\"%2300d4ff\"/%3E%3Cline x1=\"40\" y1=\"0\" x2=\"40\" y2=\"40\" stroke=\"%2300d4ff\" stroke-width=\"0.5\"/%3E%3C/svg%3E\")] bg-repeat'></div><div class='z-10 text-center'><div id='end-icon' class='flex justify-center mb-8 opacity-0 scale-0 transition-all duration-1000'><div class='w-32 h-32 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-600/20 border-2 border-cyan-400/40 flex items-center justify-center backdrop-blur'><i class='bi bi-check-circle-fill text-7xl text-cyan-400'></i></div></div><h1 id='end-title' class='text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-blue-500 tracking-tighter mb-6 opacity-0 translate-y-10 transition-all duration-1000 delay-300'>CIRCUIT MASTERY</h1><p id='end-sub' class='text-2xl text-gray-400 max-w-3xl mx-auto leading-relaxed opacity-0 translate-y-10 transition-all duration-1000 delay-600'>From fundamental principles to manufacturing excellence, circuit design transforms ideas into the technology that powers our world.</p><div id='end-line' class='h-[2px] w-0 bg-gradient-to-r from-transparent via-cyan-400 to-transparent mx-auto mt-10 transition-all duration-[2s] delay-1000'></div></div></div>",
+      "steps": [
+        {
+          "narration": "Circuit design is both an art and a science, requiring creativity, precision, and deep technical knowledge.",
+          "actions": [
+            {"type": "reveal", "target": "#end-icon"},
+            {"type": "reveal", "target": "#end-title"}
+          ]
+        },
+        {
+          "narration": "Whether designing simple circuits or complex systems, these fundamental principles remain constant.",
+          "actions": [
+            {"type": "reveal", "target": "#end-sub"},
+            {"type": "custom", "fn": "document.getElementById('end-line').style.width = '600px'"}
+          ]
+        }
+      ]
+    }
+  ]
+}
