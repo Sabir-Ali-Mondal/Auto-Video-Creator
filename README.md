@@ -11,6 +11,11 @@ It will be awesome.
 
 ### Developed By: Sabir Ali Mondal 
 
+
+## Example Topic :
+
+```Discuss the artistic world through coding languages. Generate 10 visually beautiful, code-based artworks. For standard imagery, use randomly sourced art images via an art/image API.```
+
 ## Prompt 
 
 ```
