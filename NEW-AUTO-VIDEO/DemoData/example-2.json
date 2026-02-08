@@ -1,0 +1,97 @@
+{
+  "meta": {
+    "topic": "The Syntax of Beauty: Artistic Worlds via Code",
+    "style": "Cinematic Tech-Atelier",
+    "duration": "02:15"
+  },
+  "scenes": [
+    {
+      "type": "TITLE_CINEMATIC",
+      "html": "<div class=\"w-full h-full bg-slate-950 flex flex-col items-center justify-center overflow-hidden relative\">\n  <div id=\"bg-grid\" class=\"absolute inset-0 opacity-20 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px]\"></div>\n  <div class=\"relative z-10 text-center\">\n    <h1 id=\"main-title\" class=\"text-white text-9xl font-black tracking-tighter opacity-0 translate-y-20 transition-all duration-1000 mix-blend-difference italic\">SYNTAX</h1>\n    <div id=\"sub-bar\" class=\"w-0 h-1 bg-emerald-400 mt-4 mx-auto shadow-[0_0_20px_#34d399]\"></div>\n    <p id=\"sub-text\" class=\"text-emerald-400 font-mono tracking-[0.5em] mt-6 text-xl opacity-0\">GENERATE_AESTHETIC( )</p>\n  </div>\n  <div class=\"absolute bottom-10 left-10 text-slate-500 font-mono text-xs\">\n    [SYSTEM]: INITIALIZING ARTISTIC_KERNEL... <br/>\n    [STATUS]: COMPILING CREATIVITY\n  </div>\n</div>",
+      "script": "(ctx) => {\n  return {\n    animateTitle: () => {\n      const bar = ctx.root.querySelector('#sub-bar');\n      bar.style.width = '60%';\n      bar.style.transition = 'width 2s cubic-bezier(0.65, 0, 0.35, 1)';\n    }\n  }\n}",
+      "steps": [
+        {
+          "narration": "In the modern era, the brush is no longer made of hair, but of logic. The canvas is no longer cloth, but coordinate systems.",
+          "actions": [
+            { "type": "reveal", "target": "#main-title" },
+            { "type": "custom", "fn": "Engine.state.activeScript.animateTitle()" },
+            { "type": "reveal", "target": "#sub-text" }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "CODE_TERMINAL",
+      "html": "<div class=\"w-full h-full bg-slate-900 p-20 flex items-center justify-center\">\n  <div class=\"w-full max-w-4xl aspect-video bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden flex flex-col\">\n    <div class=\"h-10 bg-white/5 flex items-center px-4 gap-2\">\n      <div class=\"w-3 h-3 rounded-full bg-red-500/50\"></div>\n      <div class=\"w-3 h-3 rounded-full bg-amber-500/50\"></div>\n      <div class=\"w-3 h-3 rounded-full bg-emerald-500/50\"></div>\n      <span class=\"text-slate-500 text-xs font-mono ml-4\">canvas_generator.js</span>\n    </div>\n    <div class=\"p-8 font-mono text-lg leading-relaxed\">\n      <div id=\"line-1\" class=\"text-pink-400 opacity-0\">const <span class=\"text-blue-400\">sketch</span> = (p) => {</div>\n      <div id=\"line-2\" class=\"text-pink-400 ml-8 opacity-0\">p.setup = () => {</div>\n      <div id=\"line-3\" class=\"text-white ml-16 opacity-0\">p.createCanvas(windowWidth, windowHeight);</div>\n      <div id=\"line-4\" class=\"text-emerald-400 ml-16 opacity-0 underline decoration-emerald-500/30\">p.strokeWeight(0.5);</div>\n      <div id=\"line-5\" class=\"text-pink-400 ml-8 opacity-0\">}</div>\n      <div id=\"line-6\" class=\"text-pink-400 opacity-0\">};</div>\n    </div>\n  </div>\n</div>",
+      "script": "(ctx) => {\n  return {\n    typeCode: (id) => {\n       const el = ctx.root.querySelector(id);\n       el.classList.remove('opacity-0');\n       el.classList.add('animate-pulse');\n    }\n  }\n}",
+      "steps": [
+        {
+          "narration": "Coding languages like Processing and p5.js have turned mathematical functions into strokes of digital paint.",
+          "actions": [
+            { "type": "custom", "fn": "Engine.state.activeScript.typeCode('#line-1')" },
+            { "type": "custom", "fn": "Engine.state.activeScript.typeCode('#line-2')" },
+            { "type": "custom", "fn": "Engine.state.activeScript.typeCode('#line-3')" },
+            { "type": "custom", "fn": "Engine.state.activeScript.typeCode('#line-4')" },
+            { "type": "custom", "fn": "Engine.state.activeScript.typeCode('#line-5')" },
+            { "type": "custom", "fn": "Engine.state.activeScript.typeCode('#line-6')" }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "GENERATIVE_ABSTRACT",
+      "html": "<div class=\"w-full h-full bg-black relative\">\n  <div id=\"p5-canvas-container\" class=\"absolute inset-0\"></div>\n  <div class=\"absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60\"></div>\n  <div class=\"absolute bottom-20 left-20 z-20\">\n    <h2 id=\"gen-label\" class=\"text-white text-6xl font-serif italic opacity-0 -translate-x-10\">Perlin Noise <span class=\"font-sans text-xl text-slate-400 block tracking-widest\">STOCHASTIC FLUIDITY</span></h2>\n  </div>\n</div>",
+      "script": "(ctx) => {\n  let sketch = (p) => {\n    let particles = [];\n    const num = 1000;\n    const noiseScale = 0.01;\n\n    p.setup = () => {\n      p.createCanvas(window.innerWidth, window.innerHeight).parent('p5-canvas-container');\n      for(let i=0; i<num; i++) { particles.push(p.createVector(p.random(p.width), p.random(p.height))); }\n      p.stroke(52, 211, 153, 50);\n    };\n\n    p.draw = () => {\n      p.background(0, 10);\n      for(let i=0; i<num; i++) {\n        let p_vec = particles[i];\n        p.point(p_vec.x, p_vec.y);\n        let n = p.noise(p_vec.x * noiseScale, p_vec.y * noiseScale);\n        let a = p.TAU * n;\n        p_vec.x += p.cos(a);\n        p_vec.y += p.sin(a);\n        if(!p.onScreen(p_vec)) {\n          p_vec.x = p.random(p.width);\n          p_vec.y = p.random(p.height);\n        }\n      }\n    };\n\n    p.onScreen = (v) => v.x >= 0 && v.x <= p.width && v.y >= 0 && v.y <= p.height;\n  };\n\n  const p5Instance = ctx.p5(sketch, 'p5-canvas-container');\n  \n  return {\n    remove: () => p5Instance.remove()\n  }\n}",
+      "steps": [
+        {
+          "narration": "By simulating natural phenomena like Perlin noise, artists can create organic, flowing structures that mimic the chaotic beauty of smoke, water, and biological growth.",
+          "actions": [
+            { "type": "reveal", "target": "#gen-label" }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "DATA_VISUALIZATION",
+      "html": "<div class=\"w-full h-full bg-slate-50 flex items-center justify-center p-20\">\n  <div class=\"w-1/2 p-10\">\n    <h3 id=\"chart-title\" class=\"text-slate-900 text-5xl font-bold mb-4 opacity-0\">The Creative Stack</h3>\n    <p id=\"chart-desc\" class=\"text-slate-500 text-xl opacity-0\">JavaScript leads the renaissance of the web as an art gallery, followed by the deep-learning capabilities of Python.</p>\n  </div>\n  <div class=\"w-1/2 h-96\">\n    <canvas id=\"lang-chart\"></canvas>\n  </div>\n</div>",
+      "script": "(ctx) => {\n  const config = {\n    type: 'bar',\n    data: {\n      labels: ['JS (p5/Three)', 'Python (AI)', 'C++ (OF)', 'GLSL (Shaders)'],\n      datasets: [{\n        label: 'Creative Usage',\n        data: [95, 82, 60, 75],\n        backgroundColor: ['#10b981', '#3b82f6', '#f43f5e', '#f59e0b'],\n        borderRadius: 10\n      }]\n    },\n    options: {\n      responsive: true,\n      maintainAspectRatio: false,\n      animation: { duration: 2000, easing: 'easeOutQuart' },\n      plugins: { legend: { display: false } }\n    }\n  };\n  \n  let chartInstance = null;\n\n  return {\n    renderChart: () => {\n      chartInstance = ctx.chart('lang-chart', config);\n    }\n  }\n}",
+      "steps": [
+        {
+          "narration": "The landscape is diverse. From JavaScript's dominance in the browser to Python's role in the AI-generated art revolution, every language offers a unique lens.",
+          "actions": [
+            { "type": "reveal", "target": "#chart-title" },
+            { "type": "reveal", "target": "#chart-desc" },
+            { "type": "custom", "fn": "Engine.state.activeScript.renderChart()" }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "3D_OBJECT_CSS",
+      "html": "<div class=\"w-full h-full bg-white flex items-center justify-center perspective-[1200px]\">\n  <div id=\"gallery-wall\" class=\"relative w-[600px] h-[400px] transform-style-3d -rotate-y-12 transition-transform duration-[3s] flex gap-4\">\n    <div class=\"w-1/3 h-full bg-slate-200 shadow-2xl rounded border-8 border-white overflow-hidden transform hover:translate-z-20 transition-all\">\n      <div class=\"w-full h-full bg-[url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80')] bg-cover\"></div>\n    </div>\n    <div class=\"w-1/3 h-full bg-slate-200 shadow-2xl rounded border-8 border-white overflow-hidden transform -translate-y-10 translate-z-10 transition-all\">\n      <div class=\"w-full h-full bg-[url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80')] bg-cover\"></div>\n    </div>\n    <div class=\"w-1/3 h-full bg-slate-200 shadow-2xl rounded border-8 border-white overflow-hidden transform translate-z-20 transition-all\">\n       <div class=\"w-full h-full bg-[url('https://images.unsplash.com/photo-1633356122544-f134324a6cee?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80')] bg-cover\"></div>\n    </div>\n    <div class=\"absolute -bottom-20 -right-20 text-slate-200 text-[12rem] font-bold select-none -z-10\">MUSEUM</div>\n  </div>\n</div>",
+      "script": "(ctx) => {\n  return {\n    panGallery: () => {\n      ctx.root.querySelector('#gallery-wall').classList.add('rotate-y-12');\n    }\n  }\n}",
+      "steps": [
+        {
+          "narration": "Ultimately, code doesn't just describe the world; it builds new ones. Welcome to the gallery of the infinite.",
+          "actions": [
+            { "type": "custom", "fn": "Engine.state.activeScript.panGallery()" }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "END_CINEMATIC",
+      "html": "<div class=\"w-full h-full bg-emerald-500 flex flex-col items-center justify-center\">\n  <div class=\"text-white mix-blend-overlay\">\n     <h2 id=\"final-word\" class=\"text-8xl font-black scale-150 opacity-0 transition-all duration-1000\">CREATE_ORIGIN( )</h2>\n  </div>\n  <div id=\"end-bar\" class=\"w-0 h-2 bg-white mt-10\"></div>\n  <p class=\"mt-10 text-emerald-900 font-mono font-bold tracking-tighter\">PROCESSED BY VIDEO_ENGINE_V1</p>\n</div>",
+      "script": "(ctx) => {\n  return {\n    animateEnd: () => {\n      ctx.root.querySelector('#end-bar').style.width = '200px';\n      ctx.root.querySelector('#end-bar').style.transition = 'width 1.5s ease';\n    }\n  }\n}",
+      "steps": [
+        {
+          "narration": "The script is yours to write. Start coding your masterpiece today.",
+          "actions": [
+            { "type": "reveal", "target": "#final-word" },
+            { "type": "custom", "fn": "Engine.state.activeScript.animateEnd()" }
+          ]
+        }
+      ]
+    }
+  ]
+}
