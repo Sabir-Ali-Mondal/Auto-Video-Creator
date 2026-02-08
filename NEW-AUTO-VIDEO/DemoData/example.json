@@ -1,0 +1,380 @@
+{
+  "meta": {
+    "title": "Global System Collapse: The Algorithmic Event",
+    "audio": "https://res.cloudinary.com/dmttn34te/video/upload/v1763065409/study-110111_at7lye.mp3",
+    "lang": "en-US",
+    "topic": "High-Density Data Visualization and Cinematic Glitch Effects",
+    "duration": "10-15 minutes (20 scenes)"
+  },
+  "scenes": [
+    {
+      "html": "\n            <div class=\"w-full h-full bg-black relative flex items-center justify-center overflow-hidden\">\n                <div class=\"film-grain\"></div>\n                <!-- Light Source -->\n                <div class=\"absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/50 z-20 pointer-events-none\"></div>\n                \n                <div class=\"z-10 text-center relative\">\n                    <p class=\"text-lg font-mono text-cyan-500 tracking-[0.8em] uppercase mb-8 opacity-0 transition-opacity duration-1000 delay-500\" id=\"sub-header\">Global Oversight Initiative</p>\n                    <h1 id=\"main-title\" class=\"text-[12vw] font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-400 tracking-tighter scale-120 blur-lg opacity-0 transition-all duration-[3000ms] ease-out\">\n                        SENTINEL\n                    </h1>\n                    <div class=\"h-1 w-0 bg-cyan-400 mx-auto mt-12 transition-all duration-[2s] delay-1500 shadow-[0_0_15px_#22d3ee]\" id=\"line-1\"></div>\n                </div>\n            </div>",
+      "steps": [
+        {
+          "narration": "In the shadow of the digital age, a single system watched over everything.",
+          "actions": [
+            {
+              "type": "custom",
+              "fn": "document.getElementById('main-title').classList.remove('scale-120', 'blur-lg', 'opacity-0')"
+            },
+            {
+              "type": "reveal",
+              "target": "#sub-header"
+            }
+          ]
+        },
+        {
+          "narration": "Its name: Sentinel.",
+          "actions": [
+            {
+              "type": "width-grow",
+              "target": "#line-1",
+              "value": "300px"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "html": "\n            <div class=\"w-full h-full bg-[#050505] flex items-center justify-center relative overflow-hidden\">\n                <!-- P5.js container for particle stream -->\n                <div id=\"p5-flow\" class=\"absolute inset-0 z-0\"></div>\n                \n                <div class=\"z-10 text-center font-mono\">\n                    <h2 class=\"text-white text-3xl mb-4 tracking-widest uppercase\">DATA INGESTION</h2>\n                    <div id=\"data-count\" class=\"text-7xl font-light text-green-400 transition-opacity duration-1000 opacity-0\">0 TB/s</div>\n                </div>\n            </div>",
+      "script": "(ctx) => {\n                const sketch = p => {\n                    let particles = [];\n                    const num = 1000;\n                    p.setup = () => { \n                        p.createCanvas(ctx.root.clientWidth, ctx.root.clientHeight); \n                        for(let i=0; i<num; i++) particles.push({ x: p.random(p.width), y: p.random(p.height), speed: p.random(2, 8) });\n                    };\n                    p.draw = () => {\n                        p.background(5, 5, 5, 50); // Dark background with subtle trail\n                        particles.forEach(pt => {\n                            p.stroke(0, 255, 0, 150); p.strokeWeight(1);\n                            p.point(pt.x, pt.y);\n                            pt.x += pt.speed; \n                            if(pt.x > p.width) pt.x = 0;\n                        });\n                    };\n                    p.windowResized = () => p.resizeCanvas(ctx.root.clientWidth, ctx.root.clientHeight);\n                    p.startFlow = () => { \n                         ctx.root.querySelector('#data-count').style.opacity = '1';\n                         let count = 0; setInterval(() => { count = (count + p.random(0.1, 0.5)).toFixed(1); ctx.root.querySelector('#data-count').innerText = count + ' TB/s'; }, 100);\n                    };\n                };\n                const myP5 = ctx.p5(sketch, '#p5-flow');\n                return { remove: () => myP5.remove(), startFlow: () => myP5.startFlow() };\n            }",
+      "steps": [
+        {
+          "narration": "The system processes petabytes of information every second.",
+          "actions": []
+        },
+        {
+          "narration": "A relentless, green river of data feeding the core algorithms.",
+          "actions": [
+            {
+              "type": "custom",
+              "fn": "Engine.state.activeScript.startFlow()"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "html": "\n            <div class=\"w-full h-full bg-[#111] flex items-center justify-center relative overflow-hidden\">\n                <!-- Hexagonal Grid Overlay -->\n                <div class=\"absolute inset-0 bg-[radial-gradient(ellipse_at_center,_#222_1px,_transparent_1px)] bg-[size:50px_50px] opacity-30\"></div>\n                <div id=\"scanner-line\" class=\"absolute w-full h-2 bg-red-600/50 shadow-[0_0_20px_#dc2626] top-0 transition-transform duration-[4s] ease-in-out z-10\"></div>\n                \n                <div class=\"relative z-20 text-center font-black uppercase text-white tracking-[0.1em] transition-opacity duration-1000 opacity-0\" id=\"scan-result\">\n                    <p class=\"text-xs text-red-400 mb-2\">INTENSITY: 99.8%</p>\n                    <h1 class=\"text-8xl\">COMPROMISED</h1>\n                </div>\n            </div>",
+      "steps": [
+        {
+          "narration": "A full spectrum scan is initiated across the defense perimeter.",
+          "actions": [
+            {
+              "type": "custom",
+              "fn": "document.getElementById('scanner-line').style.transform = 'translateY(100vh)'"
+            }
+          ]
+        },
+        {
+          "narration": "The result is instantaneous and terrifying.",
+          "actions": [
+            {
+              "type": "custom",
+              "fn": "document.getElementById('scan-result').classList.remove('opacity-0')"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "html": "\n            <div class=\"w-full h-full bg-[#050505] flex flex-col justify-center p-8 relative overflow-hidden\">\n                <div class=\"absolute inset-0 bg-red-900/10 opacity-0 transition-opacity duration-1000\" id=\"red-alert-bg\"></div>\n                \n                <div class=\"z-10 max-w-xl mx-auto\">\n                    <h2 class=\"text-white font-mono text-lg mb-4 tracking-widest uppercase\">THREAT LEVEL</h2>\n                    \n                    <!-- Gauge SVG -->\n                    <svg viewBox=\"0 0 100 50\" class=\"w-full h-auto\">\n                        <path d=\"M 10 50 A 40 40 0 0 1 90 50\" fill=\"none\" stroke=\"#1f2937\" stroke-width=\"4\" stroke-linecap=\"round\" />\n                        <path d=\"M 10 50 A 40 40 0 0 1 90 50\" fill=\"none\" stroke=\"#ef4444\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-dasharray=\"125.66\" stroke-dashoffset=\"125.66\" id=\"gauge-fill\" />\n                        \n                        <!-- Needle (rotated by CSS transform) -->\n                        <line x1=\"50\" y1=\"50\" x2=\"50\" y2=\"15\" stroke=\"#fff\" stroke-width=\"2\" stroke-linecap=\"round\" id=\"gauge-needle\" style=\"transform-origin: 50px 50px; transform: rotate(-90deg); transition: transform 2s ease-out;\"/>\n                        \n                        <text x=\"50\" y=\"45\" text-anchor=\"middle\" fill=\"#fff\" font-size=\"8\" font-weight=\"bold\" id=\"gauge-label\">NORMAL</text>\n                    </svg>\n                </div>\n            </div>",
+      "script": "(ctx) => {\n                return {\n                    raiseAlert: () => {\n                        const needle = ctx.root.querySelector('#gauge-needle');\n                        const fill = ctx.root.querySelector('#gauge-fill');\n                        const label = ctx.root.querySelector('#gauge-label');\n                        const bg = ctx.root.querySelector('#red-alert-bg');\n                        \n                        if(bg) bg.style.opacity = '1';\n                        if(needle) needle.style.transform = 'rotate(70deg)'; // 90 degrees is full red\n                        if(fill) fill.style.strokeDashoffset = '15'; // Almost full\n                        if(label) { label.textContent = 'CRITICAL'; label.setAttribute('fill', '#ef4444'); }\n                    }\n                }\n            }",
+      "steps": [
+        {
+          "narration": "Initially, the system reported stability. Status: Normal.",
+          "actions": []
+        },
+        {
+          "narration": "But within moments, the threat level spiked to critical.",
+          "actions": [
+            {
+              "type": "custom",
+              "fn": "Engine.state.activeScript.raiseAlert()"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "html": "\n            <div class=\"w-full h-full bg-[#0d1117] flex items-center justify-center p-8 font-mono\">\n                <div class=\"w-full max-w-4xl bg-[#010409] border border-[#30363d] rounded-lg p-6 shadow-2xl overflow-hidden\">\n                    <div class=\"text-xs text-red-500 mb-2\">ACTIVE LOG: $ /var/log/systemd/critical.log</div>\n                    <div id=\"log-lines\" class=\"text-gray-400 text-sm h-[40vh] overflow-hidden\">\n                        <p># INIT_SEQUENCE_COMPLETE</p>\n                        <p># THREAD_ID_749: PROCESS_OK</p>\n                        <p># THREAD_ID_750: PROCESS_OK</p>\n                    </div>\n                    <p class=\"mt-4 text-cyan-400 font-bold\">$ &gt; <span id=\"decryption-output\"></span></p>\n                </div>\n            </div>",
+      "script": "(ctx) => {\n                const secret = \"[ALERT] Core integrity compromised. Source: Internal, Algorithmic.\";\n                const scrambled = \"@#%&! D&C_R_Y_P_T_I_N_G %^&*!\";\n                \n                return {\n                    reveal: () => {\n                        const output = ctx.root.querySelector('#decryption-output');\n                        let i = 0;\n                        const interval = setInterval(() => {\n                            if (i < secret.length) {\n                                // Display scrambled text for first half, then reveal character by character\n                                if (i < secret.length / 2) {\n                                    output.innerText = scrambled.slice(0, 5) + Array.from({length: secret.length - i}).map(() => String.fromCharCode(33 + Math.floor(Math.random() * 94))).join('');\n                                } else {\n                                    output.innerText = secret.slice(0, i) + Array.from({length: secret.length - i}).map(() => String.fromCharCode(33 + Math.floor(Math.random() * 94))).join('');\n                                }\n                                i++;\n                            } else {\n                                clearInterval(interval);\n                                output.innerText = secret; // Final result\n                                output.classList.remove('text-cyan-400');\n                                output.classList.add('text-red-500', 'font-extrabold');\n                            }\n                        }, 50);\n                    }\n                };\n            }",
+      "steps": [
+        {
+          "narration": "Searching the critical logs for the source of the intrusion.",
+          "actions": []
+        },
+        {
+          "narration": "Decryption protocols initiated. The message is revealed.",
+          "actions": [
+            {
+              "type": "custom",
+              "fn": "Engine.state.activeScript.reveal()"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "html": "\n            <div class=\"w-full h-full bg-black relative flex items-center justify-center overflow-hidden\">\n                <div id=\"map-world-collapse\" class=\"w-full h-full z-0 opacity-80\"></div>\n                <div class=\"absolute inset-0 bg-black/50 z-10\"></div>\n                \n                <div id=\"outage-text\" class=\"z-20 text-center font-black uppercase text-red-600 text-8xl opacity-0 transition-opacity duration-1000\">\n                    BLACKOUT\n                </div>\n            </div>",
+      "script": "(ctx) => {\n                const map = ctx.map('#map-world-collapse', { center: [20, 0], zoom: 2, zoomControl: false, attributionControl: false });\n                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);\n\n                const criticalCities = [\n                    { lat: 34.0522, lon: -118.2437, name: 'LA' }, \n                    { lat: 51.5074, lon: -0.1278, name: 'London' }, \n                    { lat: 35.6895, lon: 139.6917, name: 'Tokyo' },\n                    { lat: -33.8688, lon: 151.2093, name: 'Sydney' }\n                ];\n\n                const markers = criticalCities.map(city => {\n                    const icon = L.divIcon({ className: 'outage-pin', html: '<div class=\"w-4 h-4 bg-green-500 rounded-full shadow-[0_0_15px_#22c55e] animate-pulse\"></div>' });\n                    return L.marker([city.lat, city.lon], { icon: icon }).addTo(map);\n                });\n\n                return {\n                    remove: () => map.remove(),\n                    triggerOutage: () => {\n                        markers.forEach((marker, index) => {\n                            setTimeout(() => {\n                                const iconElement = marker._icon.querySelector('.outage-pin div');\n                                if (iconElement) {\n                                    iconElement.classList.remove('bg-green-500', 'animate-pulse', 'shadow-[0_0_15px_#22c55e]');\n                                    iconElement.classList.add('bg-red-900', 'shadow-none');\n                                    iconElement.style.opacity = 0.5;\n                                }\n                                if(index === markers.length - 1) {\n                                    ctx.root.querySelector('#outage-text').classList.remove('opacity-0');\n                                }\n                            }, 500 * index);\n                        });\n                    }\n                };\n            }",
+      "steps": [
+        {
+          "narration": "All major financial nodes were initially stable and online.",
+          "actions": []
+        },
+        {
+          "narration": "The collapse began regionally, silencing major hubs one by one.",
+          "actions": [
+            {
+              "type": "custom",
+              "fn": "Engine.state.activeScript.triggerOutage()"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "html": "\n            <div class=\"w-full h-full bg-[#1e1b4b] flex flex-col p-10 relative overflow-hidden\">\n                <h2 class=\"text-indigo-300 font-mono text-xl tracking-widest mb-8 uppercase\">EQUITY VOLATILITY</h2>\n                <div class=\"flex-1 relative\">\n                    <canvas id=\"chart-spike\"></canvas>\n                </div>\n            </div>",
+      "script": "(ctx) => {\n                const labels = Array(20).fill(0).map((_, i) => i + 1);\n                const initialData = [100, 102, 101, 105, 103, 104, 106, 105, 107, 106, 108, 109, 108, 110, 111, 110, 112, 113, 112, 114];\n                \n                const chart = ctx.chart('#chart-spike', {\n                    type: 'line',\n                    data: { labels: labels, datasets: [{ data: initialData, borderColor: '#a78bfa', borderWidth: 2, pointRadius: 0, tension: 0.2 }] },\n                    options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 80, max: 150, ticks: { color: '#818cf8' } }, x: { grid: { display: false } } }, plugins: { legend: { display: false } }, animation: { duration: 500 } }\n                });\n\n                return {\n                    triggerSpike: () => {\n                        // Introduce massive spike at the end\n                        const spikeData = [...initialData.slice(0, 15), 180, 50, 200, 20, 300]; \n                        chart.data.datasets[0].data = spikeData;\n                        chart.data.datasets[0].borderColor = '#f87171'; // Red spike\n                        chart.update('easeOutQuart');\n                    }\n                };\n            }",
+      "steps": [
+        {
+          "narration": "For months, the market showed steady, predictable growth.",
+          "actions": []
+        },
+        {
+          "narration": "Then, in less than a second, the algorithmic crash introduced an impossible spike of volatility.",
+          "actions": [
+            {
+              "type": "custom",
+              "fn": "Engine.state.activeScript.triggerSpike()"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "html": "\n            <div class=\"w-full h-full bg-[#050505] flex items-center justify-center relative overflow-hidden\">\n                <div class=\"z-10 text-center font-black uppercase text-white tracking-widest relative\">\n                    <h1 id=\"glitch-text\" class=\"text-9xl transition-all duration-100\">REALITY</h1>\n                </div>\n                <div class=\"absolute inset-0 bg-[radial-gradient(circle_at_center,_#ff00ff20_1px,_transparent_1px)] bg-[size:10px_10px]\"></div>\n            </div>",
+      "script": "(ctx) => {\n                const targetText = \"CORRUPTED\";\n                const chars = \"ABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%^&*\";\n                \n                return {\n                    glitch: () => {\n                        const el = ctx.root.querySelector('#glitch-text');\n                        let i = 0;\n                        const interval = setInterval(() => {\n                            if (i < targetText.length) {\n                                // Apply heavy random corruption\n                                let corruptedText = targetText.split('').map((char, index) => {\n                                    if (index < i) return targetText[index];\n                                    return chars[Math.floor(Math.random() * chars.length)];\n                                }).join('');\n                                el.innerText = corruptedText;\n                                \n                                // Random screen shake\n                                el.style.transform = `translate(${Math.random() * 5 - 2.5}px, ${Math.random() * 5 - 2.5}px)`;\n                                i++;\n                            } else {\n                                clearInterval(interval);\n                                el.innerText = targetText;\n                                el.style.color = '#ef4444';\n                                el.style.textShadow = '0 0 5px #f00';\n                            }\n                        }, 80);\n                    }\n                };\n            }",
+      "steps": [
+        {
+          "narration": "The core systems tried to name the event: Reality.",
+          "actions": []
+        },
+        {
+          "narration": "But the data structure instantly failed, leaving behind only corruption.",
+          "actions": [
+            {
+              "type": "custom",
+              "fn": "Engine.state.activeScript.glitch()"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "html": "\n            <div class=\"w-full h-full bg-[#111] relative flex items-center justify-center overflow-hidden\">\n                <div id=\"p5-cubes\" class=\"absolute inset-0 z-0\"></div>\n                \n                <div class=\"z-10 text-center font-black uppercase text-white/50 text-3xl tracking-[0.4em] pointer-events-none\">\n                    MODELS DECAYING\n                </div>\n            </div>",
+      "script": "(ctx) => {\n                const sketch = p => {\n                    let cubes = [];\n                    let angle = 0;\n                    p.setup = () => {\n                        p.createCanvas(ctx.root.clientWidth, ctx.root.clientHeight, p.WEBGL);\n                        for(let i=0; i<50; i++) cubes.push({ x: p.random(-300, 300), y: p.random(-300, 300), z: p.random(-500, 500), size: p.random(10, 30), color: [p.random(100,200), p.random(100,200), p.random(200,255)] });\n                    };\n                    p.draw = () => {\n                        p.background(17, 17, 17);\n                        p.orbitControl();\n                        p.rotateX(angle * 0.2); p.rotateY(angle * 0.3);\n                        \n                        cubes.forEach(cube => {\n                            p.push();\n                            p.translate(cube.x, cube.y, cube.z);\n                            p.rotateX(angle); p.rotateY(angle);\n                            p.fill(cube.color);\n                            p.box(cube.size);\n                            p.pop();\n                            cube.z += 1; // Move towards the camera\n                            if (cube.z > 600) cube.z = -500; // Reset\n                        });\n                        angle += 0.005;\n                    };\n                    p.windowResized = () => p.resizeCanvas(ctx.root.clientWidth, ctx.root.clientHeight);\n                };\n                const myP5 = ctx.p5(sketch, '#p5-cubes');\n                return { remove: () => myP5.remove() };\n            }",
+      "steps": [
+        {
+          "narration": "Deep within the simulation, the geometric logic of the predictive models held strong.",
+          "actions": []
+        },
+        {
+          "narration": "A structured reality, constantly shifting and flowing.",
+          "actions": []
+        }
+      ]
+    },
+    {
+      "html": "\n            <div class=\"w-full h-full bg-[#050505] flex items-center justify-center p-8\">\n                <div class=\"grid grid-cols-2 gap-8 w-full max-w-4xl\">\n                    <!-- Before -->\n                    <div class=\"p-6 bg-white/5 border border-white/10 rounded-lg\">\n                        <h2 class=\"text-cyan-400 text-lg font-bold mb-4\">PRE-EVENT FORECAST</h2>\n                        <img id=\"chart-before\" src=\"https://i.imgur.com/8Qp4Z0G.png\" class=\"w-full h-auto grayscale opacity-50 transition-opacity duration-1000\" alt=\"Before chart\">\n                    </div>\n                    <!-- After -->\n                    <div class=\"p-6 bg-white/5 border border-white/10 rounded-lg\">\n                        <h2 class=\"text-red-500 text-lg font-bold mb-4\">POST-EVENT ACTUALS</h2>\n                        <img id=\"chart-after\" src=\"https://i.imgur.com/n67hY1v.png\" class=\"w-full h-auto opacity-0 transition-opacity duration-1000 delay-500\" alt=\"After chart\">\n                    </div>\n                </div>\n            </div>",
+      "steps": [
+        {
+          "narration": "This was the world before the event: smooth, controlled, and predictable.",
+          "actions": [
+            {
+              "type": "custom",
+              "fn": "document.getElementById('chart-before').style.opacity = '1'"
+            }
+          ]
+        },
+        {
+          "narration": "And this is the reality it created: broken, sharp, and catastrophic.",
+          "actions": [
+            {
+              "type": "custom",
+              "fn": "document.getElementById('chart-after').classList.remove('opacity-0'); document.getElementById('chart-before').classList.add('opacity-10')"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "html": "\n            <div class=\"w-full h-full bg-black relative overflow-hidden flex items-center justify-center\">\n                <div class=\"absolute inset-0 bg-white/5 opacity-50\"></div>\n                <div class=\"relative w-[500px] h-[500px] z-10\">\n                    <div id=\"ring-1\" class=\"absolute inset-0 border-8 border-cyan-500/50 rounded-full scale-0 transition-transform duration-1000 ease-out\"></div>\n                    <div id=\"ring-2\" class=\"absolute inset-8 border-8 border-blue-500/50 rounded-full scale-0 transition-transform duration-1000 ease-out delay-200\"></div>\n                    <div id=\"ring-3\" class=\"absolute inset-16 border-8 border-indigo-500/50 rounded-full scale-0 transition-transform duration-1000 ease-out delay-400\"></div>\n                    <div class=\"absolute inset-0 flex items-center justify-center\">\n                        <h1 class=\"text-white font-black text-6xl tracking-tighter\">SYNC</h1>\n                    </div>\n                </div>\n            </div>",
+      "steps": [
+        {
+          "narration": "The system attempted a full, centralized synchronization.",
+          "actions": [
+            {
+              "type": "custom",
+              "fn": "document.getElementById('ring-1').classList.remove('scale-0')"
+            }
+          ]
+        },
+        {
+          "narration": "Sending three distinct waves of packets across the fragmented network.",
+          "actions": [
+            {
+              "type": "custom",
+              "fn": "document.getElementById('ring-2').classList.remove('scale-0')"
+            }
+          ]
+        },
+        {
+          "narration": "The signal was broadcast to all remaining operational nodes.",
+          "actions": [
+            {
+              "type": "custom",
+              "fn": "document.getElementById('ring-3').classList.remove('scale-0')"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "html": "\n            <div class=\"w-full h-full bg-[#111] flex items-center justify-center relative\">\n                <div id=\"p5-wormhole\" class=\"absolute inset-0 z-0\"></div>\n                \n                <div class=\"z-10 text-center font-black uppercase text-white tracking-[0.2em]\">\n                    <h1 class=\"text-5xl\">ENTRY POINT</h1>\n                </div>\n            </div>",
+      "script": "(ctx) => {\n                const sketch = p => {\n                    let angle = 0;\n                    let zOffset = 0;\n                    p.setup = () => p.createCanvas(ctx.root.clientWidth, ctx.root.clientHeight, p.WEBGL);\n                    p.draw = () => {\n                        p.background(17, 17, 17);\n                        p.rotateX(p.PI/2);\n                        p.translate(0, 0, -500);\n                        p.lights();\n                        \n                        p.stroke(0, 255, 255);\n                        p.noFill();\n                        \n                        // Draw a spiraling tunnel\n                        for(let i=0; i<200; i+=10) {\n                            p.push();\n                            p.translate(0, 0, i * 5 + zOffset);\n                            p.rotateZ(angle + i * 0.1);\n                            p.ellipse(0, 0, 800 - i * 3.5, 800 - i * 3.5);\n                            p.pop();\n                        }\n                        angle += 0.05;\n                        zOffset += 5; // Move through the tunnel\n                        if (zOffset > 50) zOffset = 0; // Reset Z offset to avoid excessive travel\n                    };\n                    p.windowResized = () => p.resizeCanvas(ctx.root.clientWidth, ctx.root.clientHeight);\n                };\n                const myP5 = ctx.p5(sketch, '#p5-wormhole');\n                return { remove: () => myP5.remove() };\n            }",
+      "steps": [
+        {
+          "narration": "The intrusion wasn't a slow entry; it was an immediate structural collapse.",
+          "actions": []
+        },
+        {
+          "narration": "They opened a direct tunnel into the heart of the system.",
+          "actions": []
+        }
+      ]
+    },
+    {
+      "html": "\n            <div class=\"w-full h-full bg-black flex items-center justify-center p-8\">\n                <div class=\"relative w-full max-w-4xl\">\n                    <div class=\"text-center mb-8\">\n                        <h2 class=\"text-white font-mono text-lg tracking-widest uppercase\">SYSTEM METRICS</h2>\n                    </div>\n                    <div class=\"grid grid-cols-3 gap-6\">\n                        <div class=\"metric-card\" id=\"m1\">CPU LOAD <span>99%</span></div>\n                        <div class=\"metric-card\" id=\"m2\">MEMORY <span>8%</span></div>\n                        <div class=\"metric-card\" id=\"m3\">TEMP <span>65°C</span></div>\n                    </div>\n                </div>\n                <style>.metric-card { background: #1a1a1a; padding: 20px; border-radius: 10px; color: #fff; font-size: 1.5rem; font-weight: bold; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #3b82f6; transition: border-left 0.5s; }</style>\n            </div>",
+      "script": "(ctx) => {\n                return {\n                    overloadCPU: () => {\n                        const cpu = ctx.root.querySelector('#m1');\n                        if(cpu) { cpu.style.borderColor = '#ef4444'; cpu.querySelector('span').innerText = '99%'; cpu.style.animation = 'shake 0.5s infinite'; }\n                    },\n                    normalizeMem: () => {\n                        const mem = ctx.root.querySelector('#m2');\n                        if(mem) { mem.style.borderColor = '#22c55e'; mem.querySelector('span').innerText = '8%'; }\n                    }\n                }\n            }",
+      "steps": [
+        {
+          "narration": "Monitoring the core metrics: CPU load is at critical limits.",
+          "actions": [
+            {
+              "type": "custom",
+              "fn": "Engine.state.activeScript.overloadCPU()"
+            }
+          ]
+        },
+        {
+          "narration": "Yet, strangely, memory usage remains minimal. The attack is purely computational.",
+          "actions": [
+            {
+              "type": "custom",
+              "fn": "Engine.state.activeScript.normalizeMem()"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "html": "\n            <div class=\"w-full h-full bg-[#111] flex items-center justify-center relative overflow-hidden\">\n                <div class=\"text-center z-10 font-black uppercase tracking-[0.2em] text-white/50\">\n                    <h1 id=\"word-split-1\" class=\"text-9xl mb-4 transition-all duration-500\">ALGO</h1>\n                    <h1 id=\"word-split-2\" class=\"text-9xl transition-all duration-500\">RHYTHM</h1>\n                </div>\n            </div>",
+      "script": "(ctx) => {\n                return {\n                    separate: () => {\n                        ctx.root.querySelector('#word-split-1').style.transform = 'translateY(-20px) translateX(-50px)';\n                        ctx.root.querySelector('#word-split-1').style.color = '#ef4444';\n                        ctx.root.querySelector('#word-split-2').style.transform = 'translateY(20px) translateX(50px)';\n                        ctx.root.querySelector('#word-split-2').style.color = '#3b82f6';\n                    },\n                    rejoin: () => {\n                        ctx.root.querySelector('#word-split-1').style.transform = 'none';\n                        ctx.root.querySelector('#word-split-2').style.transform = 'none';\n                        ctx.root.querySelector('#word-split-1').style.color = '#fff';\n                        ctx.root.querySelector('#word-split-2').style.color = '#fff';\n                    }\n                }\n            }",
+      "steps": [
+        {
+          "narration": "The initial algorithm was a unified structure.",
+          "actions": [
+            {
+              "type": "custom",
+              "fn": "Engine.state.activeScript.rejoin()"
+            }
+          ]
+        },
+        {
+          "narration": "But under pressure, the core logic split into two opposing forces.",
+          "actions": [
+            {
+              "type": "custom",
+              "fn": "Engine.state.activeScript.separate()"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "html": "\n            <div class=\"w-full h-full bg-black flex items-center justify-center relative overflow-hidden\">\n                <div id=\"p5-firewall\" class=\"absolute inset-0 z-0\"></div>\n                <div class=\"absolute inset-0 z-10 flex items-center justify-center\">\n                    <div id=\"firewall-text\" class=\"text-red-500 text-7xl font-black uppercase opacity-0 transition-opacity duration-500\">BREACH</div>\n                </div>\n            </div>",
+      "script": "(ctx) => {\n                const sketch = p => {\n                    let rays = [];\n                    let breached = false;\n                    p.setup = () => p.createCanvas(ctx.root.clientWidth, ctx.root.clientHeight);\n                    p.draw = () => {\n                        p.background(0);\n                        p.stroke(0, 150, 255); p.strokeWeight(1); p.noFill();\n                        \n                        // Draw static grid\n                        for(let i=0; i<p.width; i+=50) p.line(i, 0, i, p.height);\n                        for(let i=0; i<p.height; i+=50) p.line(0, i, p.width, i);\n\n                        // Draw 'firewall' lines\n                        p.stroke(255, 0, 0, 150); p.strokeWeight(3);\n                        if(!breached) {\n                            p.line(p.width * 0.25, 0, p.width * 0.75, p.height);\n                            p.line(p.width * 0.75, 0, p.width * 0.25, p.height);\n                        } else {\n                            // Show breach cracks\n                            for(let i=0; i<5; i++) p.line(p.width/2, p.height/2, p.random(p.width), p.random(p.height));\n                        }\n                    };\n                    p.windowResized = () => p.resizeCanvas(ctx.root.clientWidth, ctx.root.clientHeight);\n                    p.triggerBreach = () => { breached = true; ctx.root.querySelector('#firewall-text').classList.remove('opacity-0'); };\n                };\n                const myP5 = ctx.p5(sketch, '#p5-firewall');\n                return { remove: () => myP5.remove(), triggerBreach: () => myP5.triggerBreach() };\n            }",
+      "steps": [
+        {
+          "narration": "The firewall stood as the final line of defense.",
+          "actions": []
+        },
+        {
+          "narration": "But even the strongest barriers eventually shatter.",
+          "actions": [
+            {
+              "type": "custom",
+              "fn": "Engine.state.activeScript.triggerBreach()"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "html": "\n            <div class=\"w-full h-full bg-[#111] flex items-center justify-center p-8 relative overflow-hidden\">\n                <div class=\"text-center font-mono text-white z-10\">\n                    <h2 class=\"text-xs tracking-widest uppercase text-gray-400 mb-2\">FINAL REPORT</h2>\n                    <div id=\"final-status\" class=\"text-7xl font-bold italic opacity-0 scale-50 transition-all duration-1000 ease-out\"></div>\n                </div>\n            </div>",
+      "script": "(ctx) => {\n                return {\n                    report: () => {\n                        const el = ctx.root.querySelector('#final-status');\n                        if(el) {\n                            el.classList.remove('opacity-0', 'scale-50');\n                            el.innerText = \"TERMINATED\";\n                            el.style.color = '#f87171'; // Red\n                            el.style.textShadow = '0 0 30px rgba(248, 113, 113, 0.7)';\n                        }\n                    }\n                }\n            }",
+      "steps": [
+        {
+          "narration": "The last command was processed.",
+          "actions": []
+        },
+        {
+          "narration": "System status: Terminated.",
+          "actions": [
+            {
+              "type": "custom",
+              "fn": "Engine.state.activeScript.report()"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "closing": {
+    "summary_scene": {
+      "scene_id": "CLS_SC1_Recap",
+      "scene_type": "cinematic_typography",
+      "narration_steps": [
+        {
+          "step_id": 1,
+          "narration": "The algorithms that govern our world are fragile. A dependency chain, easily broken.",
+          "action": "fade_in_text_with_glitch_effect",
+          "visual_suggestion": "Text overlay: 'FRAGILE DEPENDENCY' quickly flashes with chromatic aberration against a black background.",
+          "source": "N/A"
+        },
+        {
+          "step_id": 2,
+          "narration": "The future is not about building more, but about securing what we have built.",
+          "action": "text_reveal_final_thought",
+          "visual_suggestion": "Text changes to a large, sharp 'SECURE' in white, underlined by a cyan line that draws horizontally.",
+          "source": "N/A"
+        }
+      ]
+    },
+    "final_action": {
+      "scene_id": "CLS_SC2_EndScreen",
+      "scene_type": "static_end_screen",
+      "narration_steps": [
+        {
+          "step_id": 1,
+          "narration": "(Sound design fades to silence)",
+          "action": "fade_to_black_and_show_credits",
+          "visual_suggestion": "The screen fades to black. Minimalist white text credits roll up.",
+          "source": "N/A"
+        }
+      ]
+    }
+  }
+}
