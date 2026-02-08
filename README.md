@@ -6,8 +6,12 @@ This project bridges the gap between data and storytelling, enabling developers,
 
 VIDEO-LIKE: A Auto Video Creator uses **frontend and text generating AI**.
 
-It will be awesome.
+It will be awesome. 
 
+
+### Developed By: Sabir Ali Mondal 
+
+## Prompt 
 
 ```
 **Role & Objective:**
