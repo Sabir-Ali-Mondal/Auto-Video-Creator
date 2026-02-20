@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Video-Like</title>
+
+    <!-- LIBRARIES -->
+    <script src="https://js.puter.com/v2/"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- FONTS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #fbbf24;
+            --glass: rgba(10, 10, 12, 0.9);
+            --border: rgba(255, 255, 255, 0.12);
+            --ease: cubic-bezier(0.19, 1, 0.22, 1);
+        }
+
+        body {
+            background-color: #000;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            color: white;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* SPLASH SCREEN */
+        #splash-screen {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 1s ease-in-out;
+        }
+
+        #stage-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+            position: relative;
+            padding-bottom: 80px;
+        }
+
+        #stage-content {
+            margin-top: 10px;
+            background: #000;
+            position: relative;
+            aspect-ratio: 16/9;
+            width: 100%;
+            max-width: min(90vw, calc((100vh - 150px) * (16/9)));
+            box-shadow: 0 0 0 1px #333, 0 50px 100px -20px rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+            container-type: size;
+            transition: aspect-ratio 0.5s var(--ease);
+        }
+
+        #stage-content canvas,
+        #stage-content svg {
+            max-width: 100% !important;
+            max-height: 100% !important;
+            object-fit: contain;
+        }
+
+        #stage-content.portrait {
+            aspect-ratio: 4/5;
+            max-width: none;
+            height: 80vh;
+            width: auto;
+        }
+
+        .slide-layer {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #000;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 1;
+        }
+
+        .slide-layer.active {
+            opacity: 1;
+            z-index: 10;
+        }
+
+        /* UI & MENUS */
+        .ui-layer {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            min-width: 320px;
+            height: 70px;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 35px;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 0 1.5rem;
+            z-index: 2000;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            transition: all 0.5s var(--ease);
+        }
+
+        .ui-layer.inactive {
+            opacity: 0;
+            transform: translateX(-50%) translateY(40px);
+            pointer-events: none;
+        }
+
+        .btn-ui {
+            background: rgba(255, 255, 255, 0.05);
+            color: #94a3b8;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: 0.2s;
+        }
+
+        .btn-ui:hover {
+            background: white;
+            color: black;
+            transform: translateY(-2px);
+        }
+
+        .btn-play {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: white;
+            color: black;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+
+        #system-menu {
+            position: absolute;
+            bottom: 90px;
+            left: 0;
+            background: #09090b;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            width: 280px;
+            padding: 8px;
+            display: none;
+            flex-direction: column;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+            transform-origin: bottom left;
+            animation: menuPop 0.2s var(--ease);
+        }
+
+        #system-menu.open {
+            display: flex;
+        }
+
+        @keyframes menuPop {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(15px);
+            z-index: 5000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal-box {
+            width: 850px;
+            max-width: 95%;
+            background: #09090b;
+            border: 1px solid #27272a;
+            border-radius: 24px;
+            padding: 32px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        #notification-area {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: #1a1a1a;
+            color: white;
+            border-left: 4px solid var(--primary);
+            padding: 12px 24px;
+            border-radius: 12px;
+            transform: translateX(120%);
+            transition: 0.4s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-left-color: var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .bg-fallback-tech {
+            background-image: radial-gradient(#333 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            margin-top: -7px;
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+        }
+
+        /* MULTIPLE DYNAMIC GRAINS (Updated CSS) */
+        .film-grain {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.42;
+            background-image: url("https://upload.wikimedia.org/wikipedia/commons/7/76/Noise.png");
+            background-size: cover;
+            background-position: center;
+            mix-blend-mode: overlay;
+            animation: grainDance 0.2s steps(4) infinite;
+            transition: background-image 0.5s ease;
+        }
+
+        @keyframes grainDance {
+            0% {
+                transform: translate(0, 0);
+            }
+
+            10% {
+                transform: translate(-2%, -2%);
+            }
+
+            20% {
+                transform: translate(-4%, 2%);
+            }
+
+            30% {
+                transform: translate(2%, -4%);
+            }
+
+            40% {
+                transform: translate(-2%, 6%);
+            }
+
+            50% {
+                transform: translate(-4%, 2%);
+            }
+
+            60% {
+                transform: translate(6%, 0);
+            }
+
+            70% {
+                transform: translate(0, 4%);
+            }
+
+            80% {
+                transform: translate(-6%, 0);
+            }
+
+            90% {
+                transform: translate(4%, 2%);
+            }
+
+            100% {
+                transform: translate(2%, 0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- APP SPLASH SCREEN -->
+    <div id="splash-screen" class="min-h-screen flex items-center justify-center bg-black px-6 text-center">
+        <div class="max-w-xl space-y-6">
+            <!-- Title -->
+            <h1 class="text-4xl md:text-6xl font-extrabold uppercase tracking-[0.2em]">
+                <span class="text-orange-500">Video</span><span class="text-white">-Like</span>
+            </h1>
+            <p class="text-gray-500 uppercase tracking-[0.3em] text-sm">
+                by S.A.M
+            </p>
+            <!-- Short Description -->
+            <p class="text-gray-300 text-base md:text-lg leading-relaxed">
+                A <span class="text-orange-400 font-semibold">single HTML file</span>
+                for <span class="text-white font-semibold">structured visual learning</span>.
+            </p>
+            <!-- Main Message -->
+            <p class="text-red-500 font-bold uppercase tracking-wider text-sm">
+                No cartoons. No ultra-real AI video.</p>
+        </div>
+
+    </div>
+    <div class="film-grain" id="dynamic-grain"></div>
+    <div id="notification-area"></div>
+
+    <div id="stage-container">
+        <!-- Stage Content acts as bounds. Container Queries (cqw/cqmin) used for fluid scaling. -->
+        <div id="stage-content">
+            <!-- YOUTUBE STYLE SUBTITLES (Compact, 2px padding, centered) -->
+            <div id="subtitle-layer" class="absolute bottom-[6%] left-1/2 -translate-x-1/2 w-full text-center z-[100] transition-opacity duration-300 hidden pointer-events-none flex justify-center px-[2cqw]">
+                <span id="subtitle-text" class="bg-black/85 text-white/95 px-[10px] py-[2px] rounded-[4px] text-[clamp(12px,2.5cqmin,24px)] leading-normal font-medium shadow-sm font-sans tracking-wide max-w-[85%] inline-block"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- UI LAYER -->
+    <div class="ui-layer" id="main-ui">
+        <div class="relative">
+            <button class="btn-ui" onclick="Engine.ui.toggleMenu()" id="menu-btn"><i class="bi bi-grid-fill"></i></button>
+            <div id="system-menu">
+                <div class="p-3 hover:bg-white/10 cursor-pointer rounded-lg flex items-center gap-3" onclick="Engine.ui.openModal('ai')"><i class="bi bi-robot text-purple-400"></i> AI Architect</div>
+                <div class="p-3 hover:bg-white/10 cursor-pointer rounded-lg flex items-center gap-3" onclick="Engine.ui.openModal('audio')"><i class="bi bi-music-note-beamed text-pink-400"></i> Background Music</div>
+                <div class="p-3 hover:bg-white/10 cursor-pointer rounded-lg flex items-center gap-3" onclick="Engine.ui.toggleSubtitles()"><i class="bi bi-card-text text-yellow-400"></i> Toggle Subtitles</div>
+                <div class="p-3 hover:bg-white/10 cursor-pointer rounded-lg flex items-center gap-3" onclick="Engine.ui.copyPrompt()"><i class="bi bi-file-earmark-text text-yellow-400"></i> Script Prompt</div>
+                <div class="p-3 hover:bg-white/10 cursor-pointer rounded-lg flex items-center gap-3" onclick="Engine.ui.openModal('settings')"><i class="bi bi-sliders text-blue-400"></i> Studio Settings</div>
+                <div class="p-3 hover:bg-white/10 cursor-pointer rounded-lg flex items-center gap-3" onclick="Engine.ui.openModal('import')"><i class="bi bi-code-slash text-green-400"></i> Project JSON</div>
+                <div class="h-[1px] bg-white/10 my-1"></div>
+                <div class="p-3 hover:bg-white/10 cursor-pointer rounded-lg flex items-center gap-3" onclick="Engine.ui.toggleRatio()"><i class="bi bi-phone"></i> Toggle Portrait</div>
+            </div>
+        </div>
+        <button class="btn-ui" title="Previous Scene (Left Arrow)" onclick="Engine.prev()"><i class="bi bi-skip-start-fill"></i></button>
+        <button class="btn-play" title="Play/Pause (Spacebar)" id="play-btn" onclick="Engine.togglePlay()"><i class="bi bi-play-fill"></i></button>
+        <button class="btn-ui" title="Next Scene (Right Arrow)" onclick="Engine.next()"><i class="bi bi-skip-end-fill"></i></button>
+        <button class="btn-ui" onclick="Engine.ui.toggleFullscreen()"><i class="bi bi-arrows-fullscreen"></i></button>
+    </div>
+
+    <!-- AUDIO MODAL -->
+    <div id="modal-audio" class="modal-overlay">
+        <div class="modal-box w-[600px]">
+            <h2 class="text-3xl font-black mb-8 italic tracking-tighter">BACKGROUND MUSIC</h2>
+            <div class="mb-8">
+                <div class="flex justify-between mb-2">
+                    <label class="text-[10px] text-gray-500 font-bold tracking-[0.2em]">MUSIC VOLUME</label>
+                    <span id="bgm-vol-val" class="text-primary text-xs font-mono">30%</span>
+                </div>
+                <input type="range" min="0" max="1" step="0.05" value="0.3" oninput="Engine.audio.setVolume(this.value)">
+            </div>
+            <label class="text-[10px] text-gray-500 font-bold tracking-[0.2em] block mb-4">PRESET LIBRARY</label>
+            <div class="grid gap-3 mb-8">
+                <div class="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 bg-pink-500/20 rounded-full flex items-center justify-center text-pink-400"><i class="bi bi-music-note"></i></div>
+                        <div>
+                            <div class="font-bold text-sm">Study Lo-Fi 1</div>
+                            <div class="text-[10px] text-gray-400">Chill / Ambient</div>
+                        </div>
+                    </div>
+                    <button onclick="Engine.audio.setTrack('https://res.cloudinary.com/dmttn34te/video/upload/v1763065409/study-110111_at7lye.mp3')" class="px-4 py-2 bg-white text-black text-xs font-bold rounded-lg hover:bg-primary transition"><i class="bi bi-play-circle-fill mr-1"></i> LOAD</button>
+                </div>
+                <div class="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 bg-blue-500/20 rounded-full flex items-center justify-center text-blue-400"><i class="bi bi-music-note"></i></div>
+                        <div>
+                            <div class="font-bold text-sm">Study Focus 2</div>
+                            <div class="text-[10px] text-gray-400">Piano / Soft</div>
+                        </div>
+                    </div>
+                    <button onclick="Engine.audio.setTrack('https://res.cloudinary.com/dmttn34te/video/upload/v1763064765/study-music-181044_jbuwpq.mp3')" class="px-4 py-2 bg-white text-black text-xs font-bold rounded-lg hover:bg-primary transition"><i class="bi bi-play-circle-fill mr-1"></i> LOAD</button>
+                </div>
+            </div>
+            <label class="text-[10px] text-gray-500 font-bold tracking-[0.2em] block mb-4">UPLOAD CUSTOM</label>
+            <input type="file" accept="audio/*" onchange="Engine.audio.upload(this)" class="w-full text-xs text-gray-400 file:mr-4 file:py-3 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-white/10 file:text-white hover:file:bg-white/20 transition cursor-pointer">
+            <button onclick="Engine.ui.closeModal()" class="w-full mt-8 bg-white/5 border border-white/10 text-white font-bold py-4 rounded-xl hover:bg-white/10 transition">CLOSE</button>
+        </div>
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div id="modal-settings" class="modal-overlay">
+        <div class="modal-box">
+            <h2 class="text-3xl font-black mb-6 italic tracking-tighter">STUDIO SETTINGS</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Global Voice settings -->
+                <div>
+                    <label class="text-[10px] text-gray-500 font-bold tracking-[0.2em] mb-3 block">GLOBAL NARRATOR VOICE</label>
+                    <select id="voice-select" class="w-full bg-black border border-white/10 rounded-xl p-3 text-sm" onchange="Engine.audio.setVoice(this.value)"></select>
+
+                    <!-- PODCAST TOGGLE -->
+                    <label class="text-[10px] text-gray-500 font-bold tracking-[0.2em] mt-8 mb-3 block">PODCAST MODE</label>
+                    <label class="flex items-center gap-3 cursor-pointer p-4 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition">
+                        <input type="checkbox" id="podcast-toggle" class="w-5 h-5 accent-primary" onchange="Engine.audio.togglePodcast(this.checked)">
+                        <span class="text-sm font-bold text-gray-300">Enable 2-Speaker Mode</span>
+                    </label>
+                </div>
+
+                <!-- Global Speed/Pitch -->
+                <div class="space-y-6 pt-2">
+                    <div>
+                        <div class="flex justify-between mb-2"><label class="text-[10px] text-gray-500 font-bold tracking-[0.2em]">SPEED</label><span id="speed-val" class="text-primary text-xs font-mono">1.0x</span></div>
+                        <input type="range" id="tts-speed" min="0.5" max="2.0" step="0.1" value="1.0" oninput="document.getElementById('speed-val').innerText=this.value+'x'">
+                    </div>
+                    <div>
+                        <div class="flex justify-between mb-2"><label class="text-[10px] text-gray-500 font-bold tracking-[0.2em]">PITCH</label><span id="pitch-val" class="text-primary text-xs font-mono">1.0</span></div>
+                        <input type="range" id="tts-pitch" min="0.1" max="2.0" step="0.1" value="1.0" oninput="document.getElementById('pitch-val').innerText=this.value">
+                    </div>
+                </div>
+            </div>
+
+            <!-- DYNAMIC PODCAST CONTROLS (HIDDEN BY DEFAULT) -->
+            <div id="podcast-settings-container" class="mt-6 p-5 border border-primary/30 bg-primary/5 rounded-2xl hidden transition-all">
+                <h3 class="text-xs font-bold tracking-[0.2em] text-primary mb-4"><i class="bi bi-mic-fill mr-1"></i> PODCAST CASTING</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Speaker 1 -->
+                    <div class="bg-black/50 p-4 rounded-xl border border-white/5">
+                        <label class="text-[10px] text-gray-400 font-bold tracking-[0.1em] mb-2 block text-blue-400">SPEAKER 1 (Host)</label>
+                        <select id="s1-voice" class="w-full bg-black border border-white/10 rounded-lg p-2 text-xs mb-4" onchange="Engine.audio.updatePodcastSettings()"></select>
+                        <div class="flex gap-4">
+                            <div class="flex-1">
+                                <div class="flex justify-between text-[8px] text-gray-500 mb-1"><span>SPEED</span><span id="s1-speed-val">1.0</span></div>
+                                <input type="range" id="s1-speed" min="0.5" max="2.0" step="0.1" value="1.0" oninput="document.getElementById('s1-speed-val').innerText=this.value; Engine.audio.updatePodcastSettings()">
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex justify-between text-[8px] text-gray-500 mb-1"><span>PITCH</span><span id="s1-pitch-val">1.0</span></div>
+                                <input type="range" id="s1-pitch" min="0.1" max="2.0" step="0.1" value="1.0" oninput="document.getElementById('s1-pitch-val').innerText=this.value; Engine.audio.updatePodcastSettings()">
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Speaker 2 -->
+                    <div class="bg-black/50 p-4 rounded-xl border border-white/5">
+                        <label class="text-[10px] text-gray-400 font-bold tracking-[0.1em] mb-2 block text-green-400">SPEAKER 2 (Guest)</label>
+                        <select id="s2-voice" class="w-full bg-black border border-white/10 rounded-lg p-2 text-xs mb-4" onchange="Engine.audio.updatePodcastSettings()"></select>
+                        <div class="flex gap-4">
+                            <div class="flex-1">
+                                <div class="flex justify-between text-[8px] text-gray-500 mb-1"><span>SPEED</span><span id="s2-speed-val">1.0</span></div>
+                                <input type="range" id="s2-speed" min="0.5" max="2.0" step="0.1" value="1.0" oninput="document.getElementById('s2-speed-val').innerText=this.value; Engine.audio.updatePodcastSettings()">
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex justify-between text-[8px] text-gray-500 mb-1"><span>PITCH</span><span id="s2-pitch-val">1.0</span></div>
+                                <input type="range" id="s2-pitch" min="0.1" max="2.0" step="0.1" value="1.0" oninput="document.getElementById('s2-pitch-val').innerText=this.value; Engine.audio.updatePodcastSettings()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="Engine.ui.closeModal()" class="w-full mt-8 bg-white/5 border border-white/10 text-white font-bold py-4 rounded-xl hover:bg-primary hover:text-black transition">SAVE CHANGES</button>
+        </div>
+    </div>
+
+    <!-- JSON MODAL -->
+    <div id="modal-import" class="modal-overlay">
+        <div class="modal-box w-[1000px] relative">
+            <h2 class="text-xl font-bold mb-4 italic">PROJECT JSON EDITOR</h2>
+            <div id="json-loader" class="absolute inset-0 bg-black/90 z-50 flex flex-col items-center justify-center rounded-2xl hidden">
+                <div class="loading-spinner mb-6"></div>
+                <div class="text-2xl font-bold italic tracking-tighter animate-pulse">DIRECTOR IS WRITING SCRIPT...</div>
+                <div class="text-gray-500 text-xs mt-2 font-mono">Generating Scenes, Visuals, and Narration</div>
+            </div>
+            <div class="flex gap-4 mb-6">
+                <button onclick="Engine.io.downloadJSON()" class="flex-1 bg-blue-600/20 border border-blue-500/50 text-blue-400 font-bold py-3 rounded-xl hover:bg-blue-600 hover:text-white transition"><i class="bi bi-download mr-2"></i> DOWNLOAD PROJECT</button>
+                <button onclick="document.getElementById('file-upload').click()" class="flex-1 bg-purple-600/20 border border-purple-500/50 text-purple-400 font-bold py-3 rounded-xl hover:bg-purple-600 hover:text-white transition"><i class="bi bi-upload mr-2"></i> UPLOAD JSON</button>
+                <input type="file" id="file-upload" hidden accept=".json" onchange="Engine.io.uploadJSON(this)">
+            </div>
+            <textarea id="json-editor" class="w-full h-[450px] bg-[#0d1117] text-green-400 font-mono text-xs p-6 rounded-2xl border border-white/10 outline-none resize-none" spellcheck="false"></textarea>
+            <div class="mt-6 flex gap-4">
+                <button onclick="Engine.io.apply()" class="flex-[2] bg-green-600 text-white font-black py-4 rounded-xl tracking-widest hover:bg-green-500 transition">APPLY CHANGES</button>
+                <button onclick="Engine.ui.closeModal()" class="flex-1 bg-white/5 text-gray-400 font-bold py-4 rounded-xl hover:bg-white/10 transition">CLOSE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI MODAL -->
+    <div id="modal-ai" class="modal-overlay">
+        <div class="modal-box">
+            <h2 class="text-4xl font-black italic mb-2 tracking-tighter">AI ARCHITECT</h2>
+            <p class="text-gray-500 text-xs mb-6 font-mono tracking-widest uppercase">Puter.js Powered</p>
+            <textarea id="ai-prompt" class="w-full bg-black border border-white/10 rounded-2xl p-6 h-40 mb-4 text-white outline-none focus:border-primary transition font-mono text-sm" placeholder="Enter topic, full script JSON, or description here..."></textarea>
+
+            <label class="flex items-center gap-3 cursor-pointer mb-6">
+                <input type="checkbox" id="ai-podcast-toggle" class="w-5 h-5 accent-primary" onchange="Engine.audio.togglePodcast(this.checked)">
+                <span class="text-sm font-bold text-primary">Generate as Podcast Conversation (2 Speakers)</span>
+            </label>
+
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                    <label class="text-[10px] text-gray-500 font-bold tracking-[0.2em] block mb-2">TARGET AUDIENCE</label>
+                    <select id="ai-style" class="w-full bg-black border border-white/10 rounded-xl p-3 text-sm text-gray-300">
+                        <option value="documentary">Cinematic Documentary</option>
+                        <option value="teaching">Educational / Academic</option>
+                        <option value="kids">Kids / Storytelling</option>
+                        <option value="hybrid">Hybrid Explainer</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[10px] text-gray-500 font-bold tracking-[0.2em] block mb-2">LANGUAGE</label>
+                    <select id="ai-lang" class="w-full bg-black border border-white/10 rounded-xl p-3 text-sm text-gray-300"></select>
+                </div>
+            </div>
+            <div class="flex gap-4">
+                <button id="json-btn" onclick="Engine.ai.getScript()" class="flex-1 bg-gray-900 text-white font-bold py-5 rounded-2xl hover:bg-gray-700 transition flex items-center justify-center gap-2 border border-white/10"><i class="bi bi-file-earmark-code"></i> RESEARCH</button>
+                <button id="gen-btn" onclick="Engine.ai.render()" class="flex-[2] bg-gray-500 text-yellow-400 font-black py-5 rounded-2xl tracking-[0.3em] hover:bg-white transition flex items-center justify-center gap-2"><i class="bi bi-film"></i> GENERATE</button>
+            </div>
+            <button onclick="Engine.ui.closeModal()" class="w-full mt-4 text-gray-600 text-xs hover:text-white transition">CANCEL</button>
+        </div>
+    </div>
+
+    <script>
+        // Array of cool film grain/noise textures to cycle through per scene
+        const GRAIN_ASSETS = [
+            'url("https://upload.wikimedia.org/wikipedia/commons/7/76/Noise.png")',
+            'url("https://denniscooperblog.com/wp-content/uploads/2021/05/tumblr_pfy6mo95zi1wn4t3ao2_540.gif")',
+            'url("https://i.makeagif.com/media/8-20-2022/-boNgt.gif")'
+        ];
+
+        const DEMO_DATA = {
+            "meta": {
+                "topic": "The Genesis and Architecture of Python",
+                "style": "Cinematic Documentary, Deep Tech Aesthetic",
+                "duration": "300s",
+                "podcast": "true",
+                "audio": "https://res.cloudinary.com/dmttn34te/video/upload/v1763065409/study-110111_at7lye.mp3"
+            },
+            "scenes": [{
+                    "type": "TITLE_CINEMATIC",
+                    "html": "<div class='w-full h-full bg-[#050505] relative flex flex-col items-center justify-center overflow-hidden font-sans'>\n  <div class='absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-900/20 via-black to-black z-0'></div>\n  <div id='god-ray' class='absolute inset-0 bg-gradient-to-t from-blue-500/10 to-transparent translate-y-full transition-transform duration-[3s] ease-out z-10'></div>\n  <div class='z-20 text-center flex flex-col items-center relative w-full px-[5cqw]'>\n    <div id='badge' class='px-[1.5cqw] py-[0.5cqh] border border-blue-500/30 rounded-full bg-blue-500/10 text-blue-300 font-mono tracking-[0.3em] text-[clamp(0.8rem,3cqw,1.5rem)] mb-[3cqh] opacity-0 scale-90 transition-all duration-1000'>ARCHITECTURAL BREAKDOWN</div>\n    <h1 id='main-title' class='text-[clamp(4rem,12cqw,15rem)] leading-none font-black text-transparent bg-clip-text bg-gradient-to-b from-white via-gray-300 to-blue-600 tracking-tighter opacity-0 scale-150 blur-2xl transition-all duration-[2000ms] ease-out drop-shadow-[0_0_50px_rgba(37,99,235,0.3)]'>\n      PYTHON\n    </h1>\n    <div id='line-draw' class='h-[2px] w-0 bg-gradient-to-r from-transparent via-blue-400 to-transparent mt-[4cqh] transition-all duration-[1.5s] ease-in-out shadow-[0_0_15px_rgba(96,165,250,0.8)]'></div>\n    <p id='subtitle' class='mt-[4cqh] text-[clamp(1.2rem,4cqw,3rem)] font-light text-gray-400 tracking-wide opacity-0 transition-opacity duration-1000'>\n      THE <span class='text-white font-bold'>LANGUAGE</span> OF THE MODERN WEB\n    </p>\n  </div>\n</div>",
+                    "script": "(ctx) => {\n  return {\n    hook: () => {\n      const t = ctx.root.querySelector('#main-title');\n      t.classList.remove('opacity-0', 'scale-150', 'blur-2xl');\n      ctx.root.querySelector('#god-ray').classList.remove('translate-y-full');\n    },\n    reveal: () => {\n      ctx.root.querySelector('#badge').classList.remove('opacity-0', 'scale-90');\n      ctx.root.querySelector('#subtitle').classList.remove('opacity-0');\n      ctx.root.querySelector('#line-draw').style.width = '70%';\n    }\n  }\n}",
+                    "steps": [{
+                            "narration": "Did you know Python wasn't actually named after the snake? It's a common misconception.",
+                            "actions": [{
+                                "type": "custom",
+                                "fn": "Engine.state.activeScript.hook()"
+                            }]
+                        },
+                        {
+                            "narration": "Right, it was actually named after 'Monty Python's Flying Circus'. Guido van Rossum wanted something short, unique, and slightly mysterious.",
+                            "actions": [{
+                                "type": "custom",
+                                "fn": "Engine.state.activeScript.reveal()"
+                            }]
+                        }
+                    ]
+                },
+                {
+                    "type": "CODE_TERMINAL",
+                    "html": "<div class='w-full h-full bg-[#0d1117] p-[5cqw] flex flex-col justify-center relative overflow-hidden font-mono text-[clamp(1rem,4cqmin,3rem)]'>\n  <div class='absolute top-0 left-0 w-full h-[4px] bg-gradient-to-r from-green-400 to-blue-500'></div>\n  <div class='z-10 relative max-w-[90cqw] mx-auto w-full'>\n    <div id='hl-box' class='absolute left-[-2cqw] w-[104%] h-[1.5em] bg-blue-500/10 border-l-[4px] border-blue-400 opacity-0 transition-all duration-500 ease-out z-0 rounded-r shadow-[inset_20px_0_30px_-20px_rgba(59,130,246,0.3)]'></div>\n    <div class='relative z-10 text-gray-400 leading-[1.8]'>\n      <div id='line-1' class='opacity-0 transition-opacity duration-300'><span class='text-gray-600'>1</span> <span class='text-pink-400'>import</span> <span class='text-white'>this</span></div>\n      <div id='line-2' class='opacity-0 transition-opacity duration-300 mt-[2cqh]'><span class='text-gray-600'>2</span> <span class='text-green-500 italic'># The Zen of Python</span></div>\n      <div id='line-3' class='opacity-0 transition-opacity duration-300'><span class='text-gray-600'>3</span> <span class='text-pink-400'>print</span>(<span class='text-yellow-300'>\"Simple is better.\"</span>)</div>\n      <div id='line-4' class='opacity-0 transition-opacity duration-300'><span class='text-gray-600'>4</span> <span class='text-pink-400'>print</span>(<span class='text-yellow-300'>\"Readability counts.\"</span>)</div>\n    </div>\n  </div>\n  <div id='output-panel' class='absolute bottom-[5cqh] right-[5cqw] max-w-[80cqw] bg-black/80 border border-gray-700 rounded-xl p-[3cqw] translate-y-full opacity-0 transition-all duration-700 backdrop-blur-md z-20 shadow-2xl'>\n    <div class='text-gray-500 text-[clamp(0.8rem,2cqmin,1.2rem)] mb-[1cqh] font-sans tracking-widest'>CONSOLE OUTPUT</div>\n    <div id='output-text' class='text-green-400 font-mono'></div>\n  </div>\n</div>",
+                    "script": "(ctx) => {\n  const lines = [1, 2, 3, 4].map(i => ctx.root.querySelector(`#line-${i}`));\n  const hl = ctx.root.querySelector('#hl-box');\n  const highlightLine = (index) => {\n    const target = lines[index];\n    target.classList.remove('opacity-0');\n    hl.classList.remove('opacity-0');\n    hl.style.top = `${target.offsetTop - (target.offsetHeight * 0.1)}px`;\n    hl.style.height = `${target.offsetHeight * 1.2}px`;\n  };\n  return {\n    step1: () => highlightLine(0),\n    step2: () => {\n      highlightLine(1);\n      setTimeout(() => highlightLine(2), 600);\n      setTimeout(() => highlightLine(3), 1200);\n    },\n    step3: () => {\n      ctx.root.querySelector('#output-panel').classList.remove('translate-y-full', 'opacity-0');\n      setTimeout(() => {\n        ctx.root.querySelector('#output-text').innerHTML = '> Simple is better.<br>> Readability counts.';\n      }, 600);\n    }\n  }\n}",
+                    "steps": [{
+                            "narration": "To understand Python, you have to look at its core philosophy: The Zen of Python.",
+                            "actions": [{
+                                "type": "custom",
+                                "fn": "Engine.state.activeScript.step1()"
+                            }]
+                        },
+                        {
+                            "narration": "Exactly. Unlike C or Java, you don't need heavy boilerplate. You don't fight the syntax; you just express the logic.",
+                            "actions": [{
+                                "type": "custom",
+                                "fn": "Engine.state.activeScript.step2()"
+                            }]
+                        },
+                        {
+                            "narration": "Just type your command, and the machine executes it immediately. It's designed for human readability first.",
+                            "actions": [{
+                                "type": "custom",
+                                "fn": "Engine.state.activeScript.step3()"
+                            }]
+                        }
+                    ]
+                },
+                {
+                    "type": "UI_SIMULATION",
+                    "html": "<div class='w-full h-full bg-[#0a0a0f] flex items-center justify-between px-[8cqw] relative font-mono overflow-hidden'>\n  <div class='w-[45%] text-[clamp(2rem,6cqmin,5rem)] z-10'>\n    <div id='var-code' class='text-gray-100 opacity-0 -translate-x-10 transition-all duration-700 leading-tight'>\n      <div class='text-gray-500 text-[clamp(1rem,2.5cqmin,2rem)] mb-[2cqh]'>// Dynamic Typing</div>\n      <span class='text-orange-400'>player_score</span> = <span id='code-val' class='text-purple-400'>0</span>\n    </div>\n  </div>\n  <div class='w-[45%] aspect-square max-h-[70cqh] border border-gray-800 bg-black/40 rounded-3xl relative flex items-center justify-center shadow-[0_0_50px_rgba(0,0,0,0.5)] z-10'>\n    <div class='absolute top-[3cqh] left-[2cqw] text-gray-500 text-[clamp(0.8rem,1.5cqmin,1.5rem)] tracking-widest'>MEMORY HEAP ALLOCATION</div>\n    <div id='memory-box' class='w-[60%] h-[60%] border-4 border-dashed border-gray-700 rounded-2xl flex items-center justify-center relative transition-all duration-500 bg-[#050505]'>\n      <div class='absolute -top-[4cqh] text-orange-400 text-[clamp(1.2rem,3cqmin,2.5rem)] tracking-widest bg-[#0a0a0f] px-4'>Reference</div>\n      <div id='memory-val' class='text-[clamp(4rem,10cqmin,10rem)] text-gray-800 transition-all duration-300 scale-50'>NULL</div>\n      <div id='mem-glow' class='absolute inset-0 bg-purple-500/20 blur-3xl opacity-0 transition-opacity duration-700 rounded-2xl'></div>\n    </div>\n  </div>\n  <div id='data-packet' class='absolute left-[35cqw] top-[50%] w-[3cqw] h-[3cqw] bg-purple-400 rounded-full blur-[2px] opacity-0 shadow-[0_0_30px_#c084fc] z-20'></div>\n</div>",
+                    "script": "(ctx) => {\n  return {\n    initVar: () => {\n      ctx.root.querySelector('#var-code').classList.remove('opacity-0', '-translate-x-10');\n    },\n    assignValue: () => {\n      ctx.root.querySelector('#code-val').textContent = '999';\n      const pkt = ctx.root.querySelector('#data-packet');\n      pkt.classList.remove('opacity-0');\n      pkt.style.transition = 'all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1)';\n      pkt.style.transform = 'translateX(20cqw)';\n      setTimeout(() => {\n        pkt.classList.add('opacity-0');\n        const box = ctx.root.querySelector('#memory-box');\n        const val = ctx.root.querySelector('#memory-val');\n        box.classList.replace('border-gray-700', 'border-purple-500');\n        box.classList.replace('border-dashed', 'border-solid');\n        box.classList.add('shadow-[0_0_40px_rgba(168,85,247,0.4)]');\n        ctx.root.querySelector('#mem-glow').classList.remove('opacity-0');\n        val.textContent = '999';\n        val.classList.replace('text-gray-800', 'text-white');\n        val.classList.remove('scale-50');\n        val.classList.add('scale-110');\n      }, 800);\n    }\n  }\n}",
+                    "steps": [{
+                            "narration": "But how does Python handle memory under the hood? In languages like C, you strictly declare the data type.",
+                            "actions": [{
+                                "type": "custom",
+                                "fn": "Engine.state.activeScript.initVar()"
+                            }]
+                        },
+                        {
+                            "narration": "Python uses dynamic typing. A variable is simply a nametag attached to an object in the memory heap. It figures out the type automatically on the fly.",
+                            "actions": [{
+                                "type": "custom",
+                                "fn": "Engine.state.activeScript.assignValue()"
+                            }]
+                        }
+                    ]
+                },
+                {
+                    "type": "NETWORK_NODES",
+                    "html": "<div class='w-full h-full bg-slate-950 relative flex flex-col items-center justify-center font-mono overflow-hidden'>\n  <div class='absolute top-[10%] text-[clamp(2rem,6cqmin,5rem)] text-gray-300 text-center w-full z-20'>\n    <span id='cond-if' class='opacity-0 transition-opacity duration-500'>if </span>\n    <span id='cond-expr' class='text-yellow-400 opacity-0 transition-opacity duration-500'>data_valid:</span>\n  </div>\n  <div class='relative w-full h-[70%] flex flex-col items-center mt-[10cqh]'>\n    <div id='start-node' class='w-[4cqw] h-[4cqw] rounded-full bg-blue-500 shadow-[0_0_30px_#3b82f6] opacity-0 scale-0 transition-all duration-500 z-10'></div>\n    <div id='trunk-line' class='w-[4px] h-0 bg-blue-500 transition-all duration-700 z-0'></div>\n    <div class='w-[50cqw] flex justify-between relative mt-[-2px]'>\n      <div id='left-branch' class='absolute top-0 left-1/2 w-0 h-[4px] bg-green-500 origin-left transition-all duration-700 ease-out z-0'></div>\n      <div id='left-drop' class='absolute top-0 left-0 w-[4px] h-0 bg-green-500 transition-all duration-500 delay-700 z-0'></div>\n      <div id='left-node' class='w-[18cqw] py-[2cqh] bg-green-900/40 border-2 border-green-500 text-green-300 text-center text-[clamp(1rem,2cqmin,2rem)] rounded-xl absolute top-[10cqh] left-0 -translate-x-1/2 opacity-0 transition-all duration-500 backdrop-blur-md shadow-[0_0_20px_rgba(34,197,94,0.3)]'>TRUE PATH</div>\n      <div id='right-branch' class='absolute top-0 right-1/2 w-0 h-[4px] bg-red-500 origin-right transition-all duration-700 ease-out z-0'></div>\n      <div id='right-drop' class='absolute top-0 right-0 w-[4px] h-0 bg-red-500 transition-all duration-500 delay-700 z-0'></div>\n      <div id='right-node' class='w-[18cqw] py-[2cqh] bg-red-900/40 border-2 border-red-500 text-red-300 text-center text-[clamp(1rem,2cqmin,2rem)] rounded-xl absolute top-[10cqh] right-0 translate-x-1/2 opacity-0 transition-all duration-500 backdrop-blur-md shadow-[0_0_20px_rgba(239,68,68,0.3)]'>FALSE PATH</div>\n    </div>\n    <div id='signal' class='absolute w-[3cqw] h-[3cqw] bg-white rounded-full blur-[2px] shadow-[0_0_20px_white] opacity-0 z-20'></div>\n  </div>\n</div>",
+                    "script": "(ctx) => {\n  return {\n    typeCondition: () => {\n      ctx.root.querySelector('#cond-if').classList.remove('opacity-0');\n      setTimeout(() => ctx.root.querySelector('#cond-expr').classList.remove('opacity-0'), 400);\n      ctx.root.querySelector('#start-node').classList.remove('opacity-0', 'scale-0');\n    },\n    drawFork: () => {\n      ctx.root.querySelector('#trunk-line').style.height = '10cqh';\n      setTimeout(() => {\n        ctx.root.querySelector('#left-branch').style.width = '25cqw';\n        ctx.root.querySelector('#right-branch').style.width = '25cqw';\n        setTimeout(() => {\n          ctx.root.querySelector('#left-drop').style.height = '10cqh';\n          ctx.root.querySelector('#right-drop').style.height = '10cqh';\n          setTimeout(() => {\n            ctx.root.querySelector('#left-node').classList.remove('opacity-0');\n            ctx.root.querySelector('#right-node').classList.remove('opacity-0');\n          }, 300);\n        }, 700);\n      }, 700);\n    },\n    executePath: () => {\n      const sig = ctx.root.querySelector('#signal');\n      sig.classList.remove('opacity-0');\n      sig.style.top = '0px';\n      sig.style.left = '50%';\n      sig.style.transform = 'translate(-50%, -1cqw)';\n      sig.animate([\n        { transform: 'translate(-50%, -1cqw)' },\n        { transform: 'translate(-50%, 10cqh)' }\n      ], { duration: 500, fill: 'forwards', easing: 'ease-in' }).onfinish = () => {\n        ctx.root.querySelector('#right-branch').style.opacity = '0.2';\n        ctx.root.querySelector('#right-drop').style.opacity = '0.2';\n        ctx.root.querySelector('#right-node').style.opacity = '0.2';\n        sig.animate([\n          { transform: 'translate(-50%, 10cqh)', left: '50%' },\n          { transform: 'translate(-50%, 10cqh)', left: '25%' }\n        ], { duration: 500, fill: 'forwards', easing: 'linear' }).onfinish = () => {\n          sig.animate([\n            { transform: 'translate(-50%, 10cqh)', left: '25%' },\n            { transform: 'translate(-50%, 20cqh)', left: '25%' }\n          ], { duration: 300, fill: 'forwards', easing: 'ease-out' }).onfinish = () => {\n            ctx.root.querySelector('#left-node').classList.add('bg-green-500', 'text-white', 'scale-110');\n            sig.classList.add('opacity-0');\n          };\n        };\n      };\n    }\n  }\n}",
+                    "steps": [{
+                            "narration": "So once we have our data, we need logic. The `if` statement.",
+                            "actions": [{
+                                "type": "custom",
+                                "fn": "Engine.state.activeScript.typeCondition()"
+                            }, {
+                                "type": "custom",
+                                "fn": "setTimeout(() => Engine.state.activeScript.drawFork(), 600)"
+                            }]
+                        },
+                        {
+                            "narration": "It's the absolute foundation of machine decision making. True goes one way, False goes the other. This branching is what makes a program alive.",
+                            "actions": [{
+                                "type": "custom",
+                                "fn": "Engine.state.activeScript.executePath()"
+                            }]
+                        }
+                    ]
+                },
+                {
+                    "type": "HOLOGRAM_SCAN",
+                    "html": "<div class='w-full h-full bg-black relative flex flex-col items-center justify-center overflow-hidden'>\n  <div id='ambient-bg' class='absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-900/10 via-black to-black opacity-0 transition-opacity duration-1000'></div>\n  <div class='relative w-[40cqw] max-w-[500px] aspect-square flex items-center justify-center z-10'>\n    <div id='core-glow' class='absolute inset-0 bg-blue-600/30 rounded-full blur-[80px] opacity-0 transition-all duration-[4s] scale-50'></div>\n    <div id='code-text' class='absolute text-center text-[clamp(1rem,3cqmin,3rem)] font-mono text-gray-500 opacity-0 transition-all duration-[2s] z-20 leading-loose whitespace-nowrap'>\n      def <span class='text-blue-400'>genesis</span>():<br/>&nbsp;&nbsp;sys.<span class='text-yellow-300'>start</span>()<br/>&nbsp;&nbsp;while True:<br/>&nbsp;&nbsp;&nbsp;&nbsp;create()<br/>&nbsp;&nbsp;return <span class='text-pink-500'>Reality</span>\n    </div>\n    <div id='ring-1' class='absolute w-[80%] h-[80%] border-2 border-blue-500/20 rounded-full opacity-0 scale-0 transition-all duration-[2s] ease-out'></div>\n    <div id='ring-2' class='absolute w-[100%] h-[100%] border border-cyan-400/30 rounded-full opacity-0 scale-0 transition-all duration-[2.5s] ease-out delay-300 border-dashed animate-[spin_15s_linear_infinite]'></div>\n    <div id='ring-3' class='absolute w-[120%] h-[120%] border-4 border-purple-500/10 rounded-full opacity-0 scale-0 transition-all duration-[3s] ease-out delay-500 animate-[spin_25s_linear_infinite_reverse]'></div>\n  </div>\n  <h1 id='final-text' class='absolute bottom-[12%] text-[clamp(2rem,7cqmin,6rem)] font-black text-white tracking-[0.2em] uppercase opacity-0 translate-y-10 transition-all duration-[2s] z-30 drop-shadow-[0_0_30px_rgba(255,255,255,0.4)]'>\n    DIGITAL CREATION\n  </h1>\n</div>",
+                    "script": "(ctx) => {\n  return {\n    showText: () => {\n      ctx.root.querySelector('#ambient-bg').classList.remove('opacity-0');\n      const text = ctx.root.querySelector('#code-text');\n      text.classList.remove('opacity-0');\n      setTimeout(() => {\n        text.classList.add('scale-110', 'drop-shadow-[0_0_15px_white]');\n        text.classList.replace('text-gray-500', 'text-gray-100');\n      }, 1000);\n    },\n    formSystem: () => {\n      ctx.root.querySelector('#core-glow').classList.remove('opacity-0', 'scale-50');\n      ctx.root.querySelector('#core-glow').classList.add('scale-125', 'bg-cyan-500/40');\n      ['ring-1', 'ring-2', 'ring-3'].forEach(id => {\n        ctx.root.querySelector(`#${id}`).classList.remove('opacity-0', 'scale-0');\n      });\n      setTimeout(() => {\n         ctx.root.querySelector('#final-text').classList.remove('opacity-0', 'translate-y-10');\n      }, 1500);\n    }\n  }\n}",
+                    "steps": [{
+                            "narration": "From a blinking cursor on a black screen to the very backbone of global artificial intelligence.",
+                            "actions": [{
+                                "type": "custom",
+                                "fn": "Engine.state.activeScript.showText()"
+                            }]
+                        },
+                        {
+                            "narration": "Python is more than just a programming language. It is the ultimate bridge between human logic and working, breathing digital creation.",
+                            "actions": [{
+                                "type": "custom",
+                                "fn": "Engine.state.activeScript.formSystem()"
+                            }]
+                        }
+                    ]
+                }
+            ]
+        };
+
+        const SCRIPT_PROMPT = `
+**Role:** Deep Research Strategist & Narrative Architect
+**Objective:** Provide a high-density **Context & Resource Brief** for an elite Video Director.
+**Style:** Vox-level depth, journalistic accuracy, cinematic storytelling.
+
+**Instructions:**
+1. **Deep Context:** Explain not just the facts, but their *significance*, *conflict*, or *irony*. Include analogies or mental models to make complex ideas simple and memorable.
+2. **Thematic Chapters:** Break the topic into as many logical chapters as needed. Each chapter may contain multiple **micro-beats** to fully explore the idea. There is **no limit** on chapters.
+3. **Data Vault:** Provide specific, verified numbers, percentages, and dates. Include raw data if it can be visualized.
+4. **Visual Lexicon:** Describe the *feeling*, *metaphor*, and *motion* of the concept (e.g., "like a wildfire spreading," "a house of cards collapsing," "digital veins pulsing"). No technical scene types — only imagery.
+5. **Journalistic Elements:** Include optional content types naturally in the brief:
+   - **News Headlines**: Short, punchy lines that highlight a key event.
+   - **Breaking Alerts**: Dramatic one-line facts that would catch attention.
+   - **Quotes / Testimonies**: Relevant statements from experts, witnesses, or historical figures.
+   - **Historical Notes / Context**: Add dates, background events, and turning points.
+6. **Resources & References:** Include key people, locations, events, or searchable keywords for images, footage, or textures.
+7. **Pacing & Flow:** Chapters and micro-beats should feel connected, with a natural narrative arc. Suggest pacing or emphasis (e.g., slow focus, rapid movement) when needed.
+8. **Creative Freedom:** Invent new chapters, metaphors, or analogies if they better explain the topic. Do not feel constrained by examples.
+
+**Output Format (Strict Text Blocks):**
+
+---
+**[THEME]** Chapter Name  
+**[CONTEXT]** Deep dive narrative and explanation (conversational, Netflix-doc style)  
+**[ANALOGY]** Mental model or metaphor to clarify the concept  
+**[DATA_VAULT]** Specific statistics, numbers, dates, or raw data  
+**[VISUAL_LEXICON]** Descriptive imagery, color moods, motion, emotion  
+**[JOURNALISTIC_ELEMENTS]** Headlines, alerts, quotes, historical notes  
+**[RESOURCES]** People, locations, events, searchable asset keywords  
+**[MICRO_BEATS]** Optional: multiple sub-points to break complex ideas into digestible moments  
+---
+**Generate a complete Context & Resource Brief for the topic below.**  
+`;
+
+        const DIRECTOR_PROMPT_TEMPLATE = (prompt, style, langCode, isPodcast) => `
+# ROLE & OBJECTIVE
+You are an expert **Video Engine Architect** and **Motion Graphics Director**. Your task is to generate a production-ready \`JSON\` payload for an automated video rendering engine. The output must be **visually cinematic**, **educationally deep**, and **technically flawless**.
+
+# INPUT SPECIFICATIONS
+*   **Topic / Context:** "${prompt}"
+*   **Target Audience:** ${style}
+*   **Narration Language:** ${langCode}
+${isPodcast ? `\n*   **PODCAST MODE ACTIVE:** Make each scene/narration like one person, next scene or narration other person talking themself and making viewer understand like podcast. You must add \`"podcast": "true"\` in the \`meta\` object.` : `\n*   **STANDARD MODE:** You must add \`"podcast": "false"\` in the \`meta\` object.`}
+
+# SCENE REQUIREMENTS
+*   **Scene Count:** >20 Scenes (The video must be long and detailed).
+*   **Sub-steps:** Each scene must have multiple narrative sub-steps (progressive disclosure).
+
+---
+
+# 1. DIRECTORIAL GUIDELINES (CREATIVE FREEDOM & LOGIC)
+**Do not be a robot following a checklist. Be a Director.**
+
+*   **Creative Freedom:** The **Scene Library** below is for **inspiration, not obligation**. You are free to invent new scene types, visual metaphors, or layouts if they better explain the topic. Mix, bend, or replace specific archetypes as needed.
+*   **Explanation First, Effects Second:** Every visual choice must exist to clarify a concept. Visuals should support understanding, not distract from it.
+*   **One Main Idea Per Scene:** Do not overcrowd. Focus each scene on **one** core concept. If a new idea starts, create a new scene.
+*   **Natural Story Flow:** Structure the video like a narrative: **Hook → Context → Deep Dive → Insight → Conclusion**. Avoid random, disconnected scenes.
+*   **Respect Viewer Attention:** Avoid chaos. Use calm, clear visuals over constant, overwhelming motion. A clean aesthetic is a premium aesthetic.
+*   **Tone Matching:** Adjust the visual complexity and narration depth based on the **Target Audience** (${style}). Beginners need simplicity; experts need density.
+
+# 2. CRITICAL RESPONSIVENESS RULES (MANDATORY UPDATE)
+**The video engine renders in variable aspect ratios (16:9 Landscape, 9:16 Portrait, Mobile, Desktop) via \`container-type: size\` logic.**
+
+*   **NEVER USE Viewport Units (\`vw\` or \`vh\`) for Text or Spacing inside the scene.** Viewport units break when the user is on mobile but the video aspect ratio forces a smaller box.
+*   **MANDATORY: Use Container Query Units (\`cqw\`, \`cqh\`, \`cqmin\`) inside Tailwind classes for ALL text and dynamic spacing.** 
+    *   *Correct Example:* \`text-[5cqw]\`, \`text-[clamp(1rem,4cqmin,5rem)]\`, \`mt-[5cqh]\`, \`px-[4cqmin]\`
+    *   *Incorrect Example:* \`text-[5vw]\`, \`mt-[5vh]\`
+*   **Fit & Scale:** Every element (text, images, charts, canvases) **must** fit within the viewport using container units.
+*   **Fluid Layouts:** Use \`w-full h-full flex items-center justify-center\` as the base. Use \`%\`, \`cqw\`, or \`max-w\`.
+*   **Object Fitting:** Images and Videos must use \`object-cover\` or \`object-contain\`.
+*   **Canvas/Charts:** Canvas elements must be wrapped in a container with \`w-full h-full relative\` so they resize dynamically. Chart configs must set \`maintainAspectRatio: false\`.
+
+# 3. VISUAL AESTHETIC
+*   **Topic-Based Palette:** Background and colors **must be chosen according to the topic**.
+*   **No Default Dark Mode:** Dark themes are allowed **only when the topic requires it** (e.g., space, cyberpunk, deep tech). Otherwise, use nature, history, or academic palettes.
+*   **Composition:** Follow Netflix/Vox-style composition (large responsive typography, subtle depth, Tailwind utilities).
+
+# 4. THE RENDERING ENGINE API (TECHNICAL CONSTRAINTS)
+The engine is strict. You must output valid \`JSON\` adhering to this logic:
+
+**A. HTML & CSS Classes**
+*   **Container:** \`<div class="w-full h-full relative overflow-hidden ...">\`
+*   **Hidden State:** Elements meant to animate **must start hidden** using specific Tailwind classes:
+    *   \`opacity-0\`
+    *   \`translate-y-4\` (or \`translate-y-10\`, \`-translate-x-4\`, \`scale-90\`)
+*   **Reveal Action:** The engine's \`reveal\` action automatically removes these specific classes to trigger CSS transitions.
+
+**B. Scripting Interface (\`script\` property)**
+*   The \`script\` property is a **stringified JavaScript arrow function**.
+*   It receives a context object \`ctx\`: \`{ root, chart, map, p5 }\`.
+    *   \`ctx.root\`: The HTMLElement container.
+    *   \`ctx.chart(selector, config)\`: Returns a Chart.js instance.
+    *   \`ctx.map(selector, config)\`: Returns a Leaflet instance.
+    *   \`ctx.p5(sketchFn, selector)\`: Returns a p5 instance.
+*   **Return Object:** The function **must** return an object containing:
+    1.  Custom methods (e.g., \`triggerAnimation()\`) to be called by steps.
+    2.  A \`remove()\` method to clean up listeners, intervals, or animation frames (CRITICAL).
+*   **Attachment Rule:** Any canvas, WebGL, SVG, or generative renderer must be explicitly attached to its scene container selector and initialized only after the container’s size is resolved.
+
+**C. Step Actions**
+*   **reveal:** Targets a CSS selector and removes the hidden utility classes.
+*   **width-grow:** Animates width (useful for progress bars/lines).
+*   **custom:** Executes a raw JS string. To call your script's methods, use:
+    *   \`"fn": "Engine.state.activeScript.yourMethodName()"\`
+
+# 5. JSON STRUCTURE BLUEPRINT
+Output **ONLY** raw JSON. No markdown fencing.
+
+\`\`\`json
+{
+  "meta": {
+    "title": "Generated Title",
+    "audio": "background_music_url",
+    "lang": "${langCode}",
+    "podcast": "true_or_false"
+  },
+  "scenes": [
+    {
+      "html": "<div class='w-full h-full bg-slate-900 relative overflow-hidden flex flex-col items-center justify-center p-[4cqw]'><h1 id='title' class='text-[clamp(1.5rem,5cqmin,6rem)] font-bold text-white opacity-0 translate-y-4 transition-all duration-700'>Market Crash</h1><div class='relative w-full max-w-4xl flex-1 min-h-0'><canvas id='my-chart'></canvas></div></div>",
+      "script": "(ctx) => { \\n  const chart = ctx.chart('#my-chart', { type: 'line', data: { ... }, options: { maintainAspectRatio: false, responsive: true } }); \\n  return { \\n    crash: () => { chart.data.datasets[0].data = [10, 0]; chart.update(); }, \\n    remove: () => { chart.destroy(); } \\n  }\\n}",
+      "steps": [
+        {
+          "narration": "The market was stable until the incident.",
+          "actions": [
+            { "type": "reveal", "target": "#title" }
+          ]
+        },
+        {
+          "narration": "Then, everything collapsed.",
+          "actions": [
+            { "type": "custom", "fn": "Engine.state.activeScript.crash()" }
+          ]
+        }
+      ]
+    }
+  ]
+}
+\`\`\`
+
+# 6. SCENE LIBRARY (INSPIRATION ONLY)
+*Use these as a base, but feel free to invent, modify, or combine concepts.*
+
+*   **TITLE_CINEMATIC:** Blur-to-focus, god rays, gradients.
+*   **KINETIC_TYPE:** High contrast, rhythmic text reveals.
+*   **GLITCH_TEXT:** RGB split, decode effects, cyberpunk.
+*   **QUOTE_SCENE:** Serif fonts, paper texture, highlighter effects.
+*   **SPOTLIGHT:** Flashlight reveal, mask-image effects.
+*   **NEON_SIGN:** Glow effects, flickering text.
+*   **PARALLAX_LAYER:** Multi-layer depth movement.
+*   **NEON_DATA_CRASH:** Line chart that crashes/animates dynamically.
+*   **KPI_STATS_CASCADE:** Staggered cards with counting numbers.
+*   **DOUGHNUT_HOLO:** 3D tilted chart with floating data.
+*   **TIMELINE_SCROLL:** Horizontal container translation (translateX).
+*   **BAR_RACE:** Bar chart where values overtake each other.
+*   **STOCK_TICKER:** Scrolling marquee with gauge indicators.
+*   **HEATMAP_PULSE:** Grid of cells with random highlighting.
+*   **SATELLITE_ZOOM:** Leaflet map flying to coordinates.
+*   **NETWORK_NODES:** P5.js particle system with connections.
+*   **DETECTIVE_BOARD:** SVG strings connecting photos/evidence.
+*   **DNA_HELIX:** P5.js 3D rotating particles.
+*   **PARTICLE_EXPLOSION:** P5.js big bang simulation.
+*   **MATRIX_RAIN:** P5.js falling code symbols.
+*   **LIQUID_WAVEFORM:** P5.js sine wave analysis.
+*   **SWARM_AI:** P5.js boids/flocking simulation.
+*   **NEWSPAPER_SPIN:** CSS transform rotate/scale reveal.
+*   **CHAT_CONV:** iOS/Android style message bubbles.
+*   **CODE_TERMINAL:** Typing effect in a console window.
+*   **BROWSER_SEARCH:** Fake Google input typing and results reveal.
+*   **SOCIAL_POST:** Twitter/X card with counting likes.
+*   **NOTIFICATIONS:** Stacked glassmorphism alerts.
+*   **SPLIT_COMPARISON:** Before/After slider using width transition.
+*   **PROCESS_STEPS:** Icons and arrows revealing sequentially.
+*   **QUIZ_GAME:** Multiple choice options with highlight logic.
+*   **TREE_DIAGRAM:** Org chart with SVG connectors.
+*   **PROS_CONS:** Two columns with list items sliding in.
+*   **CAROUSEL_3D:** Rotating 3D image gallery.
+*   **EXPLODED_VIEW:** CSS 3D transform expanding layers.
+
+**Generate the full JSON now.**
+`;
+    </script>
+    <script>
+        const Engine = {
+            data: null,
+            state: {
+                scene: 0,
+                step: 0,
+                paused: true,
+                voice: null,
+                idleTimer: null,
+                activeScript: null,
+                subtitles: false,
+                podcast: {
+                    s1: {
+                        voiceIdx: 0,
+                        speed: 1.0,
+                        pitch: 1.0
+                    },
+                    s2: {
+                        voiceIdx: 1,
+                        speed: 1.05,
+                        pitch: 0.8
+                    }
+                }
+            },
+            audioEl: new Audio(),
+            tts: window.speechSynthesis,
+            init: () => {
+                Engine.audioEl.loop = true;
+                Engine.audioEl.volume = 0.3;
+                const systemInit = () => {
+                    Engine.audio.populateVoices();
+                    const aiSel = document.getElementById('ai-lang');
+                    aiSel.innerHTML = '';
+                    const voices = Engine.tts.getVoices();
+                    const uniqueLangs = [...new Set(voices.map(v => v.lang))].sort();
+                    uniqueLangs.forEach(langCode => {
+                        const opt = document.createElement('option');
+                        opt.value = langCode;
+                        try {
+                            opt.text = `${new Intl.DisplayNames([navigator.language], { type: 'language' }).of(langCode)} (${langCode})`;
+                        } catch (e) {
+                            opt.text = langCode;
+                        }
+                        aiSel.appendChild(opt);
+                    });
+                    const enLang = uniqueLangs.find(l => l.startsWith('en'));
+                    if (enLang) aiSel.value = enLang;
+                };
+                if (Engine.tts.getVoices().length) systemInit();
+                else Engine.tts.onvoiceschanged = systemInit;
+
+                Engine.ui.trackIdle();
+                Engine.load(DEMO_DATA);
+
+                // KEYBOARD SHORTCUTS
+                window.addEventListener('keydown', (e) => {
+                    // Prevent triggering if typing in a textbox
+                    if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+
+                    if (e.code === 'Space') {
+                        e.preventDefault();
+                        Engine.togglePlay();
+                    } else if (e.code === 'ArrowRight') {
+                        Engine.next();
+                    } else if (e.code === 'ArrowLeft') {
+                        Engine.prev();
+                    }
+                });
+            },
+            load: (json) => {
+                Engine.data = json;
+                Engine.state.scene = 0;
+                Engine.state.step = 0;
+                Engine.state.paused = true;
+
+                // Auto-load audio if present in JSON meta
+                if (json.meta && json.meta.audio) {
+                    Engine.audioEl.src = json.meta.audio;
+                }
+
+                // Auto-toggle Podcast Switch
+                const podToggle = document.getElementById('podcast-toggle');
+                const aiPodToggle = document.getElementById('ai-podcast-toggle');
+                const isPod = (json.meta && (json.meta.podcast === "true" || json.meta.podcast === true));
+                if (podToggle) podToggle.checked = isPod;
+                if (aiPodToggle) aiPodToggle.checked = isPod;
+                Engine.audio.togglePodcast(isPod);
+
+                Engine.render(0);
+                Engine.loader.preload(1);
+                Engine.ui.update();
+            },
+            gfx: {
+                handleError: (img) => {
+                    const sceneIdx = parseInt(img.dataset.sceneIndex || 0);
+                    const attempt = parseInt(img.dataset.failCount || 0) + 1;
+                    img.dataset.failCount = attempt;
+                    if (attempt <= 2) {
+                        img.src = `https://picsum.photos/seed/${sceneIdx}_tech/1920/1080?grayscale&blur=2`;
+                        return;
+                    }
+                    img.style.display = 'none';
+                    img.parentElement.classList.add('bg-fallback-tech', 'bg-gray-900');
+                }
+            },
+            loader: {
+                preload: (nextIdx) => {
+                    for (let i = nextIdx; i < nextIdx + 2; i++) {
+                        if (Engine.data && Engine.data.scenes[i]) {
+                            const parser = new DOMParser();
+                            const doc = parser.parseFromString(Engine.data.scenes[i].html, 'text/html');
+                            doc.querySelectorAll('img').forEach(img => {
+                                const i = new Image();
+                                i.src = img.src;
+                            });
+                        }
+                    }
+                }
+            },
+            render: (idx) => {
+                if (Engine.state.activeScript && Engine.state.activeScript.remove) {
+                    try {
+                        Engine.state.activeScript.remove();
+                    } catch (e) {}
+                }
+                if (!Engine.data.scenes[idx]) return;
+
+                // Dynamic Grain Update per Scene
+                const grainEl = document.getElementById('dynamic-grain');
+                if (grainEl) {
+                    grainEl.style.backgroundImage = GRAIN_ASSETS[idx % GRAIN_ASSETS.length];
+                }
+
+                const stage = document.getElementById('stage-content');
+                const scene = Engine.data.scenes[idx];
+
+                const old = stage.querySelectorAll('.slide-layer.active');
+                old.forEach(l => {
+                    l.classList.remove('active');
+                    setTimeout(() => l.remove(), 800);
+                });
+
+                const layer = document.createElement('div');
+                layer.className = 'slide-layer active';
+                let processedHTML = scene.html.replace(/<img /g, `<img data-scene-index="${idx}" onerror="Engine.gfx.handleError(this)" `);
+                layer.innerHTML = processedHTML;
+                stage.appendChild(layer);
+
+                if (scene.script) {
+                    setTimeout(() => {
+                        try {
+                            const fn = new Function('return ' + scene.script)();
+                            const instance = fn({
+                                root: layer,
+                                chart: (id, cfg) => new Chart(layer.querySelector(id), cfg),
+                                map: (id, cfg) => L.map(layer.querySelector(id), cfg),
+                                p5: (sketch, id) => new p5(sketch, layer.querySelector(id))
+                            });
+                            Engine.state.activeScript = instance;
+                        } catch (e) {
+                            console.error("Script Error:", e);
+                        }
+                    }, 50);
+                }
+            },
+            playStep: () => {
+                if (Engine.state.paused) return;
+                const scene = Engine.data.scenes[Engine.state.scene];
+                const step = scene.steps[Engine.state.step];
+
+                // Update Overlay Subtitle
+                const subLayer = document.getElementById('subtitle-layer');
+                document.getElementById('subtitle-text').innerText = step.narration;
+                if (Engine.state.subtitles) {
+                    subLayer.classList.remove('hidden');
+                    subLayer.classList.remove('opacity-0');
+                } else {
+                    subLayer.classList.add('hidden');
+                }
+
+                if (step.actions) {
+                    step.actions.forEach(a => {
+                        const el = document.querySelector(a.target);
+                        if (el) {
+                            if (a.type === 'reveal') el.classList.remove('opacity-0', 'translate-y-4', 'scale-90', 'translate-y-8', '-translate-x-4');
+                            if (a.type === 'highlight') el.classList.add('active', 'border-primary');
+                            if (a.type === 'width-grow') el.style.width = a.value || '100%';
+                        }
+                        if (a.type === 'custom') {
+                            try {
+                                new Function(a.fn)();
+                            } catch (e) {
+                                console.error("Custom action error:", e);
+                            }
+                        }
+                    });
+                }
+                Engine.tts.cancel();
+                const u = new SpeechSynthesisUtterance(step.narration);
+
+                // AUDIO ROUTING (Podcast vs Global)
+                const isPodcast = (Engine.data.meta && (Engine.data.meta.podcast === true || Engine.data.meta.podcast === "true"));
+                const voices = Engine.tts.getVoices();
+
+                if (isPodcast) {
+                    // Alternate based on the global step count to simulate conversation
+                    let speakerId = (Engine.state.scene + Engine.state.step) % 2;
+                    if (speakerId === 0) { // Speaker 1
+                        u.voice = voices[Engine.state.podcast.s1.voiceIdx] || Engine.state.voice;
+                        u.rate = Engine.state.podcast.s1.speed;
+                        u.pitch = Engine.state.podcast.s1.pitch;
+                    } else { // Speaker 2
+                        u.voice = voices[Engine.state.podcast.s2.voiceIdx] || Engine.state.voice;
+                        u.rate = Engine.state.podcast.s2.speed;
+                        u.pitch = Engine.state.podcast.s2.pitch;
+                    }
+                } else {
+                    // Standard Global Voice
+                    u.voice = Engine.state.voice;
+                    u.rate = parseFloat(document.getElementById('tts-speed').value);
+                    u.pitch = parseFloat(document.getElementById('tts-pitch').value);
+                }
+
+                u.onend = () => {
+                    if (!Engine.state.paused) setTimeout(Engine.nextStep, 500);
+                };
+                Engine.tts.speak(u);
+            },
+            nextStep: () => {
+                if (Engine.state.paused) return;
+                const scene = Engine.data.scenes[Engine.state.scene];
+                if (Engine.state.step < scene.steps.length - 1) {
+                    Engine.state.step++;
+                    Engine.playStep();
+                } else if (Engine.state.scene < Engine.data.scenes.length - 1) {
+                    Engine.state.scene++;
+                    Engine.state.step = 0;
+                    Engine.render(Engine.state.scene);
+                    Engine.loader.preload(Engine.state.scene + 1);
+                    setTimeout(Engine.playStep, 1000);
+                } else {
+                    Engine.togglePlay();
+                }
+            },
+            togglePlay: () => {
+                Engine.state.paused = !Engine.state.paused;
+                Engine.ui.update();
+                if (!Engine.state.paused) {
+                    Engine.audioEl.play().catch(() => {});
+                    Engine.playStep();
+                } else {
+                    Engine.audioEl.pause();
+                    Engine.tts.cancel();
+                }
+            },
+            prev: () => {
+                if (Engine.state.scene > 0) {
+                    Engine.state.paused = true;
+                    Engine.state.scene--;
+                    Engine.state.step = 0;
+                    Engine.render(Engine.state.scene);
+                    Engine.ui.update();
+                }
+            },
+            next: () => {
+                if (Engine.state.scene < Engine.data.scenes.length - 1) {
+                    Engine.state.paused = true;
+                    Engine.state.scene++;
+                    Engine.state.step = 0;
+                    Engine.render(Engine.state.scene);
+                    Engine.loader.preload(Engine.state.scene + 1);
+                    Engine.ui.update();
+                }
+            },
+            ai: {
+                getScript: async () => {
+                    const promptText = document.getElementById('ai-prompt').value;
+                    if (!promptText) {
+                        Engine.ui.notify("Topic needed", "error");
+                        return;
+                    }
+                    const btn = document.getElementById('json-btn');
+                    btn.disabled = true;
+                    btn.innerHTML = "RESEARCHING...";
+                    try {
+                        const res = await puter.ai.chat(`${SCRIPT_PROMPT}\n\nTOPIC: ${promptText}\n\nOUTPUT JSON.`);
+                        let clean = res.message.content.replace(/```json|```/g, "").trim();
+                        document.getElementById('ai-prompt').value = clean;
+                        Engine.ui.notify("Research Complete", "success");
+                    } catch (e) {
+                        Engine.ui.notify("Error", "error");
+                    }
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-file-earmark-code"></i> RESEARCH';
+                },
+                render: async () => {
+                    const promptText = document.getElementById('ai-prompt').value;
+                    const langCode = document.getElementById('ai-lang').value;
+                    const style = document.getElementById('ai-style').value;
+                    const isPodcast = document.getElementById('ai-podcast-toggle').checked;
+
+                    Engine.ui.openModal('import');
+                    document.getElementById('json-loader').classList.remove('hidden');
+                    const voices = Engine.tts.getVoices();
+                    const matchingVoice = voices.find(v => v.lang === langCode);
+                    if (matchingVoice) {
+                        Engine.state.voice = matchingVoice;
+                        document.getElementById('voice-select').value = voices.indexOf(matchingVoice);
+                    }
+                    try {
+                        const fullPrompt = DIRECTOR_PROMPT_TEMPLATE(promptText, style, langCode, isPodcast);
+                        const res = await puter.ai.chat(fullPrompt, {
+                            model: 'gemini-3-flash-preview'
+                        });
+                        let clean = res.message.content;
+                        if (clean.includes('```json')) {
+                            clean = clean.split('```json')[1].split('```')[0].trim();
+                        } else if (clean.includes('```')) {
+                            clean = clean.split('```')[1].split('```')[0].trim();
+                        }
+                        document.getElementById('json-editor').value = clean;
+                        Engine.io.apply();
+                        Engine.ui.notify("Masterpiece Generated!", "success");
+                        setTimeout(() => Engine.togglePlay(), 1000);
+                    } catch (e) {
+                        console.error(e);
+                        Engine.ui.notify("Generation failed. Try again.", "error");
+                    } finally {
+                        document.getElementById('json-loader').classList.add('hidden');
+                    }
+                }
+            },
+            audio: {
+                populateVoices: () => {
+                    const voices = Engine.tts.getVoices();
+                    const globalSel = document.getElementById('voice-select');
+                    const s1Sel = document.getElementById('s1-voice');
+                    const s2Sel = document.getElementById('s2-voice');
+
+                    globalSel.innerHTML = '';
+                    s1Sel.innerHTML = '';
+                    s2Sel.innerHTML = '';
+
+                    voices.forEach((v, i) => {
+                        const optText = `${v.name} (${v.lang})`;
+
+                        let opt1 = document.createElement('option');
+                        opt1.value = i;
+                        opt1.text = optText;
+                        let opt2 = document.createElement('option');
+                        opt2.value = i;
+                        opt2.text = optText;
+                        let opt3 = document.createElement('option');
+                        opt3.value = i;
+                        opt3.text = optText;
+
+                        globalSel.appendChild(opt1);
+                        s1Sel.appendChild(opt2);
+                        s2Sel.appendChild(opt3);
+                    });
+
+                    if (voices.length > 0) {
+                        if (!Engine.state.voice) Engine.state.voice = voices[globalSel.options[0].value];
+                        // Auto-fill Podcast Speakers with some variety if possible
+                        s1Sel.value = 0;
+                        s2Sel.value = voices.length > 1 ? 1 : 0;
+                        Engine.audio.updatePodcastSettings();
+                    }
+                },
+                setVoice: (idx) => Engine.state.voice = Engine.tts.getVoices()[idx],
+                setVolume: (val) => {
+                    Engine.audioEl.volume = val;
+                    document.getElementById('bgm-vol-val').innerText = Math.round(val * 100) + '%';
+                },
+                setTrack: (url) => {
+                    Engine.audioEl.src = url;
+                    if (!Engine.state.paused) Engine.audioEl.play();
+                    Engine.ui.notify("Music Track Loaded", "success");
+                },
+                upload: (input) => {
+                    if (input.files && input.files[0]) {
+                        const url = URL.createObjectURL(input.files[0]);
+                        Engine.audio.setTrack(url);
+                    }
+                },
+                togglePodcast: (enabled) => {
+                    const container = document.getElementById('podcast-settings-container');
+                    if (enabled) {
+                        container.classList.remove('hidden');
+                    } else {
+                        container.classList.add('hidden');
+                    }
+
+                    if (Engine.data && Engine.data.meta) {
+                        Engine.data.meta.podcast = enabled ? "true" : "false";
+                        const ed = document.getElementById('json-editor');
+                        if (ed.value) {
+                            try {
+                                let j = JSON.parse(ed.value);
+                                j.meta.podcast = enabled ? "true" : "false";
+                                ed.value = JSON.stringify(j, null, 2);
+                            } catch (e) {}
+                        }
+                    }
+                },
+                updatePodcastSettings: () => {
+                    Engine.state.podcast.s1 = {
+                        voiceIdx: parseInt(document.getElementById('s1-voice').value),
+                        speed: parseFloat(document.getElementById('s1-speed').value),
+                        pitch: parseFloat(document.getElementById('s1-pitch').value)
+                    };
+                    Engine.state.podcast.s2 = {
+                        voiceIdx: parseInt(document.getElementById('s2-voice').value),
+                        speed: parseFloat(document.getElementById('s2-speed').value),
+                        pitch: parseFloat(document.getElementById('s2-pitch').value)
+                    };
+                }
+            },
+            io: {
+                downloadJSON: () => {
+                    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(Engine.data, null, 2));
+                    const dlAnchorElem = document.createElement('a');
+                    dlAnchorElem.setAttribute("href", dataStr);
+                    dlAnchorElem.setAttribute("download", "VideoLike_Project.json");
+                    dlAnchorElem.click();
+                },
+                uploadJSON: (input) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        document.getElementById('json-editor').value = e.target.result;
+                        Engine.ui.notify('JSON Loaded to Editor', 'success');
+                    };
+                    reader.readAsText(input.files[0]);
+                },
+                apply: () => {
+                    try {
+                        const json = JSON.parse(document.getElementById('json-editor').value);
+                        Engine.load(json);
+                        Engine.ui.notify('Project Updated', 'success');
+                        Engine.ui.closeModal();
+                    } catch (e) {
+                        Engine.ui.notify('Invalid JSON Format', 'error');
+                    }
+                }
+            },
+            ui: {
+                toggleSubtitles: () => {
+                    Engine.state.subtitles = !Engine.state.subtitles;
+                    const subLayer = document.getElementById('subtitle-layer');
+                    if (Engine.state.subtitles && !Engine.state.paused) {
+                        subLayer.classList.remove('hidden');
+                    } else {
+                        subLayer.classList.add('hidden');
+                    }
+                    Engine.ui.notify('Subtitles ' + (Engine.state.subtitles ? 'ON' : 'OFF'), 'info');
+                },
+                toggleMenu: () => {
+                    document.getElementById('system-menu').classList.toggle('open');
+                    document.getElementById('menu-btn').classList.toggle('active');
+                },
+                openModal: (id) => {
+                    Engine.ui.closeModal();
+                    document.getElementById('system-menu').classList.remove('open');
+                    document.getElementById('modal-' + id).classList.add('open');
+                    if (id === 'import') {
+                        if (!document.getElementById('json-editor').value) {
+                            document.getElementById('json-editor').value = JSON.stringify(Engine.data, null, 2);
+                        }
+                    }
+                },
+                closeModal: () => document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('open')),
+                toggleRatio: () => document.getElementById('stage-content').classList.toggle('portrait'),
+                toggleFullscreen: () => document.fullscreenElement ? document.exitFullscreen() : document.body.requestFullscreen(),
+                notify: (msg, type) => {
+                    const t = document.createElement('div');
+                    t.className = `toast`;
+                    let icon = type === 'success' ? 'bi-check-circle-fill' : (type === 'error' ? 'bi-exclamation-triangle-fill' : 'bi-info-circle-fill');
+                    t.innerHTML = `<i class="bi ${icon}"></i> ${msg}`;
+                    document.getElementById('notification-area').appendChild(t);
+                    setTimeout(() => t.classList.add('show'), 100);
+                    setTimeout(() => {
+                        t.classList.remove('show');
+                        setTimeout(() => t.remove(), 500);
+                    }, 3000);
+                },
+                trackIdle: () => {
+                    const bar = document.getElementById('main-ui');
+                    const reset = () => {
+                        bar.classList.remove('inactive');
+                        clearTimeout(Engine.state.idleTimer);
+                        Engine.state.idleTimer = setTimeout(() => {
+                            if (!Engine.state.paused) bar.classList.add('inactive');
+                        }, 5000);
+                    };
+                    ['mousemove', 'mousedown', 'keydown', 'touchstart'].forEach(e => window.addEventListener(e, reset));
+                    reset();
+                },
+                update: () => {
+                    document.getElementById('play-btn').innerHTML = Engine.state.paused ? '<i class="bi bi-play-fill"></i>' : '<i class="bi bi-pause-fill"></i>';
+                },
+                copyPrompt: () => {
+                    navigator.clipboard.writeText(SCRIPT_PROMPT);
+                    Engine.ui.notify('Script Prompt Copied', 'success');
+                }
+            }
+        };
+
+        // Initialize Splash screen fade out
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const splash = document.getElementById('splash-screen');
+                splash.classList.add('opacity-0');
+                setTimeout(() => {
+                    splash.remove();
+                    Engine.init();
+                }, 1000);
+            }, 2500); // Intro displays for 2.5 seconds before fading
+        });
+    </script>
+</body>
+
+</html>
